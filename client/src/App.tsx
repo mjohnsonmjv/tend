@@ -1,4 +1,4 @@
-import { Switch, Route, Router } from "wouter";
+import { Switch, Route, Router, Redirect } from "wouter";
 import { useHashLocation } from "wouter/use-hash-location";
 import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
@@ -15,6 +15,8 @@ import PrayerDetail from "@/pages/PrayerDetail";
 import ChurchQR from "@/pages/ChurchQR";
 import ChurchSettings from "@/pages/ChurchSettings";
 import Pricing from "@/pages/Pricing";
+import Privacy from "@/pages/Privacy";
+import Terms from "@/pages/Terms";
 import { AuthProvider,RequireAuth,useAuth } from "@/components/Auth";
 import Login from "@/pages/Login";
 import MyChurches from "@/pages/MyChurches";
@@ -45,7 +47,9 @@ function AppRouter() {
       <Route path="/demo" component={Demo} />
       <Route path="/pricing" component={Pricing} />
       <Route path="/login">{()=><Login/>}</Route>
-      <Route path="/register">{()=><Login register/>}</Route>
+      <Route path="/register">{()=><Redirect to="/signup"/>}</Route>
+      <Route path="/privacy" component={Privacy} />
+      <Route path="/terms" component={Terms} />
       <Route path="/app">{()=><RequireAuth><MyChurches/></RequireAuth>}</Route>
       <Route path="/signup">{()=><SignupEntry/>}</Route>
       {/* Dashboard */}

@@ -20,7 +20,7 @@ This callback goes to Supabase, not directly to the Vercel application. After au
 
 In Supabase Auth URL Configuration, allow the deployed Tend application’s exact root URL. The existing pilot is:
 
-`https://tend-gilt-seven.vercel.app/`
+`https://tendpray.com/`
 
 Before testing a separate Vercel preview, add that exact preview root as an allowed redirect. Do not add arbitrary external redirects. Promote the new callback code together with the new sign-in controls so an old production build cannot receive a new flow.
 

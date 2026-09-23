@@ -2,7 +2,7 @@
 
 ## Current pilot
 
-- Website: https://tend-gilt-seven.vercel.app
+- Website: https://tendpray.com (Vercel deployment: https://tend-gilt-seven.vercel.app)
 - Vercel project: https://vercel.com/mjohnson-1676s-projects/tend
 - Supabase project selected by the owner: https://supabase.com/dashboard/project/hvrdkrtismqbrkbmcgne
 
@@ -54,7 +54,7 @@ Fictional QA accounts and data were removed from the selected project after thes
 - Stripe account access is live-mode only. No products, prices, live charges, subscriptions, or runtime billing credentials were configured. Pricing remains proposed.
 - A dedicated Tend messaging number has not been purchased. Unrelated messaging accounts and numbers must not be repurposed.
 - SMS, urgent alerts, and automated email digests are not active.
-- tend.faith has not been connected to Vercel.
+- tendpray.com is connected to Vercel (replacing the earlier tend.faith plan).
 
 ## Infrastructure cleanup
 

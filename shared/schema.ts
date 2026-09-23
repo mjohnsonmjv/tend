@@ -4,7 +4,7 @@ import { z } from "zod";
 
 /**
  * churches : a single congregation. `slug` is what appears in the public QR URL:
- * https://tend.faith/{slug}
+ * https://tendpray.com/#/c/{slug}
  */
 export const churches = sqliteTable("churches", {
   id: integer("id").primaryKey({ autoIncrement: true }),

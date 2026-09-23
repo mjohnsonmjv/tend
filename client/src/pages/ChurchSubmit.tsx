@@ -196,7 +196,7 @@ export default function ChurchSubmit() {
               </div>
               <div>
                 <Label htmlFor="phone" className="text-sm">
-                  Phone <span className="text-muted-foreground font-normal">(optional : for pastor follow-up)</span>
+                  Phone <span className="text-muted-foreground font-normal">(optional) for pastor follow-up</span>
                 </Label>
                 <Input
                   id="phone"
@@ -236,6 +236,11 @@ export default function ChurchSubmit() {
           >
             {submit.isPending ? "Sending..." : slug === "demo" ? "Try the example" : "Share with pastor"}
           </Button>
+          {!message && !submit.isPending && (
+            <p className="text-xs text-center text-muted-foreground -mt-3" data-testid="text-submit-hint">
+              Share a few words above to send your request.
+            </p>
+          )}
           <p className="text-xs text-center text-muted-foreground pt-2">
             Powered by <span className="font-serif italic">Tend</span> · One QR code for your church
           </p>

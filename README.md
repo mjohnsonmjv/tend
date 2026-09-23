@@ -6,7 +6,7 @@ A QR-first prayer intake and pastoral-care application. Congregants submit reque
 
 - Repository: https://github.com/mjohnsonmjv/tend
 - Vercel project: https://vercel.com/mjohnson-1676s-projects/tend
-- Pilot: https://tend-gilt-seven.vercel.app
+- Pilot: https://tendpray.com
 - Supabase: https://supabase.com/dashboard/project/hvrdkrtismqbrkbmcgne
 
 ## Development

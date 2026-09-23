@@ -1,5 +1,4 @@
 import { Link } from "wouter";
-import { Button } from "@/components/ui/button";
 import { SiteHeader, SiteFooter } from "@/components/SiteHeader";
 import { Check } from "lucide-react";
 
@@ -95,16 +94,16 @@ export default function Pricing() {
                 </li>
               ))}
             </ul>
-            <Link href="/signup" data-testid={`link-plan-${p.id}`}>
-              <Button
-                className={`mt-8 w-full h-11 ${
-                  p.highlighted
-                    ? "bg-primary hover:bg-primary/90 text-primary-foreground"
-                    : "bg-foreground hover:bg-foreground/90 text-background"
-                }`}
-              >
-                {p.cta}
-              </Button>
+            <Link
+              href="/signup"
+              data-testid={`link-plan-${p.id}`}
+              className={`mt-8 inline-flex h-11 w-full items-center justify-center rounded-md text-sm font-medium transition-colors ${
+                p.highlighted
+                  ? "bg-primary hover:bg-primary/90 text-primary-foreground"
+                  : "bg-foreground hover:bg-foreground/90 text-background"
+              }`}
+            >
+              {p.cta}
             </Link>
           </div>
         ))}

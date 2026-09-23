@@ -40,4 +40,4 @@ These references inform design principles, not a claim of an objective â€œbestâ€
 
 The initial branding preview used fictional data. The current app now includes Supabase authentication and owner-based database authorization; see DEPLOYMENT.md for the implementation and verification boundaries. Production privacy review, billing, and automated notifications remain unfinished. Use fictional information for demos and QA. Do not add unsupported encryption, privacy, instant-notification, or subscription-enforcement claims; planned pricing features remain explicitly labeled.
 
-The selected tend.faith domain has not been verified as registered or connected. Preview QR codes use the current preview address, not a live tend.faith destination.
+The live domain is tendpray.com. Preview QR codes use the current page address.

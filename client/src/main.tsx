@@ -3,10 +3,16 @@ import App from "./App";
 import "./index.css";
 import {parseOAuthReturn} from "./lib/oauth-core";
 import {OAuthReturn} from "./components/OAuthReturn";
+import Recovery,{isRecoveryUrl} from "./pages/Recovery";
 
 const root=createRoot(document.getElementById("root")!);
 let callbackMode=false;
 function start(){
+  if(isRecoveryUrl(location.href)){
+    callbackMode=true;
+    root.render(<Recovery/>);
+    return;
+  }
   const payload=parseOAuthReturn(location.href);
   if(payload){
     callbackMode=true;
@@ -20,6 +26,6 @@ function start(){
   root.render(<App />);
 }
 window.addEventListener("hashchange",()=>{
-  if(parseOAuthReturn(location.href)||callbackMode)start();
+  if(isRecoveryUrl(location.href)||parseOAuthReturn(location.href)||callbackMode)start();
 });
 start();

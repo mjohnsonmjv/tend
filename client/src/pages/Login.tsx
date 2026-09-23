@@ -7,6 +7,7 @@ import { supabase } from "@/lib/supabase";
 import { Form,FormField,FormItem,FormLabel,FormControl,FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
 import { SiteHeader,SiteFooter } from "@/components/SiteHeader";
 import { useAuth } from "@/components/Auth";
 import { useQuery } from "@tanstack/react-query";
@@ -21,8 +22,11 @@ export default function Login({register=false}:{register?:boolean}) {
   const {session}=useAuth();
   const [message,setMessage]=useState("");
   const [pending,setPending]=useState(false);
+  const [accepted,setAccepted]=useState(false);
   const [socialPending,setSocialPending]=useState<SocialProvider|null>(null);
   const providers=useQuery<Record<SocialProvider,boolean>>({queryKey:["/api/auth/providers"],enabled:!session,staleTime:30000});
+  // Hide the social section entirely when no provider is configured; it reappears on its own once enabled in Supabase.
+  const socialVisible=providers.isError||!providers.data||providers.data.google||providers.data.azure;
   async function social(provider:SocialProvider){
     setMessage("");setSocialPending(provider);
     try{await startSocialSignIn(provider);navigate("/app");}
@@ -46,11 +50,22 @@ export default function Login({register=false}:{register?:boolean}) {
     }catch(e:any){setMessage(e.message || "Unable to sign in. Please try again.");}
     finally{setPending(false)}
   }
+  async function forgotPassword(){
+    const email=form.getValues("email");
+    if(!email||!/.+@.+\..+/.test(email)){setMessage("Enter your email address above first, then choose Forgot password.");return;}
+    setMessage("");setPending(true);
+    try{
+      const {error}=await supabase.auth.resetPasswordForEmail(email,{redirectTo:window.location.origin+window.location.pathname+"?recovery=1"});
+      if(error) throw error;
+      setMessage("If that email has a Tend account, a reset link is on its way. Give it a minute, and check spam.");
+    }catch(e:any){setMessage(e.message || "Could not send a reset link. Try again.");}
+    finally{setPending(false)}
+  }
   return <div><SiteHeader/><main className="max-w-lg mx-auto px-6 py-16">
     <h1 className="text-3xl mb-3">{register?"Create your pastor account":"Welcome back."}</h1>
     <p className="text-muted-foreground mb-8">{register?"Use a supported sign-in provider or create an email account. Then set up your church and its QR code.":"Sign in to your church’s prayer inbox."}</p>
     {session ? <Link className="brand-button" href="/app">Open my churches</Link> :
-    <><div className="space-y-3 mb-7" aria-label="Social sign-in options">
+    <>{socialVisible&&<><div className="space-y-3 mb-7" aria-label="Social sign-in options">
       {(["google","azure"] as const).map(provider=>{
         const label=provider==="google"?"Google":"Microsoft";
         const Icon=provider==="google"?SiGoogle:FaMicrosoft;
@@ -62,15 +77,20 @@ export default function Login({register=false}:{register?:boolean}) {
       {providers.isError?<div className="text-xs text-muted-foreground" role="status">Couldn’t check social sign-in. Email sign-in is still available. <button type="button" className="underline min-h-11" onClick={()=>providers.refetch()} data-testid="button-retry-providers">Try again</button></div>:
         providers.data&&(!providers.data.google||!providers.data.azure)?<p className="text-xs text-muted-foreground leading-relaxed" data-testid="text-provider-setup">Options marked “Setup pending” are not active yet. You can use email below.</p>:<p className="text-xs text-muted-foreground leading-relaxed">Only basic identity is requested. No access to your inbox, contacts, calendar, or church directory.</p>}
       {socialPending&&<p role="status" className="text-sm text-primary">Finish signing in in the new window. Keep this page open.</p>}
-    </div><div className="relative border-t mb-7"><span className="absolute left-1/2 -translate-x-1/2 -translate-y-1/2 bg-background px-3 text-xs text-muted-foreground">or continue with email</span></div>
+    </div><div className="relative border-t mb-7"><span className="absolute left-1/2 -translate-x-1/2 -translate-y-1/2 bg-background px-3 text-xs text-muted-foreground">or continue with email</span></div></>}
     <Form {...form}><form onSubmit={form.handleSubmit(submit)} className="space-y-5">
       <FormField control={form.control} name="email" render={({field})=><FormItem><FormLabel>Email</FormLabel><FormControl><Input {...field} type="email" autoComplete="email" data-testid="input-auth-email"/></FormControl><FormMessage/></FormItem>}/>
       <FormField control={form.control} name="password" render={({field})=><FormItem><FormLabel>Password</FormLabel><FormControl><Input {...field} type="password" autoComplete={register?"new-password":"current-password"} data-testid="input-auth-password"/></FormControl><FormMessage/></FormItem>}/>
-      <Button className="w-full h-12" disabled={pending||!!socialPending} data-testid="button-auth-submit">{pending?"Please wait…":register?"Create email account":"Sign in with email"}</Button>
+      {register&&<label className="flex items-start gap-3 text-sm cursor-pointer">
+        <Checkbox checked={accepted} onCheckedChange={(v)=>setAccepted(v===true)} className="mt-0.5 shrink-0" data-testid="checkbox-terms"/>
+        <span className="text-muted-foreground">I agree to the <Link href="/terms" className="underline text-foreground">Terms of Service</Link> and <Link href="/privacy" className="underline text-foreground">Privacy Policy</Link>.</span>
+      </label>}
+      <Button className="w-full h-12" disabled={pending||!!socialPending||(register&&!accepted)} data-testid="button-auth-submit">{pending?"Please wait…":register?"Create email account":"Sign in with email"}</Button>
     </form></Form>
+    {!register&&<p className="text-sm mt-4 text-center"><button type="button" className="underline min-h-11" onClick={forgotPassword} disabled={pending} data-testid="link-forgot-password">Forgot password?</button></p>}
     {message && <p role="status" className="rounded border p-4 mt-5 text-sm" data-testid="text-auth-message">{message}</p>}
     </>}
-    <p className="text-sm mt-6">{register?"Already have an account?":"New to Tend?"} <Link href={register?"/login":"/register"} className="underline" data-testid="link-auth-switch">{register?"Sign in":"Create an account"}</Link></p>
+    <p className="text-sm mt-6">{register?"Already have an account?":"New to Tend?"} <Link href={register?"/login":"/signup"} className="underline" data-testid="link-auth-switch">{register?"Sign in":"Create an account"}</Link></p>
     <p className="text-xs mt-5 text-muted-foreground">For privacy, sessions are kept in memory. Refreshing or closing the page requires signing in again. Your church data stays saved.</p>
   </main><SiteFooter/></div>;
 }

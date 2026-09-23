@@ -19,7 +19,7 @@ export default function ChurchQR() {
   const [qrDataUrl, setQrDataUrl] = useState<string>("");
   const { toast } = useToast();
 
-  // Public URL : for QR embedding. In production tend.faith/c/slug.
+  // Public URL : for QR embedding. In production tendpray.com/#/c/<slug>.
   const publicUrl = useMemo(() => {
     if (!church) return "";
     return `${window.location.origin}${window.location.pathname}#/c/${church.slug}`;
