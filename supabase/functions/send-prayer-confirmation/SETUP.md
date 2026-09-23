@@ -21,7 +21,7 @@ contact details (enforced by the existing check constraint).
 
 ```bash
 supabase functions deploy send-prayer-confirmation --no-verify-jwt
-supabase secrets set RESEND_API_KEY=... CONFIRM_FROM="Tend <hello@tendpray.com>" \
+supabase secrets set RESEND_API_KEY=... CONFIRM_FROM="Tend <support@tendpray.com>" \
   SUPABASE_URL=https://hvrdkrtismqbrkbmcgne.supabase.co SUPABASE_SERVICE_ROLE_KEY=...
 ```
 

@@ -6,7 +6,7 @@
 //
 // Required function secrets (set with `supabase secrets set`):
 //   RESEND_API_KEY            API key from resend.com
-//   CONFIRM_FROM              e.g. "Tend <hello@tendpray.com>" (must be a verified Resend sender/domain)
+//   CONFIRM_FROM              e.g. "Tend <support@tendpray.com>" (must be a verified Resend sender/domain)
 //   SUPABASE_URL              project URL
 //   SUPABASE_SERVICE_ROLE_KEY service-role key (server-side only, never in the frontend)
 //
@@ -17,7 +17,7 @@ import { serve } from "https://deno.land/std@0.177.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.0";
 
 const RESEND_API_KEY = Deno.env.get("RESEND_API_KEY") ?? "";
-const CONFIRM_FROM = Deno.env.get("CONFIRM_FROM") ?? "Tend <hello@tendpray.com>";
+const CONFIRM_FROM = Deno.env.get("CONFIRM_FROM") ?? "Tend <support@tendpray.com>";
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "";
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
 

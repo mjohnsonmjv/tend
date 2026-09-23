@@ -33,7 +33,7 @@ export default function Privacy() {
         </Section>
 
         <Section title="How long it is kept">
-          <p>Prayer requests are kept until the church's account owner archives or deletes them, or until the church's account is closed. A church can request deletion of its data at any time by writing to hello@tendpray.com.</p>
+          <p>Prayer requests are kept until the church's account owner archives or deletes them, or until the church's account is closed. A church can request deletion of its data at any time by writing to support@tendpray.com.</p>
         </Section>
 
         <Section title="Security">
@@ -49,7 +49,7 @@ export default function Privacy() {
         </Section>
 
         <Section title="Changes and contact">
-          <p>If this policy changes in a meaningful way, the updated date above will change. Questions about privacy can go to <a className="underline" href="mailto:hello@tendpray.com">hello@tendpray.com</a>.</p>
+          <p>If this policy changes in a meaningful way, the updated date above will change. Questions about privacy can go to <a className="underline" href="mailto:support@tendpray.com">support@tendpray.com</a>.</p>
         </Section>
       </main>
       <SiteFooter />

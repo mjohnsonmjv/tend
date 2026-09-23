@@ -32,7 +32,7 @@ export default function Terms() {
         </Section>
 
         <Section title="Your church's data">
-          <p>Your church owns the prayer requests it receives. You can archive or delete requests in the inbox, and you can request full deletion of your church's data by writing to hello@tendpray.com.</p>
+          <p>Your church owns the prayer requests it receives. You can archive or delete requests in the inbox, and you can request full deletion of your church's data by writing to support@tendpray.com.</p>
         </Section>
 
         <Section title="Suspension">
@@ -44,7 +44,7 @@ export default function Terms() {
         </Section>
 
         <Section title="Changes and contact">
-          <p>If these terms change in a meaningful way, the updated date above will change. Questions can go to <a className="underline" href="mailto:hello@tendpray.com">hello@tendpray.com</a>.</p>
+          <p>If these terms change in a meaningful way, the updated date above will change. Questions can go to <a className="underline" href="mailto:support@tendpray.com">support@tendpray.com</a>.</p>
         </Section>
       </main>
       <SiteFooter />
