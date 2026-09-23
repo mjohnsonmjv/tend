@@ -30,10 +30,32 @@ export default function ChurchSubmit() {
   const [category, setCategory] = useState<Category>("prayer");
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
+  const [emailError, setEmailError] = useState("");
+  const [phoneError, setPhoneError] = useState("");
   const [isAnonymous, setIsAnonymous] = useState(false);
   const [isUrgent, setIsUrgent] = useState(false);
   const [submissionKey] = useState(()=>crypto.randomUUID());
   const [website,setWebsite] = useState("");
+
+  const validEmail = (v: string) => v === "" || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim());
+
+  const validateContact = () => {
+    let ok = true;
+    if (!isAnonymous && phone.includes("@")) {
+      setPhoneError("That looks like an email address. Please enter a phone number here, or use the email field below.");
+      ok = false;
+    } else {
+      setPhoneError("");
+    }
+    if (!isAnonymous && !validEmail(email)) {
+      setEmailError("Enter a valid email address, or leave this blank.");
+      ok = false;
+    } else {
+      setEmailError("");
+    }
+    return ok;
+  };
 
   const { data: church, isLoading } = useQuery<PublicChurch>({
     queryKey: ["/api/churches/by-slug", slug],
@@ -46,6 +68,7 @@ export default function ChurchSubmit() {
         category,
         submitterName: isAnonymous ? undefined : name || undefined,
         submitterPhone: isAnonymous ? undefined : phone || undefined,
+        submitterEmail: isAnonymous ? undefined : email.trim() || undefined,
         isAnonymous,
         isUrgent,
         isPrivate: true,
@@ -103,6 +126,7 @@ export default function ChurchSubmit() {
           className="space-y-6"
           onSubmit={(e) => {
             e.preventDefault();
+            if (!validateContact()) return;
             submit.mutate();
           }}
         >
@@ -203,11 +227,34 @@ export default function ChurchSubmit() {
                   data-testid="input-submitter-phone"
                   type="tel"
                   value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
+                  onChange={(e) => { setPhone(e.target.value); if (phoneError) setPhoneError(""); }}
                   placeholder="(555) 123-4567"
                   maxLength={32}
                   className="mt-1.5"
                 />
+                {phoneError && (
+                  <p className="mt-1.5 text-xs text-destructive" data-testid="text-phone-error">{phoneError}</p>
+                )}
+              </div>
+              <div>
+                <Label htmlFor="email" className="text-sm">
+                  Email <span className="text-muted-foreground font-normal">(optional) for a confirmation</span>
+                </Label>
+                <Input
+                  id="email"
+                  data-testid="input-submitter-email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => { setEmail(e.target.value); if (emailError) setEmailError(""); }}
+                  placeholder="you@example.com"
+                  maxLength={254}
+                  className="mt-1.5"
+                />
+                {emailError ? (
+                  <p className="mt-1.5 text-xs text-destructive" data-testid="text-email-error">{emailError}</p>
+                ) : (
+                  <p className="mt-1.5 text-xs text-muted-foreground">We will only use this to confirm your request was received.</p>
+                )}
               </div>
             </div>
           )}

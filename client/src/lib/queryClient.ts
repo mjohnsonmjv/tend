@@ -33,6 +33,7 @@ export async function apiRequest(method: string, url: string, data?: any): Promi
       : await supabase.rpc("tend_submit_prayer", {
           p_slug:slug,p_message:data.message,p_submission_key:data.submissionKey,
           p_category:data.category,p_name:data.submitterName || null,p_phone:data.submitterPhone || null,
+          p_email:data.submitterEmail || null,
           p_anonymous:!!data.isAnonymous,p_urgent:!!data.isUrgent,p_website:data.website || "",
         });
     if (!reply.error && !reply.data) throw new Error("Church not found");

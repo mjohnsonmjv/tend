@@ -1,4 +1,4 @@
-import { useParams } from "wouter";
+import { useParams, Link } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { Logo } from "@/components/Logo";
 import { Heart } from "lucide-react";
@@ -31,6 +31,21 @@ export default function SubmitThanks() {
         {church?.pastorName && (
           <p className="mt-2 text-sm text-muted-foreground">From {church.pastorName}</p>
         )}
+        {slug !== "demo" && (
+          <p className="mt-6 text-sm text-muted-foreground">
+            If you shared your email, a confirmation is on its way to your inbox.
+          </p>
+        )}
+
+        <div className="mt-10">
+          <Link
+            href={`/c/${slug}`}
+            data-testid="link-submit-another"
+            className="inline-flex h-11 items-center justify-center rounded-md border border-border bg-card px-6 text-sm font-medium text-foreground hover:border-primary/40 transition-colors"
+          >
+            Share another request
+          </Link>
+        </div>
 
         <div className="mt-16 flex items-center justify-center gap-2 text-xs text-muted-foreground">
           <Logo size={16} />

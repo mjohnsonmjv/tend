@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { Link } from "wouter";
 import { SiteHeader, SiteFooter } from "@/components/SiteHeader";
 import { Check } from "lucide-react";
@@ -6,7 +7,8 @@ const PLANS = [
   {
     id: "starter",
     name: "Starter",
-    price: 29,
+    monthly: 29,
+    annual: 290,
     tag: "For churches under 200",
     perks: [
       "One QR code + prayer intake page",
@@ -15,12 +17,13 @@ const PLANS = [
       "Weekly digest email (planned)",
       "Printable QR poster",
     ],
-    cta: "Explore the preview",
+    cta: "Start free trial",
   },
   {
     id: "growth",
     name: "Growth",
-    price: 49,
+    monthly: 49,
+    annual: 490,
     tag: "For churches 200–500",
     highlighted: true,
     perks: [
@@ -30,12 +33,13 @@ const PLANS = [
       "Custom greeting message",
       "Export prayer log to CSV (planned)",
     ],
-    cta: "Explore the preview",
+    cta: "Start free trial",
   },
   {
     id: "large",
     name: "Large Church",
-    price: 99,
+    monthly: 99,
+    annual: 990,
     tag: "For churches 500+",
     perks: [
       "Everything in Growth",
@@ -44,24 +48,46 @@ const PLANS = [
       "Priority support (planned)",
       "Volume pricing to be confirmed",
     ],
-    cta: "Explore the preview",
+    cta: "Start free trial",
   },
 ];
 
 export default function Pricing() {
+  const [annual, setAnnual] = useState(false);
   return (
     <div className="min-h-screen bg-background text-foreground">
       <SiteHeader />
       <section className="max-w-6xl mx-auto px-6 pt-20 pb-16 text-center">
-          <div className="text-xs uppercase tracking-widest text-primary font-medium mb-4">Proposed pricing</div>
+          <div className="text-xs uppercase tracking-widest text-primary font-medium mb-4">Pricing</div>
         <h1 className="font-serif text-5xl sm:text-6xl text-foreground leading-tight">
           Simple plans.
           <br />
           <span className="text-primary">More room to care.</span>
         </h1>
         <p className="mt-6 text-lg text-muted-foreground max-w-2xl mx-auto">
-          Explore the working preview without payment. Paid plans and a 14-day trial are proposed for launch, not active yet.
+          Every plan starts with a 30-day free trial. No card required.
         </p>
+        <div className="mt-8 inline-flex items-center rounded-full border border-border bg-card p-1" role="group" aria-label="Billing period">
+          <button
+            type="button"
+            data-testid="toggle-monthly"
+            onClick={() => setAnnual(false)}
+            className={`px-5 py-2 rounded-full text-sm font-medium transition-colors ${!annual ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}
+          >
+            Monthly
+          </button>
+          <button
+            type="button"
+            data-testid="toggle-annual"
+            onClick={() => setAnnual(true)}
+            className={`px-5 py-2 rounded-full text-sm font-medium transition-colors ${annual ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground"}`}
+          >
+            Annual
+          </button>
+        </div>
+        {annual && (
+          <p className="mt-3 text-sm text-primary font-medium">Annual billing gives you two months free.</p>
+        )}
       </section>
 
       <section className="max-w-6xl mx-auto px-6 pb-24 grid md:grid-cols-3 gap-6">
@@ -83,8 +109,8 @@ export default function Pricing() {
             <div className="text-sm text-muted-foreground uppercase tracking-widest">{p.tag}</div>
             <h2 className="font-serif text-3xl text-foreground mt-2">{p.name}</h2>
             <div className="mt-6 flex items-baseline gap-1">
-              <span className="font-serif text-5xl text-foreground">${p.price}</span>
-              <span className="text-muted-foreground">/mo</span>
+              <span className="font-serif text-5xl text-foreground">${annual ? p.annual : p.monthly}</span>
+              <span className="text-muted-foreground">{annual ? "/yr" : "/mo"}</span>
             </div>
             <ul className="mt-8 space-y-3 flex-1">
               {p.perks.map((perk) => (
@@ -118,8 +144,8 @@ export default function Pricing() {
           <Faq q="Do I need to know anything technical to set this up?">
             No. Sign up, print the QR code we generate, tape it in the sanctuary. You're done.
           </Faq>
-          <Faq q="Can I subscribe yet?">
-            Not yet. Billing is not connected in this preview. No payments are collected here.
+          <Faq q="How does the free trial work?">
+            Every plan starts with a 30-day free trial. No card is required up front, and you can cancel anytime.
           </Faq>
           <Faq q="Is this HIPAA-compliant?">
             No. Tend is a pastoral-care pilot, not a medical records system. Pastor login and church-specific database access controls are enabled. Do not use it as a substitute for clinical or emergency services.

@@ -100,16 +100,16 @@ export default function ChurchSettings() {
               title="Billing"
               hint={
                 church.plan === "trial"
-                  ? "You're on the free 14-day trial. Add a plan to continue after."
+                  ? "You're on the free 30-day trial. No card required."
                   : `Current plan: ${church.plan}`
               }
             >
               {!billing?.configured && (
                 <div className="rounded-md border border-dashed border-accent/40 bg-accent/5 p-4 text-sm text-foreground/80">
                   <div className="flex items-center gap-2 text-accent mb-1 font-medium">
-                    <CreditCard className="h-4 w-4" /> Billing is not active
+                    <CreditCard className="h-4 w-4" /> Free 30-day trial
                   </div>
-                  No charges occur during this pilot. Stripe Checkout and subscription management will be enabled after test-mode verification and pricing approval.
+                  No charges and no card required to start. Plan selection and subscription management are coming soon.
                 </div>
               )}
               {billing?.plans && (

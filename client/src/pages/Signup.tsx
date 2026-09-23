@@ -28,7 +28,7 @@ export default function Signup(){
   const create=useMutation({mutationFn:async(v:z.infer<typeof schema>)=>(await apiRequest("POST","/api/churches",v)).json() as Promise<Church>,onSuccess:church=>{queryClient.invalidateQueries({queryKey:["/api/churches"]});navigate(`/church/${church.id}/qr`)}});
   async function next(){if(await form.trigger(["name","slug","pastorName"]))setStep(2)}
   return <><SiteHeader/><main className="max-w-3xl mx-auto px-5 py-12">
-    <p className="eyebrow">Set up your church · {step} of 2</p><h1 className="text-3xl mb-3">{step===1?"Make a place for prayer.":"Welcome people in your own words."}</h1><p className="text-muted-foreground mb-8">No payment required during the pilot. Your QR code is ready as soon as you finish.</p>
+    <p className="eyebrow">Set up your church · {step} of 2</p><h1 className="text-3xl mb-3">{step===1?"Make a place for prayer.":"Welcome people in your own words."}</h1><p className="text-muted-foreground mb-8">No payment required to start. Your QR code is ready as soon as you finish.</p>
     <Form {...form}><form className="border rounded-xl bg-card p-6 sm:p-8 space-y-6" onSubmit={form.handleSubmit(v=>create.mutate(v))}>
       {step===1?<>
         <FormField control={form.control} name="name" render={({field})=><FormItem><FormLabel>Church name</FormLabel><FormControl><Input {...field} maxLength={120} data-testid="input-church-name" placeholder="Grace Community Church" onChange={e=>{field.onChange(e);if(!slugEdited)form.setValue("slug",e.target.value.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"").slice(0,40))}}/></FormControl><FormMessage/></FormItem>}/>
@@ -42,6 +42,6 @@ export default function Signup(){
         {create.isError&&<p role="alert" className="text-destructive text-sm" data-testid="text-setup-error">{create.error.message}</p>}
         <div className="flex gap-3"><Button type="button" variant="outline" disabled={create.isPending} className="min-h-12" onClick={()=>{create.reset();setStep(1)}}>Back</Button><Button type="submit" className="flex-1 min-h-12" disabled={create.isPending} data-testid="button-create-church">{create.isPending?"Creating your church…":"Create church & get QR code"}</Button></div>
       </>}
-    </form></Form><p className="mt-6 text-xs text-muted-foreground leading-relaxed">Only your signed-in account can access this church’s inbox. Your account email is not included on the public prayer form. SMS and billing are not active.</p><Link href="/app" className="inline-block mt-5 underline text-sm">Back to my churches</Link>
+    </form></Form><p className="mt-6 text-xs text-muted-foreground leading-relaxed">Only your signed-in account can access this church’s inbox. Your account email is not included on the public prayer form. Every plan starts with a 30-day free trial. SMS and automated notifications are not active yet.</p><Link href="/app" className="inline-block mt-5 underline text-sm">Back to my churches</Link>
   </main><SiteFooter/></>;
 }

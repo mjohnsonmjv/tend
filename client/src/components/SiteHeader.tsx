@@ -28,7 +28,7 @@ export function SiteFooter() {
         <div className="footer-links"><Link href="/pricing" data-testid="link-footer-pricing">Pricing</Link><Link href="/signup" data-testid="link-footer-signup">Create your church</Link><Link href="/privacy" data-testid="link-footer-privacy">Privacy</Link><Link href="/terms" data-testid="link-footer-terms">Terms</Link><a href="mailto:hello@tendpray.com" data-testid="link-footer-contact">hello@tendpray.com</a></div>
         <span className="footer-scripture">Inspired by 1 Peter 5:2</span>
       </div>
-      <p className="preview-notice">Pilot version. Pastor login and church-specific access are enabled. Billing and automated notifications are not active.</p>
+      <p className="preview-notice">Pilot version. Pastor login and church-specific access are enabled.</p>
     </footer>
   );
 }
