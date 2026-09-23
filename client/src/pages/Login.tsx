@@ -11,7 +11,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { SiteHeader,SiteFooter } from "@/components/SiteHeader";
 import { useAuth } from "@/components/Auth";
 import { useQuery } from "@tanstack/react-query";
-import { startSocialSignIn } from "@/lib/oauth";
+import { cancelSocialSignIn, startSocialSignIn } from "@/lib/oauth";
 import type {SocialProvider} from "@/lib/oauth-core";
 import { SiGoogle } from "react-icons/si";
 
@@ -75,7 +75,7 @@ export default function Login({register=false}:{register?:boolean}) {
       })}
       {providers.isError?<div className="text-xs text-muted-foreground" role="status">Couldn’t check social sign-in. Email sign-in is still available. <button type="button" className="underline min-h-11" onClick={()=>providers.refetch()} data-testid="button-retry-providers">Try again</button></div>:
         providers.data&&!providers.data.google?<p className="text-xs text-muted-foreground leading-relaxed" data-testid="text-provider-setup">Google sign-in is not active yet. You can use email below.</p>:<p className="text-xs text-muted-foreground leading-relaxed">Only basic identity is requested. No access to your inbox, contacts, calendar, or church directory.</p>}
-      {socialPending&&<p role="status" className="text-sm text-primary">Finish signing in in the new window. Keep this page open.</p>}
+      {socialPending&&<div><p role="status" className="text-sm text-primary">Finish signing in in the new window. Keep this page open.</p><button type="button" className="underline text-sm min-h-11" onClick={cancelSocialSignIn} data-testid="button-cancel-oauth">Cancel sign-in</button></div>}
     </div><div className="relative border-t mb-7"><span className="absolute left-1/2 -translate-x-1/2 -translate-y-1/2 bg-background px-3 text-xs text-muted-foreground">or continue with email</span></div></>}
     <Form {...form}><form onSubmit={form.handleSubmit(submit)} className="space-y-5">
       <FormField control={form.control} name="email" render={({field})=><FormItem><FormLabel>Email</FormLabel><FormControl><Input {...field} type="email" autoComplete="email" data-testid="input-auth-email"/></FormControl><FormMessage/></FormItem>}/>
