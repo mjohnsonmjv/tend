@@ -5,17 +5,30 @@ import { Check } from "lucide-react";
 
 const PLANS = [
   {
+    id: "free",
+    name: "Free",
+    monthly: 0,
+    annual: 0,
+    tag: "Free forever",
+    perks: [
+      "One QR code + prayer intake page",
+      "Up to 50 prayer requests a month",
+      "Pastor dashboard with status tracking",
+      "Printable QR poster",
+    ],
+    cta: "Start for free",
+  },
+  {
     id: "starter",
     name: "Starter",
     monthly: 29,
     annual: 290,
     tag: "For churches under 200",
     perks: [
-      "One QR code + prayer intake page",
+      "Everything in Free",
       "Unlimited prayer requests",
-      "Pastor dashboard with status tracking",
+      "Custom greeting message",
       "Weekly digest email (planned)",
-      "Printable QR poster",
     ],
     cta: "Start free trial",
   },
@@ -30,7 +43,6 @@ const PLANS = [
       "Everything in Starter",
       "Multiple QR codes (planned)",
       "Automated SMS follow-up (planned)",
-      "Custom greeting message",
       "Export prayer log to CSV (planned)",
     ],
     cta: "Start free trial",
@@ -46,7 +58,6 @@ const PLANS = [
       "Multiple pastor accounts (planned)",
       "Small-group ministry views (planned)",
       "Priority support (planned)",
-      "Volume pricing to be confirmed",
     ],
     cta: "Start free trial",
   },
@@ -60,12 +71,12 @@ export default function Pricing() {
       <section className="max-w-6xl mx-auto px-6 pt-20 pb-16 text-center">
           <div className="text-xs uppercase tracking-widest text-primary font-medium mb-4">Pricing</div>
         <h1 className="font-serif text-5xl sm:text-6xl text-foreground leading-tight">
-          Simple plans.
+          Start free.
           <br />
-          <span className="text-primary">More room to care.</span>
+          <span className="text-primary">Grow when you're ready.</span>
         </h1>
         <p className="mt-6 text-lg text-muted-foreground max-w-2xl mx-auto">
-          Every plan starts with a 30-day free trial. No card required.
+          The free plan is free forever, no card required. Paid plans start with a 30-day free trial.
         </p>
         <div className="mt-8 inline-flex items-center rounded-full border border-border bg-card p-1" role="group" aria-label="Billing period">
           <button
@@ -90,7 +101,7 @@ export default function Pricing() {
         )}
       </section>
 
-      <section className="max-w-6xl mx-auto px-6 pb-24 grid md:grid-cols-3 gap-6">
+      <section className="max-w-7xl mx-auto px-6 pb-24 grid md:grid-cols-2 xl:grid-cols-4 gap-6">
         {PLANS.map((p) => (
           <div
             key={p.id}
@@ -110,7 +121,7 @@ export default function Pricing() {
             <h2 className="font-serif text-3xl text-foreground mt-2">{p.name}</h2>
             <div className="mt-6 flex items-baseline gap-1">
               <span className="font-serif text-5xl text-foreground">${annual ? p.annual : p.monthly}</span>
-              <span className="text-muted-foreground">{annual ? "/yr" : "/mo"}</span>
+              <span className="text-muted-foreground">{p.monthly === 0 ? "forever" : annual ? "/yr" : "/mo"}</span>
             </div>
             <ul className="mt-8 space-y-3 flex-1">
               {p.perks.map((perk) => (
@@ -138,6 +149,9 @@ export default function Pricing() {
       <section className="max-w-3xl mx-auto px-6 py-16 border-t border-border/60">
         <h2 className="font-serif text-3xl text-foreground text-center mb-10">Common questions</h2>
         <div className="space-y-6 text-foreground/90">
+          <Faq q="Is the free plan really free?">
+            Yes. One prayer page, one QR code, and up to 50 requests a month, free forever. No card required. Paid plans add unlimited requests, SMS, and multi-campus features.
+          </Faq>
           <Faq q="Does my congregation need to install anything?">
             No. They scan a QR code with their phone camera, land on a simple submission page, and share their request. That's it.
           </Faq>
@@ -145,7 +159,7 @@ export default function Pricing() {
             No. Sign up, print the QR code we generate, tape it in the sanctuary. You're done.
           </Faq>
           <Faq q="How does the free trial work?">
-            Every plan starts with a 30-day free trial. No card is required up front, and you can cancel anytime.
+            Paid plans start with a 30-day free trial. No card is required up front, and you can cancel anytime.
           </Faq>
           <Faq q="Is this HIPAA-compliant?">
             No. Tend is a pastoral-care pilot, not a medical records system. Pastor login and church-specific database access controls are enabled. Do not use it as a substitute for clinical or emergency services.

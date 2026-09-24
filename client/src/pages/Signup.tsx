@@ -42,6 +42,6 @@ export default function Signup(){
         {create.isError&&<p role="alert" className="text-destructive text-sm" data-testid="text-setup-error">{create.error.message}</p>}
         <div className="flex gap-3"><Button type="button" variant="outline" disabled={create.isPending} className="min-h-12" onClick={()=>{create.reset();setStep(1)}}>Back</Button><Button type="submit" className="flex-1 min-h-12" disabled={create.isPending} data-testid="button-create-church">{create.isPending?"Creating your church…":"Create church & get QR code"}</Button></div>
       </>}
-    </form></Form><p className="mt-6 text-xs text-muted-foreground leading-relaxed">Only your signed-in account can access this church’s inbox. Your account email is not included on the public prayer form. Every plan starts with a 30-day free trial. SMS and automated notifications are not active yet.</p><Link href="/app" className="inline-block mt-5 underline text-sm">Back to my churches</Link>
+    </form></Form><p className="mt-6 text-xs text-muted-foreground leading-relaxed">Only your signed-in account can access this church’s inbox. Your account email is not included on the public prayer form. Start on the free plan, free forever. Paid plans begin with a 30-day free trial. SMS and automated notifications are not active yet.</p><Link href="/app" className="inline-block mt-5 underline text-sm">Back to my churches</Link>
   </main><SiteFooter/></>;
 }
