@@ -15,6 +15,11 @@ export default function SubmitThanks() {
   const { data: church } = useQuery<PublicChurch>({
     queryKey: ["/api/churches/by-slug", slug],
   });
+  let emailProvided = false;
+  try {
+    emailProvided = sessionStorage.getItem("tend_email_provided") === "1";
+    sessionStorage.removeItem("tend_email_provided");
+  } catch { /* storage unavailable */ }
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center px-6 py-12 text-center">
@@ -31,9 +36,9 @@ export default function SubmitThanks() {
         {church?.pastorName && (
           <p className="mt-2 text-sm text-muted-foreground">From {church.pastorName}</p>
         )}
-        {slug !== "demo" && (
+        {slug !== "demo" && emailProvided && (
           <p className="mt-6 text-sm text-muted-foreground">
-            If you shared your email, a confirmation is on its way to your inbox.
+            Thanks for sharing your email. The care team can reach you there if needed.
           </p>
         )}
 

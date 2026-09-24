@@ -30,12 +30,21 @@ export async function apiRequest(method: string, url: string, data?: any): Promi
     }
     const reply = method === "GET"
       ? await supabase.rpc("tend_public_church", {p_slug:slug})
-      : await supabase.rpc("tend_submit_prayer", {
-          p_slug:slug,p_message:data.message,p_submission_key:data.submissionKey,
-          p_category:data.category,p_name:data.submitterName || null,p_phone:data.submitterPhone || null,
-          p_email:data.submitterEmail || null,
-          p_anonymous:!!data.isAnonymous,p_urgent:!!data.isUrgent,p_website:data.website || "",
-        });
+      : await (async () => {
+          const args = {
+            p_slug:slug,p_message:data.message,p_submission_key:data.submissionKey,
+            p_category:data.category,p_name:data.submitterName || null,p_phone:data.submitterPhone || null,
+            p_email:data.submitterEmail || null,
+            p_anonymous:!!data.isAnonymous,p_urgent:!!data.isUrgent,p_website:data.website || "",
+          };
+          const first = await supabase.rpc("tend_submit_prayer", args);
+          // Production RPC may predate the p_email migration; retry without it.
+          if (first.error && (first.error.code === "PGRST202" || /could not find the function/i.test(first.error.message || ""))) {
+            const { p_email: _dropped, ...legacyArgs } = args;
+            return await supabase.rpc("tend_submit_prayer", legacyArgs);
+          }
+          return first;
+        })();
     if (!reply.error && !reply.data) throw new Error("Church not found");
     return result(reply.data, reply.error);
   }

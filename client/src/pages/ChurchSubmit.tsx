@@ -77,6 +77,9 @@ export default function ChurchSubmit() {
       });
     },
     onSuccess: () => {
+      try {
+        sessionStorage.setItem("tend_email_provided", !isAnonymous && email.trim() ? "1" : "");
+      } catch { /* storage unavailable */ }
       navigate(`/c/${slug}/thanks`);
     },
     onError: () => {
@@ -238,7 +241,7 @@ export default function ChurchSubmit() {
               </div>
               <div>
                 <Label htmlFor="email" className="text-sm">
-                  Email <span className="text-muted-foreground font-normal">(optional) for a confirmation</span>
+                  Email <span className="text-muted-foreground font-normal">(optional)</span>
                 </Label>
                 <Input
                   id="email"
@@ -253,7 +256,7 @@ export default function ChurchSubmit() {
                 {emailError ? (
                   <p className="mt-1.5 text-xs text-destructive" data-testid="text-email-error">{emailError}</p>
                 ) : (
-                  <p className="mt-1.5 text-xs text-muted-foreground">We will only use this to confirm your request was received.</p>
+                  <p className="mt-1.5 text-xs text-muted-foreground">So the care team can follow up if needed. We will never share it.</p>
                 )}
               </div>
             </div>

@@ -20,6 +20,13 @@ The primary business profile was rejected with error 18601
      (verification use only; never published on the site)
 2. Re-submit the profile and wait for approval.
 
+Status note (verified via Twilio API 2026-09-23): the account already has an
+**approved** profile named "Mark Johnson Ventures LLC" (approved 2026-04-19).
+The reapplied "Mark Johnson Ventures" profile (no LLC suffix) was rejected
+again on 2026-09-18 with 18601. On 2026-09-23 Mark re-submitted the primary
+profile with the LLC name and tendpray.com URL; it is now pending Twilio
+review. Once approved, use it for A2P brand registration.
+
 ## 2. A2P 10DLC brand and campaign (owner action)
 
 US carriers require this for application-to-person texting:
