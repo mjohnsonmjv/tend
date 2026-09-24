@@ -18,8 +18,8 @@ export default function Landing() {
         <section className="tend-hero brand-container">
           <div className="hero-copy">
             <p className="eyebrow">Inspired by 1 Peter 5:2</p>
-            <h1>One QR code.<br />A place for<br /><span>every prayer.</span></h1>
-            <p className="hero-description">Create your church's prayer page in minutes. No technical skills needed, and it does not have to be the pastor who sets it up. A volunteer, a committee member, or a giver who wants to sponsor prayer for their church can do it. Your congregation scans the code to share what is on their hearts, and every request lands in one inbox, ready for care and follow-up.</p>
+            <h1>The easiest way to<br />collect <span>prayer requests.</span></h1>
+            <p className="hero-description">Sign up in minutes. Tend builds your church's prayer page and QR code. Drop the code on your announcement slides or print it on the weekly cards. Your people scan it, and every request lands in one inbox, ready for care and follow-up.</p>
             <Link className="brand-button" href="/signup" data-testid="link-hero-signup">Get your church’s QR code <ArrowRight size={18} /></Link>
             <p className="hero-note">No app for your congregation to download.</p>
             <Link className="text-action mr-6" href="/demo" data-testid="link-try-inbox">Try the prayer inbox <ArrowRight size={16}/></Link>
@@ -55,6 +55,15 @@ export default function Landing() {
               ["02", "Put it where people gather.", "Download your code for the bulletin or screen. Print a poster for the lobby. The same code keeps working."],
               ["03", "See the need. Take the next step.", "Read requests in your prayer inbox. Mark what you’re praying for and keep notes for your next conversation."]
             ].map(([n, title, body]) => <article className="step-row" key={n}><span>{n}</span><div><h3>{title}</h3><p>{body}</p></div></article>)}
+          </div>
+        </section>
+
+        <section className="brand-container who-section">
+          <div className="section-intro"><p className="eyebrow">Every Sunday, everywhere</p><h2>One code.<br />Slides, cards, lobby.</h2><p>The same QR code works wherever you put it. Drop it into your announcement slides, print it on the weekly cards, hang the poster in the lobby. When someone feels the nudge to ask for prayer, the invitation is already there.</p></div>
+          <div className="who-grid">
+            <article><h3>Announcement slide</h3><p>A ready-made slide for your Sunday screens. Add your church's QR code and it is done.</p><p><a className="text-action" href="/kit/tend-announcement-slide.pdf" data-testid="link-kit-slide">Download the slide (PDF) <ArrowRight size={16} /></a></p></article>
+            <article><h3>Printed card</h3><p>A card for the bulletin or the seat backs. Print a stack each week.</p><p><a className="text-action" href="/kit/tend-pew-card.pdf" data-testid="link-kit-card">Download the card (PDF) <ArrowRight size={16} /></a></p></article>
+            <article><h3>Lobby poster</h3><p>Your dashboard generates a printable poster with your church's QR code on it.</p><p><Link className="text-action" href="/signup" data-testid="link-kit-poster">Get your QR code <ArrowRight size={16} /></Link></p></article>
           </div>
         </section>
 
