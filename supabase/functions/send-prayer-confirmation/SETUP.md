@@ -1,37 +1,46 @@
-# Prayer-confirmation email setup
+# Prayer-confirmation email deployment
 
-The code is done. Three deployment steps remain, all one-time.
+## Security model
 
-## 1. Apply the database migration
+The database trigger sends only `prayer_id`, `issued_at`, and `dry_run:false`.
+A purpose-specific HMAC signature is passed in `x-tend-signature`; the signing
+key is generated and retained inside Supabase Vault. No prayer text leaves the
+database for this webhook.
 
-In the Supabase dashboard for project `hvrdkrtismqbrkbmcgne`, open the SQL
-editor and run `supabase/migrations/20260923_prayer_email.sql`.
+The Edge Function uses a Supabase-provided public key to call
+`tend_prepare_prayer_confirmation`. This security-definer RPC validates the HMAC
+and ten-minute request lifetime before retrieving the current recipient and
+church metadata from the database. Anonymous, missing, or email-less submissions
+do not send. Recipient and church values from the HTTP request are never trusted.
+Database errors fail visibly rather than producing misleading generic emails.
 
-This adds an optional `p_email` parameter to `tend_submit_prayer` and stores
-it in `tend_prayers.submitter_email`. Anonymous submissions still store no
-contact details (enforced by the existing check constraint).
+No manually copied service-role key is needed. Keep `verify_jwt=false` because
+authentication is provided by the signed webhook and the restricted RPC, not by
+a user JWT. Never remove those checks. The secret key and HMAC values must not
+be logged or committed.
 
-## 2. Create a Resend account and API key
+## Deployment order
 
-1. Sign up at resend.com and verify the `tendpray.com` domain (add the DNS
-   records Resend provides).
-2. Create an API key and keep it server-side only.
+1. Apply `20260924194445_tend_prayer_confirmation_auth.sql`.
+2. Deploy `index.ts` and `handler.ts` as `send-prayer-confirmation`.
+3. Apply `20260924194542_tend_prayer_confirmation_trigger.sql` immediately afterward.
+4. Verify unauthenticated and invalid-signature requests return 401.
+5. Run a signed dry-run diagnostic. It checks database authorization, church
+   lookup, and sender configuration without sending an email or disclosing data.
+6. Check for any submissions during the short function/trigger cutover interval.
+   Do not replay confirmations without reviewing whether delivery already occurred.
+7. Send a real end-to-end test only with the owner's approval.
 
-## 3. Deploy the edge function and wire the webhook
+Required app secret: `RESEND_API_KEY`. Optional: `CONFIRM_FROM` defaults to
+`Tend <support@tendpray.com>`. Supabase supplies `SUPABASE_URL` and public keys
+(`SUPABASE_PUBLISHABLE_KEYS` or legacy `SUPABASE_ANON_KEY`).
 
-```bash
-supabase functions deploy send-prayer-confirmation --no-verify-jwt
-supabase secrets set RESEND_API_KEY=... CONFIRM_FROM="Tend <support@tendpray.com>" \
-  SUPABASE_URL=https://hvrdkrtismqbrkbmcgne.supabase.co SUPABASE_SERVICE_ROLE_KEY=...
+Resend must have verified `tendpray.com`. The deterministic idempotency key
+`tend-prayer-confirmation/<prayer ID>` protects against webhook replay within
+the signed request lifetime. Automatic retries are not introduced by this change.
+
+## Tests
+
+```sh
+node --import tsx --test tests/prayer-confirmation.test.ts
 ```
-
-Then in the Supabase dashboard: Database > Webhooks > Create webhook,
-- table: `public.tend_prayers`, events: INSERT,
-- filter: `submitter_email is not null`,
-- URL: the deployed function URL.
-
-## Privacy notes
-
-- Confirmation emails never include the prayer message text.
-- No email is sent for anonymous submissions or the demo form.
-- The sender address must be a verified domain in Resend before real sends.
