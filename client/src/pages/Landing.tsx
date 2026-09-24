@@ -45,7 +45,7 @@ export default function Landing() {
           </div>
         </section>
 
-        <section className="promise-strip"><div className="brand-container"><span>"Tend the flock of God."</span><strong>That is why we are called Tend.</strong><span>1 Peter 5:2</span></div></section>
+        <section className="promise-strip photo-band"><div className="brand-container"><span>"Tend the flock of God."</span><strong>That is why we are called Tend.</strong><span>1 Peter 5:2</span></div></section>
 
         <section id="how-it-works" className="brand-container how-section">
           <div className="section-intro"><p className="eyebrow">From a scan to a conversation</p><h2>A simple invitation.<br />A meaningful connection.</h2><p>Give people an easy way to tell you what’s on their hearts. Keep the technology out of the way.</p></div>
@@ -78,7 +78,7 @@ export default function Landing() {
           </div>
         </section>
 
-        <section className="brand-container closing-section">
+        <section className="brand-container closing-section photo-band">
           <div><p className="eyebrow">An open invitation</p><h2>Grow a culture<br />of prayer.</h2></div>
           <div><p>Start with one QR code for your church.<br />Let the conversations grow from there.</p><Link className="brand-button" href="/signup" data-testid="link-cta-signup">Get your church’s QR code <ArrowRight size={18} /></Link></div>
         </section>
