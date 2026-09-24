@@ -234,6 +234,11 @@
 .care-principle { border-top: 1px solid var(--brand-line); padding-top: 25px; font-family: 'Cabinet Grotesk', sans-serif; font-size: 27px; line-height: 1.2; font-weight: 700; }
 .closing-section { padding-block: 100px; display: flex; justify-content: space-between; align-items: center; gap: 40px; }
 .closing-section > div:last-child p { font-size: 17px; color: var(--brand-muted); margin-bottom: 24px; line-height: 1.6; }
+.who-section { padding-block: 104px; }
+.who-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 40px; margin-top: 56px; }
+.who-grid article { border-top: 1px solid var(--brand-line); padding-top: 26px; }
+.who-grid h3 { font-size: 21px; font-weight: 700; letter-spacing: -.02em; margin-bottom: 10px; }
+.who-grid p { font-size: 15px; color: var(--brand-muted); line-height: 1.65; }
 .brand-footer { background: var(--brand-paper); color: var(--brand-ink); border-top: 1px solid var(--brand-line); }
 .footer-inner { display: flex; align-items: center; justify-content: space-between; padding-block: 40px; gap: 30px; }
 .footer-inner p { margin-top: 12px; font-size: 13px; color: var(--brand-muted); }
@@ -267,6 +272,8 @@
   .promise-strip > div { flex-wrap: wrap; justify-content: center; column-gap: 8px; row-gap: 4px; font-size: 16px; }
   .promise-strip > div > span:last-child { display: none; }
   .how-section { grid-template-columns: 1fr; gap: 32px; padding-block: 60px; }
+  .who-section { padding-block: 60px; }
+  .who-grid { grid-template-columns: 1fr; gap: 28px; margin-top: 36px; }
   .care-section { padding-block: 56px; }
   .care-grid { grid-template-columns: 1fr; gap: 38px; }
   .closing-section { flex-direction: column; align-items: flex-start; padding-block: 60px; gap: 28px; }

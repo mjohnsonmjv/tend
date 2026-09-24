@@ -17,9 +17,9 @@ export default function Landing() {
       <main id="main-content">
         <section className="tend-hero brand-container">
           <div className="hero-copy">
-            <p className="eyebrow">A little closer to your congregation</p>
+            <p className="eyebrow">Inspired by 1 Peter 5:2</p>
             <h1>One QR code.<br />A place for<br /><span>every prayer.</span></h1>
-            <p className="hero-description">Get a QR code for your church. Your congregation scans it to share prayer needs. You see the requests in one place, ready to pray and follow up.</p>
+            <p className="hero-description">Create your church's prayer page in minutes. No technical skills needed, and it does not have to be the pastor who sets it up. A volunteer, a committee member, or a giver who wants to sponsor prayer for their church can do it. Your congregation scans the code to share what is on their hearts, and every request lands in one inbox, ready for care and follow-up.</p>
             <Link className="brand-button" href="/signup" data-testid="link-hero-signup">Get your church’s QR code <ArrowRight size={18} /></Link>
             <p className="hero-note">No app for your congregation to download.</p>
             <Link className="text-action mr-6" href="/demo" data-testid="link-try-inbox">Try the prayer inbox <ArrowRight size={16}/></Link>
@@ -45,22 +45,31 @@ export default function Landing() {
           </div>
         </section>
 
-        <section className="promise-strip"><div className="brand-container"><span>Less administration.</span><strong>More room to care.</strong><span>That’s Tend.</span></div></section>
+        <section className="promise-strip"><div className="brand-container"><span>"Tend the flock of God."</span><strong>That is why we are called Tend.</strong><span>1 Peter 5:2</span></div></section>
 
         <section id="how-it-works" className="brand-container how-section">
           <div className="section-intro"><p className="eyebrow">From a scan to a conversation</p><h2>A simple invitation.<br />A meaningful connection.</h2><p>Give people an easy way to tell you what’s on their hearts. Keep the technology out of the way.</p></div>
           <div className="steps-list">
             {[
-              ["01", "Make it yours.", "Create your church’s prayer page and welcome message. Tend generates the QR code for you."],
+              ["01", "Anyone can set it up.", "You do not need to be the pastor. A staff member, a volunteer, a committee, or a giver who wants to sponsor prayer for the church can create the prayer page in minutes. Tend generates the QR code for you."],
               ["02", "Put it where people gather.", "Download your code for the bulletin or screen. Print a poster for the lobby. The same code keeps working."],
               ["03", "See the need. Take the next step.", "Read requests in your prayer inbox. Mark what you’re praying for and keep notes for your next conversation."]
             ].map(([n, title, body]) => <article className="step-row" key={n}><span>{n}</span><div><h3>{title}</h3><p>{body}</p></div></article>)}
           </div>
         </section>
 
+        <section className="brand-container who-section">
+          <div className="section-intro"><p className="eyebrow">It starts with one person</p><h2>You do not have to<br />be the pastor.</h2><p>Tend was made to be started by whoever cares enough to begin. If that is you, your church's prayer page and QR code can be ready in minutes.</p></div>
+          <div className="who-grid">
+            <article><h3>Pastors and staff</h3><p>Open a door that never closes. Let people share prayer needs the moment they feel them, not just on Sunday morning.</p></article>
+            <article><h3>Volunteers and committees</h3><p>No technical background needed. Create the page, download the QR code, and put it in the bulletin or on the lobby screen.</p></article>
+            <article><h3>Givers</h3><p>Sponsor Tend for your church. It is a simple gift that helps build a lasting culture of prayer.</p></article>
+          </div>
+        </section>
+
         <section className="care-section">
           <div className="brand-container care-grid">
-            <div><p className="eyebrow">Built around people, not paperwork</p><h2>Some things are<br />hard to say<br />on a Sunday.</h2><p>A quiet place to share can open the door to a real conversation. Tend helps you make that invitation.</p></div>
+            <div><p className="eyebrow">Built around people, not paperwork</p><h2>Some things are<br />hard to say<br />on a Sunday.</h2><p>Getting prayer requests out of people is one of the hardest parts of church life. A quiet, simple invitation can open the door to a real conversation. Tend helps your church build a culture where asking for prayer feels natural.</p></div>
             <div className="care-details">
               <article><LockKeyhole size={22} /><div><h3>Let people choose how to share.</h3><p>Leave a name and a phone number for follow-up, or submit without identifying details.</p></div></article>
               <article><Heart size={22} /><div><h3>Remember the person behind the request.</h3><p>Move from new to praying to prayed for. Keep the context together so your next conversation starts with care.</p></div></article>
@@ -70,7 +79,7 @@ export default function Landing() {
         </section>
 
         <section className="brand-container closing-section">
-          <div><p className="eyebrow">An open invitation</p><h2>Make room for<br />every prayer.</h2></div>
+          <div><p className="eyebrow">An open invitation</p><h2>Grow a culture<br />of prayer.</h2></div>
           <div><p>Start with one QR code for your church.<br />Let the conversations grow from there.</p><Link className="brand-button" href="/signup" data-testid="link-cta-signup">Get your church’s QR code <ArrowRight size={18} /></Link></div>
         </section>
       </main>
