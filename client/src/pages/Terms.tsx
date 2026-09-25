@@ -22,7 +22,7 @@ export default function Terms() {
           <p>Tend gives churches a QR code that opens a simple prayer-request page, plus a private inbox where the church's account owner can read and track requests. Every plan starts with a 30-day free trial. Automated notifications are not active during the pilot, and features may change or pause without notice. Tend is provided as is.</p>
         </Section>
 
-        <Section title="Pastor accounts">
+        <Section title="Church accounts">
           <p>You must be authorized by your church to create its account. Keep your sign-in private. You are responsible for activity under your account, including who you allow to view your church's inbox.</p>
         </Section>
 

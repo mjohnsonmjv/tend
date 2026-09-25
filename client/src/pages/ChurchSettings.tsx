@@ -89,7 +89,7 @@ export default function ChurchSettings() {
               </div>
             </Section>
 
-            <Section title="Pastor" hint="Contact info on your account.">
+            <Section title="Care team" hint="Contact info shown with your church.">
               <div className="rounded-md border border-border bg-card px-4 py-3 space-y-1">
                 <div className="text-foreground">{church.pastorName}</div>
                 <div className="text-sm text-muted-foreground">{church.pastorEmail}</div>

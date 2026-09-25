@@ -47,7 +47,7 @@ export function DashboardShell({ church, children }: Props) {
       </aside>
 
       {/* Main */}
-      <main className="flex-1 min-w-0"><p className="preview-notice">Private pastor workspace. Automated notifications are not active yet.</p>{children}</main>
+      <main className="flex-1 min-w-0"><p className="preview-notice">Private team workspace. Automated notifications are not active yet.</p>{children}</main>
     </div>
   );
 }

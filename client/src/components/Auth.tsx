@@ -23,6 +23,6 @@ export const useAuth=()=>useContext(AuthContext);
 export function RequireAuth({children}:{children:ReactNode}) {
   const {session,loading}=useAuth();
   if(loading) return <div className="p-12 text-center" role="status">Checking your session…</div>;
-  if(!session) return <main className="max-w-lg mx-auto px-6 py-20"><Logo showWordmark/><h1 className="text-xl mt-10 mb-4">Your church’s prayer inbox is private.</h1><p className="mb-6 text-muted-foreground">Sign in with your pastor account to continue. Only accounts that own a church can access its requests.</p><Link href="/login" className="brand-button" data-testid="link-required-login">Sign in</Link></main>;
+  if(!session) return <main className="max-w-lg mx-auto px-6 py-20"><Logo showWordmark/><h1 className="text-xl mt-10 mb-4">Your church’s prayer inbox is private.</h1><p className="mb-6 text-muted-foreground">Sign in with your Tend account to continue. Only accounts that own a church can access its requests.</p><Link href="/login" className="brand-button" data-testid="link-required-login">Sign in</Link></main>;
   return <>{children}</>;
 }

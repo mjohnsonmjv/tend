@@ -15,7 +15,8 @@ export default function Landing() {
     <div className="brand-site">
       <SiteHeader />
       <main id="main-content">
-        <section className="tend-hero brand-container">
+        <section className="tend-hero hero-photo">
+          <div className="brand-container hero-grid">
           <div className="hero-copy">
             <p className="eyebrow">Inspired by 1 Peter 5:2</p>
             <h1>The easiest way to<br />collect <span>prayer requests.</span></h1>
@@ -25,7 +26,7 @@ export default function Landing() {
             <Link className="text-action mr-6" href="/demo" data-testid="link-try-inbox">Try the prayer inbox <ArrowRight size={16}/></Link>
             <button className="text-action" data-testid="button-how-it-works" onClick={() => document.getElementById("how-it-works")?.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth" })}>See how it works <ArrowDown size={16} /></button>
           </div>
-          <div className="hero-demonstration" aria-label="Illustration of a church prayer invitation and pastor inbox">
+          <div className="hero-demonstration" aria-label="Illustration of a church prayer invitation and prayer inbox">
             <div className="invitation">
               <Logo size={28} showWordmark />
               <p className="invitation-heading">How can we<br />pray for you?</p>
@@ -43,6 +44,7 @@ export default function Landing() {
               <div className="example-footer"><Check size={14} /> Received and ready for your care</div>
             </div>
           </div>
+          </div>
         </section>
 
         <section className="promise-strip photo-band"><div className="brand-container"><span>"Tend the flock of God."</span><strong>That is why we are called Tend.</strong><span>1 Peter 5:2</span></div></section>
@@ -59,7 +61,13 @@ export default function Landing() {
         </section>
 
         <section className="brand-container who-section">
+          <div className="kit-intro">
           <div className="section-intro"><p className="eyebrow">Every Sunday, everywhere</p><h2>One code.<br />Slides, cards, lobby.</h2><p>The same QR code works wherever you put it. Drop it into your announcement slides, print it on the weekly cards, hang the poster in the lobby. When someone feels the nudge to ask for prayer, the invitation is already there.</p></div>
+          <div className="kit-previews">
+            <img src="/kit/tend-announcement-slide.png" alt="Preview of the Tend announcement slide" loading="lazy" />
+            <img src="/kit/tend-pew-card.png" alt="Preview of the Tend printed prayer card" loading="lazy" />
+          </div>
+          </div>
           <div className="who-grid">
             <article><h3>Announcement slide</h3><p>A ready-made slide for your Sunday screens. Add your church's QR code and it is done.</p><p><a className="text-action" href="/kit/tend-announcement-slide.pdf" data-testid="link-kit-slide">Download the slide (PDF) <ArrowRight size={16} /></a></p></article>
             <article><h3>Printed card</h3><p>A card for the bulletin or the seat backs. Print a stack each week.</p><p><a className="text-action" href="/kit/tend-pew-card.pdf" data-testid="link-kit-card">Download the card (PDF) <ArrowRight size={16} /></a></p></article>
@@ -87,9 +95,11 @@ export default function Landing() {
           </div>
         </section>
 
-        <section className="brand-container closing-section photo-band">
+        <section className="closing-section photo-band">
+          <div className="brand-container closing-inner">
           <div><p className="eyebrow">An open invitation</p><h2>Grow a culture<br />of prayer.</h2></div>
           <div><p>Start with one QR code for your church.<br />Let the conversations grow from there.</p><Link className="brand-button" href="/signup" data-testid="link-cta-signup">Get your church’s QR code <ArrowRight size={18} /></Link></div>
+          </div>
         </section>
       </main>
       <SiteFooter />

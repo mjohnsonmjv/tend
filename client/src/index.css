@@ -182,7 +182,15 @@
 .header-cta:hover { background: var(--brand-soft); }
 .skip-link { position: absolute; top: -80px; left: 20px; padding: 14px; background: var(--brand-paper); z-index: 100; }
 .skip-link:focus { top: 12px; }
-.tend-hero { display: grid; grid-template-columns: 1.06fr 1fr; align-items: center; gap: 50px; padding-block: 72px 84px; }
+.tend-hero { padding-block: 72px 84px; }
+.hero-grid { display: grid; grid-template-columns: 1.06fr 1fr; align-items: center; gap: 50px; }
+.hero-photo { background-image: linear-gradient(rgba(9,13,26,.66), rgba(9,13,26,.66)), url('/tend-hero-blur.jpg'); background-size: cover; background-position: center; color: #fff; }
+.hero-photo .eyebrow { color: rgba(255,255,255,.72); }
+.hero-photo h1 { color: #fff; }
+.hero-photo h1 span { color: #bed095; }
+.hero-photo .hero-description { color: rgba(255,255,255,.88); }
+.hero-photo .hero-note { color: rgba(255,255,255,.7); }
+.hero-photo .text-action { color: #fff; }
 .eyebrow { text-transform: uppercase; font-size: 12px; letter-spacing: .12em; font-weight: 700; margin-bottom: 24px; }
 .tend-hero h1 { font-family: 'Cabinet Grotesk', sans-serif; font-weight: 800; font-size: clamp(52px, 5.4vw, 78px); line-height: .98; letter-spacing: -.055em; margin: 0; }
 .tend-hero h1 span { color: #55745b; }
@@ -232,7 +240,8 @@
 .care-details h3 { font-size: 21px; margin-bottom: 10px; }
 .care-details article p { font-size: 15px; color: var(--brand-muted); line-height: 1.65; }
 .care-principle { border-top: 1px solid var(--brand-line); padding-top: 25px; font-family: 'Cabinet Grotesk', sans-serif; font-size: 27px; line-height: 1.2; font-weight: 700; }
-.closing-section { padding-block: 100px; display: flex; justify-content: space-between; align-items: center; gap: 40px; }
+.closing-section { padding-block: 100px; }
+.closing-inner { display: flex; justify-content: space-between; align-items: center; gap: 40px; }
 .photo-band { background-size: cover; background-position: center; color: #fff; }
 .photo-band .eyebrow { color: rgba(255,255,255,.72); }
 .photo-band h2 { color: #fff; }
@@ -244,6 +253,9 @@
 .who-grid article { border-top: 1px solid var(--brand-line); padding-top: 26px; }
 .who-grid h3 { font-size: 21px; font-weight: 700; letter-spacing: -.02em; margin-bottom: 10px; }
 .who-grid p { font-size: 15px; color: var(--brand-muted); line-height: 1.65; }
+.kit-intro { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: center; }
+.kit-previews { display: grid; grid-template-columns: 1.35fr 1fr; gap: 18px; align-items: start; }
+.kit-previews img { width: 100%; height: auto; display: block; border-radius: 8px; border: 1px solid var(--brand-line); box-shadow: 0 14px 30px #203e3414; }
 .brand-footer { background: var(--brand-paper); color: var(--brand-ink); border-top: 1px solid var(--brand-line); }
 .footer-inner { display: flex; align-items: center; justify-content: space-between; padding-block: 40px; gap: 30px; }
 .footer-inner p { margin-top: 12px; font-size: 13px; color: var(--brand-muted); }
@@ -254,7 +266,7 @@
 :focus-visible { outline: 2px solid #6e8350; outline-offset: 4px; }
 @media (max-width: 1000px) {
   .brand-container { width: calc(100% - 64px); }
-  .tend-hero { gap: 28px; }
+  .hero-grid { gap: 28px; }
   .hero-demonstration { padding: 28px 18px 22px; }
   .how-section, .care-grid { gap: 48px; }
 }
@@ -266,7 +278,8 @@
   .header-cta { padding: 0 12px; gap: 8px; }
   .header-cta svg { display: none; }
   .tend-wordmark { font-size: 30px; }
-  .tend-hero { grid-template-columns: 1fr; padding-block: 42px 40px; gap: 35px; }
+  .tend-hero { padding-block: 42px 40px; }
+  .hero-grid { grid-template-columns: 1fr; gap: 35px; }
   .eyebrow { font-size: 12px; margin-bottom: 20px; letter-spacing: .08em; }
   .tend-hero h1 { font-size: clamp(50px, 10vw, 66px); }
   .hero-description { font-size: 16px; margin-block: 22px; }
@@ -279,9 +292,11 @@
   .how-section { grid-template-columns: 1fr; gap: 32px; padding-block: 60px; }
   .who-section { padding-block: 60px; }
   .who-grid { grid-template-columns: 1fr; gap: 28px; margin-top: 36px; }
+  .kit-intro { grid-template-columns: 1fr; gap: 36px; }
   .care-section { padding-block: 56px; }
   .care-grid { grid-template-columns: 1fr; gap: 38px; }
-  .closing-section { flex-direction: column; align-items: flex-start; padding-block: 60px; gap: 28px; }
+  .closing-section { padding-block: 60px; }
+  .closing-inner { flex-direction: column; align-items: flex-start; gap: 28px; }
   .footer-inner { flex-wrap: wrap; gap: 20px; }
   .footer-scripture { width: 100%; }
   aside nav { flex-wrap: wrap; }

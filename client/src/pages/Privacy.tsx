@@ -37,7 +37,7 @@ export default function Privacy() {
         </Section>
 
         <Section title="Security">
-          <p>Church data is stored with per-church access controls so one church cannot see another's requests. Pastor sessions are kept in memory on the pastor's own device and end when the page is refreshed or closed. No system is perfectly secure, so please share only what you are comfortable giving your pastor.</p>
+          <p>Church data is stored with per-church access controls so one church cannot see another's requests. Sessions are kept in memory on your own device and end when the page is refreshed or closed. No system is perfectly secure, so please share only what you are comfortable giving your church's care team.</p>
         </Section>
 
         <Section title="A note on sensitive requests">

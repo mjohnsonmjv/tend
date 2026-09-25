@@ -13,7 +13,7 @@ const PLANS = [
     perks: [
       "One QR code + prayer intake page",
       "Up to 50 prayer requests a month",
-      "Pastor dashboard with status tracking",
+      "Prayer inbox with status tracking",
       "Printable QR poster",
     ],
     cta: "Start for free",
@@ -55,7 +55,7 @@ const PLANS = [
     tag: "For churches 500+",
     perks: [
       "Everything in Growth",
-      "Multiple pastor accounts (planned)",
+      "Multiple team accounts (planned)",
       "Small-group ministry views (planned)",
       "Priority support (planned)",
     ],
@@ -162,7 +162,7 @@ export default function Pricing() {
             Paid plans start with a 30-day free trial. No card is required up front, and you can cancel anytime.
           </Faq>
           <Faq q="Is this HIPAA-compliant?">
-            No. Tend is a pastoral-care pilot, not a medical records system. Pastor login and church-specific database access controls are enabled. Do not use it as a substitute for clinical or emergency services.
+            No. Tend is a pastoral-care pilot, not a medical records system. Account sign-in and church-specific database access controls are enabled. Do not use it as a substitute for clinical or emergency services.
           </Faq>
           <Faq q="Can I use this for something other than prayer requests?">
             The form also supports check-ins, praises, and questions.

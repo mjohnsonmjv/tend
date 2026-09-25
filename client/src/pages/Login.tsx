@@ -61,8 +61,8 @@ export default function Login({register=false}:{register?:boolean}) {
     finally{setPending(false)}
   }
   return <div><SiteHeader/><main className="max-w-lg mx-auto px-6 py-16">
-    <h1 className="text-3xl mb-3">{register?"Create your pastor account":"Welcome back."}</h1>
-    <p className="text-muted-foreground mb-8">{register?"Use a supported sign-in provider or create an email account. Then set up your church and its QR code.":"Sign in to your church’s prayer inbox."}</p>
+    <h1 className="text-3xl mb-3">{register?"Create your account":"Welcome back."}</h1>
+    <p className="text-muted-foreground mb-8">{register?"You don't need to be the pastor. Anyone on your church team can create the account, then set up the church and its QR code.":"Sign in to your church's prayer inbox."}</p>
     {session ? <Link className="brand-button" href="/app">Open my churches</Link> :
     <>{socialVisible&&<><div className="space-y-3 mb-7" aria-label="Social sign-in options">
       {(["google"] as const).map(provider=>{

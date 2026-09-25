@@ -160,10 +160,10 @@ export default function PrayerDetail() {
         </div>
         {setStatus.isError&&<p role="alert" className="text-destructive text-sm mb-5">Status wasn’t saved. Please try again.</p>}
 
-        {/* Pastor notes */}
+        {/* Care team notes */}
         <div>
           <div className="flex items-baseline justify-between mb-2">
-            <label htmlFor="pastor-notes" className="text-sm font-medium text-foreground">Pastor's notes</label>
+            <label htmlFor="pastor-notes" className="text-sm font-medium text-foreground">Care team notes</label>
             <span className="text-xs text-muted-foreground">Only you can see these</span>
           </div>
           <Textarea

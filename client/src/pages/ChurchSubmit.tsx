@@ -107,7 +107,7 @@ export default function ChurchSubmit() {
       <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 text-center">
         <Logo size={48} className="text-primary/60 mb-6" />
         <h1 className="font-serif text-3xl text-foreground mb-2">This church isn't set up yet</h1>
-        <p className="text-muted-foreground">Check the QR code or ask your pastor for the correct link.</p>
+        <p className="text-muted-foreground">Check the QR code or ask your church's care team for the correct link.</p>
       </div>
     );
   }
@@ -122,7 +122,7 @@ export default function ChurchSubmit() {
           <p className="mt-2 text-muted-foreground">
             Share a prayer need with {church.pastorName}.
           </p>
-          <p className="preview-notice mt-4 rounded-md">{slug === "demo" ? "Example form. Nothing entered here is saved or sent." : "Your request is shared with this church’s account owner, not posted publicly. Share only information you are comfortable giving your pastor. This is not an emergency service."}</p>
+          <p className="preview-notice mt-4 rounded-md">{slug === "demo" ? "Example form. Nothing entered here is saved or sent." : "Your request is shared with this church’s account owner, not posted publicly. Share only information you are comfortable giving your church’s care team. This is not an emergency service."}</p>
         </div>
 
         <form
@@ -199,7 +199,7 @@ export default function ChurchSubmit() {
             <div>
               <div className="text-sm font-medium text-foreground">Share anonymously</div>
               <div className="text-xs text-muted-foreground mt-0.5">
-                Your pastor will see the request but nothing that identifies you.
+                Your church's care team will see the request but nothing that identifies you.
               </div>
             </div>
           </label>
@@ -223,7 +223,7 @@ export default function ChurchSubmit() {
               </div>
               <div>
                 <Label htmlFor="phone" className="text-sm">
-                  Phone <span className="text-muted-foreground font-normal">(optional) for pastor follow-up</span>
+                  Phone <span className="text-muted-foreground font-normal">(optional) for care-team follow-up</span>
                 </Label>
                 <Input
                   id="phone"
@@ -284,7 +284,7 @@ export default function ChurchSubmit() {
             disabled={submit.isPending || !message}
             className="w-full h-12 bg-primary hover:bg-primary/90 text-primary-foreground text-base"
           >
-            {submit.isPending ? "Sending..." : slug === "demo" ? "Try the example" : "Share with pastor"}
+            {submit.isPending ? "Sending..." : slug === "demo" ? "Try the example" : "Share prayer request"}
           </Button>
           {!message && !submit.isPending && (
             <p className="text-xs text-center text-muted-foreground -mt-3" data-testid="text-submit-hint">
