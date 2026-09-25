@@ -196,8 +196,10 @@
 .tend-hero h1 span { color: #55745b; }
 .dark .tend-hero h1 span { color: #bed095; }
 .hero-description { font-size: 18px; line-height: 1.6; color: var(--brand-muted); max-width: 470px; margin: 26px 0; }
-.brand-button { background: #203e34; color: #fff; border: 1px solid #203e34; min-height: 54px; display: inline-flex; align-items: center; justify-content: center; gap: 18px; padding: 13px 23px; border-radius: 5px; font-size: 15px; font-weight: 700; transition: background .15s; }
-.brand-button:hover { background: #355c49; }
+.brand-button { background: #203e34; color: #fff; border: 1px solid #203e34; min-height: 54px; display: inline-flex; align-items: center; justify-content: center; gap: 18px; padding: 13px 23px; border-radius: 5px; font-size: 15px; font-weight: 700; transition: background .15s, transform .18s ease, box-shadow .18s ease; }
+.brand-button:hover { background: #355c49; transform: translateY(-2px); box-shadow: 0 8px 20px #203e3433; }
+.brand-button svg { transition: transform .18s ease; }
+.brand-button:hover svg { transform: translateX(4px); }
 .dark .brand-button { border-color: #71896c; }
 .hero-note { font-size: 13px; color: var(--brand-muted); margin-top: 13px; }
 .text-action { margin-top: 30px; display: inline-flex; align-items: center; gap: 16px; min-height: 44px; font-size: 14px; font-weight: 700; }
@@ -317,3 +319,15 @@
 .demo-banner { display:flex;align-items:center;justify-content:space-between;gap:18px;padding:20px;background:hsl(var(--primary)/.07);border:1px solid hsl(var(--border));border-radius:8px;margin-bottom:32px; }
 .demo-banner strong { font-size:15px; }.demo-banner p { font-size:13px;line-height:1.6;color:hsl(var(--muted-foreground));margin-top:4px;max-width:430px; }
 @media(max-width:720px){.inbox-statuses{grid-template-columns:repeat(3,minmax(0,1fr));}.inbox-toolbar{grid-template-columns:1fr 1fr}.inbox-toolbar>div{grid-column:1/-1}.demo-banner{align-items:stretch;flex-direction:column}.inbox-request{padding:17px}.inbox-statuses button{min-height:75px;padding:12px}}
+
+/* ---- Landing motion: engagement animations (gated by reduced-motion) ---- */
+@media (prefers-reduced-motion: no-preference) {
+  .hero-photo { animation: hero-pan 38s ease-in-out infinite alternate; }
+  .live-dot::after { animation: live-ping 2.2s ease-out infinite; }
+}
+@keyframes hero-pan { from { background-position: 50% 38%; } to { background-position: 50% 62%; } }
+
+/* Pulsing "live" indicator on the hero inbox demo */
+.live-dot { position: relative; display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #4d7c0f; flex-shrink: 0; }
+.live-dot::after { content: ""; position: absolute; inset: 0; border-radius: 50%; background: #4d7c0f; }
+@keyframes live-ping { 0% { transform: scale(1); opacity: .7; } 100% { transform: scale(2.8); opacity: 0; } }
