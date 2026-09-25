@@ -54,7 +54,7 @@ function HeroVisual() {
         animate={reduceMotion ? undefined : { y: [0, -8, 0] }}
         transition={{ duration: 9, repeat: Infinity, ease: "easeInOut" }}
       >
-        <img src="/tend-hero-sanctuary.jpg" alt="A large church auditorium with the Tend prayer invitation and QR code displayed on the stage screens" />
+        <img src="/tend-hero-sanctuary.jpg" fetchPriority="high" alt="A large church auditorium with the Tend prayer invitation and QR code displayed on the stage screens" />
         <figcaption>Example: your QR code on the Sunday screen</figcaption>
       </motion.figure>
       <div className="inbox-example"
