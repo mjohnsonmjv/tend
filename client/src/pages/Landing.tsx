@@ -1,10 +1,8 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { Link } from "wouter";
-import QRCode from "qrcode";
 import { motion, AnimatePresence, MotionConfig, useReducedMotion } from "framer-motion";
 import { ArrowDown, ArrowRight, Check, Heart, LockKeyhole } from "lucide-react";
 import { SiteHeader, SiteFooter } from "@/components/SiteHeader";
-import { Logo } from "@/components/Logo";
 
 const EASE_OUT = "easeOut" as const;
 
@@ -29,43 +27,44 @@ const EXAMPLE_REQUESTS = [
   { name: "Priya K.", initials: "PK", text: "Our neighbor lost her husband last month. Pray for comfort for their family." },
 ];
 
-/** Hero demo: invitation card with a gently floating feel and an inbox that cycles example requests. */
-function HeroDemonstration({ qr }: { qr: string }) {
+/** Hero visual: the Tend invitation on a large church's screens, above a cycling example inbox. */
+function HeroVisual() {
   const [index, setIndex] = useState(0);
+  const [paused, setPaused] = useState(false);
   const reduceMotion = useReducedMotion();
 
   useEffect(() => {
-    if (reduceMotion) return;
+    if (reduceMotion || paused) return;
     const id = setInterval(() => setIndex((i) => (i + 1) % EXAMPLE_REQUESTS.length), 5200);
     return () => clearInterval(id);
-  }, [reduceMotion]);
+  }, [reduceMotion, paused]);
 
   const request = EXAMPLE_REQUESTS[index];
 
   return (
     <motion.div
-      className="hero-demonstration"
-      aria-label="Illustration of a church prayer invitation and prayer inbox"
+      className="hero-visual"
+      aria-label="Illustration of the Tend prayer invitation on church screens and the prayer inbox"
       initial={{ opacity: 0, y: 44, scale: 0.98 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       transition={{ duration: 0.8, delay: 0.35, ease: EASE_OUT }}
     >
-      <motion.div
-        className="invitation"
-        animate={reduceMotion ? undefined : { y: [0, -9, 0] }}
-        transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
+      <motion.figure
+        className="sanctuary-frame"
+        animate={reduceMotion ? undefined : { y: [0, -8, 0] }}
+        transition={{ duration: 9, repeat: Infinity, ease: "easeInOut" }}
       >
-        <Logo size={28} showWordmark />
-        <p className="invitation-heading">How can we<br />pray for you?</p>
-        <p>Big or small.<br />You don’t have to carry it alone.</p>
-        <Link href="/c/demo" data-testid="link-demo-qr" aria-label="Open the example prayer form" className="invitation-qr">
-          {qr ? <img src={qr} alt="QR code to the example prayer form" width={180} height={180} /> : <div className="qr-loading">Preparing QR code</div>}
-        </Link>
-        <span className="invitation-caption">Scan to share a prayer request</span>
-        <span className="example-label">Example invitation</span>
-      </motion.div>
-      <div className="inbox-example">
+        <img src="/tend-hero-sanctuary.jpg" alt="A large church auditorium with the Tend prayer invitation and QR code displayed on the stage screens" />
+        <figcaption>Example: your QR code on the Sunday screen</figcaption>
+      </motion.figure>
+      <div className="inbox-example"
+        onMouseEnter={() => setPaused(true)}
+        onMouseLeave={() => setPaused(false)}
+        onFocus={() => setPaused(true)}
+        onBlur={() => setPaused(false)}
+        aria-label="Example prayer inbox (auto-rotating demo, pauses on hover or focus)">
         <div className="inbox-example-top"><span><span className="live-dot" aria-hidden="true" /><Heart size={16} /> Prayer inbox</span><span className="sample-label">Example</span></div>
+        <div aria-live="off">
         <AnimatePresence mode="wait">
           <motion.div
             key={index}
@@ -78,6 +77,7 @@ function HeroDemonstration({ qr }: { qr: string }) {
             <p>{request.text}</p>
           </motion.div>
         </AnimatePresence>
+        </div>
         <div className="example-footer"><Check size={14} /> Received and ready for your care</div>
       </div>
     </motion.div>
@@ -85,12 +85,6 @@ function HeroDemonstration({ qr }: { qr: string }) {
 }
 
 export default function Landing() {
-  const [qr, setQr] = useState("");
-  useEffect(() => {
-    const url = `${location.origin}${location.pathname}#/c/demo`;
-    QRCode.toDataURL(url, { width: 360, margin: 2, errorCorrectionLevel: "M", color: { dark: "#203e34", light: "#ffffff" } }).then(setQr).catch(() => {});
-  }, []);
-
   const heroItem = (delay: number) => ({
     initial: { opacity: 0, y: 30 },
     animate: { opacity: 1, y: 0 },
@@ -117,7 +111,7 @@ export default function Landing() {
               <button className="text-action" data-testid="button-how-it-works" onClick={() => document.getElementById("how-it-works")?.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth" })}>See how it works <ArrowDown size={16} /></button>
             </motion.div>
           </div>
-          <HeroDemonstration qr={qr} />
+          <HeroVisual />
           </div>
         </section>
 
