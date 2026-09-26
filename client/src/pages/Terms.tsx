@@ -19,7 +19,7 @@ export default function Terms() {
         <p className="text-muted-foreground mb-10">Last updated September 23, 2026. Tend is a pilot service, and these terms will evolve as the service does.</p>
 
         <Section title="What Tend is">
-          <p>Tend gives churches a QR code that opens a simple prayer-request page, plus a private inbox where the church's account owner can read and track requests. Every plan starts with a 30-day free trial. Automated notifications are not active during the pilot, and features may change or pause without notice. Tend is provided as is.</p>
+          <p>Tend gives churches a QR code that opens a simple prayer-request page, plus a private inbox where the church's account owner can read and track requests. Tend is operated by Mark Johnson Ventures LLC. Every plan starts with a 30-day free trial. Automated notifications are not active during the pilot, and features may change or pause without notice. Tend is provided as is.</p>
         </Section>
 
         <Section title="Church accounts">
