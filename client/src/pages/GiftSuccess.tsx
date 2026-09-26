@@ -1,10 +1,10 @@
 import { Link } from "wouter";
 import { SiteHeader, SiteFooter } from "@/components/SiteHeader";
 import { Gift as GiftIcon } from "lucide-react";
+import { pageQuery } from "@/lib/location";
 
 function hashQuery() {
-  const q = window.location.hash.split("?")[1] || "";
-  return new URLSearchParams(q);
+  return pageQuery();
 }
 
 export default function GiftSuccess() {

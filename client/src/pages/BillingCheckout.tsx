@@ -5,12 +5,12 @@ import { Button } from "@/components/ui/button";
 import { Loader2, AlertCircle } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { supabase } from "@/lib/supabase";
+import { pageQuery } from "@/lib/location";
 
 const PLAN_NAMES: Record<string, string> = { starter: "Starter", growth: "Growth", large: "Large Church" };
 
 function hashQuery() {
-  const q = window.location.hash.split("?")[1] || "";
-  return new URLSearchParams(q);
+  return pageQuery();
 }
 
 type ChurchLite = { id: number; name: string; slug: string; plan: string };
