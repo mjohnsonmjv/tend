@@ -68,6 +68,36 @@ async function sendTrialStartedEmail(to: string, churchName: string, plan: strin
   }).catch((e) => console.error("trial email failed", e));
 }
 
+async function sendGiftReceivedEmail(to: string, churchName: string, plan: string) {
+  if (!RESEND_KEY || !to) return;
+  const planLabel = plan.charAt(0).toUpperCase() + plan.slice(1);
+  await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${RESEND_KEY}`, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      from: FROM,
+      to,
+      subject: `Someone gifted Tend ${planLabel} to ${churchName}`,
+      html: `<p>Hello,</p><p>Good news: someone gifted the Tend ${planLabel} plan to <strong>${churchName}</strong>, so your church now has the paid features at no cost to you.</p><p>Nothing else changes. Prayer requests keep arriving in your inbox the same way, and the gift renews automatically on the giver's card until they cancel. If the gift ever ends, we will email you first.</p><p>With care,<br/>The Tend team</p>`,
+    }),
+  }).catch((e) => console.error("gift received email failed", e));
+}
+
+async function sendGiftReceiptEmail(to: string, churchName: string, plan: string) {
+  if (!RESEND_KEY || !to) return;
+  const planLabel = plan.charAt(0).toUpperCase() + plan.slice(1);
+  await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${RESEND_KEY}`, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      from: FROM,
+      to,
+      subject: `You gifted Tend ${planLabel} to ${churchName}`,
+      html: `<p>Hello,</p><p>Thank you for gifting the Tend ${planLabel} plan to <strong>${churchName}</strong>. Your first payment went through today, and the church's team has been notified.</p><p>The gift renews automatically. If you ever want to change or cancel it, just reply to this email and we will take care of it.</p><p>With gratitude,<br/>The Tend team</p>`,
+    }),
+  }).catch((e) => console.error("gift receipt email failed", e));
+}
+
 async function sendDunningEmail(to: string, churchName: string, churchId: number) {
   if (!RESEND_KEY || !to) return;
   const settingsUrl = `${SITE_URL}/#/church/${churchId}/settings`;
@@ -98,6 +128,7 @@ Deno.serve(async (req) => {
       const s = event.data.object;
       const churchId = Number(s.metadata?.church_id);
       const plan = validPlan(s.metadata?.plan);
+      const isGift = s.metadata?.gift === "true";
       if (churchId && plan) {
         await db(`tend_churches?id=eq.${churchId}`, {
           method: "PATCH",
@@ -107,7 +138,15 @@ Deno.serve(async (req) => {
         });
         const rows = await db(`tend_churches?id=eq.${churchId}&select=name,pastor_email`);
         const church = Array.isArray(rows) ? rows[0] : null;
-        if (church) await sendTrialStartedEmail(church.pastor_email, church.name, plan);
+        if (church) {
+          if (isGift) {
+            const donorEmail = s.customer_details?.email || s.customer_email || "";
+            await sendGiftReceivedEmail(church.pastor_email, church.name, plan);
+            if (donorEmail) await sendGiftReceiptEmail(donorEmail, church.name, plan);
+          } else {
+            await sendTrialStartedEmail(church.pastor_email, church.name, plan);
+          }
+        }
       }
     } else if (
       type === "customer.subscription.created" ||

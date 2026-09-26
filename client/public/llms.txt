@@ -21,6 +21,13 @@ status tracking (new, praying, prayed for, archived).
 - Privacy: https://tendpray.com/#/privacy
 - Pricing: https://tendpray.com/#/pricing
 
+## Gifting
+
+Anyone can gift a paid plan to their church, no Tend account needed:
+https://tendpray.com/#/gift/{church-url-name} (for example, /#/gift/frontier-church).
+The gift is charged immediately, with no trial, and renews on the giver's card
+until cancelled. The church's team is notified when a gift arrives.
+
 ## How a church starts
 
 1. Sign up at https://tendpray.com/#/signup

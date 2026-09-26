@@ -12,6 +12,7 @@ export const churches = sqliteTable("churches", {
   name: text("name").notNull(),
   pastorName: text("pastor_name").notNull(),
   pastorEmail: text("pastor_email").notNull(),
+  contactRole: text("contact_role"), // pastor | staff | board | volunteer | congregant | donor
   greetingMessage: text("greeting_message").notNull().default(
     "Thank you for sharing. I'm praying for you.",
   ),

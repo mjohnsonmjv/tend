@@ -44,19 +44,11 @@ function HeroVisual() {
   return (
     <motion.div
       className="hero-visual"
-      aria-label="Illustration of the Tend prayer invitation on church screens and the prayer inbox"
+      aria-label="Example of the Tend prayer inbox"
       initial={{ opacity: 0, y: 44, scale: 0.98 }}
       animate={{ opacity: 1, y: 0, scale: 1 }}
       transition={{ duration: 0.8, delay: 0.35, ease: EASE_OUT }}
     >
-      <motion.figure
-        className="sanctuary-frame"
-        animate={reduceMotion ? undefined : { y: [0, -8, 0] }}
-        transition={{ duration: 9, repeat: Infinity, ease: "easeInOut" }}
-      >
-        <img src="/tend-hero-sanctuary.jpg" fetchPriority="high" alt="A large church auditorium with the Tend prayer invitation and QR code displayed on the stage screens" />
-        <figcaption>Example: your QR code on the Sunday screen</figcaption>
-      </motion.figure>
       <div className="inbox-example"
         onMouseEnter={() => setPaused(true)}
         onMouseLeave={() => setPaused(false)}

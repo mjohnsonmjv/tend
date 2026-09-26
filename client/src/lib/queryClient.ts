@@ -2,7 +2,7 @@ import { QueryClient, type QueryFunction } from "@tanstack/react-query";
 import { supabase,SUPABASE_URL,SUPABASE_KEY } from "./supabase";
 import { providerFlags } from "./oauth-core";
 
-const churchFields = "id,slug,name,pastorName:pastor_name,pastorEmail:pastor_email,greetingMessage:greeting_message,plan,createdAt:created_at";
+const churchFields = "id,slug,name,pastorName:pastor_name,pastorEmail:pastor_email,contactRole:contact_role,greetingMessage:greeting_message,plan,createdAt:created_at";
 const prayerFields = "id,churchId:church_id,submitterName:submitter_name,submitterPhone:submitter_phone,submitterEmail:submitter_email,message,category,isAnonymous:is_anonymous,isUrgent:is_urgent,isPrivate:is_private,status,pastorNotes:pastor_notes,createdAt:created_at";
 const dateRows = (rows: any): any => Array.isArray(rows) ? rows.map(dateRows) : rows && typeof rows === "object" && rows.createdAt ? { ...rows, createdAt: Date.parse(rows.createdAt) } : rows;
 const result = (data: any, error?: any) => {
@@ -78,13 +78,25 @@ export async function apiRequest(method: string, url: string, data?: any): Promi
   if (path === "/api/billing/portal" && method === "POST") {
     return billingFn("create-portal-session", { church_id:data.churchId });
   }
+  if (path === "/api/billing/gift" && method === "POST") {
+    // Public: no Tend account needed. The edge function validates the slug.
+    const res = await fetch(`${SUPABASE_URL}/functions/v1/create-gift-checkout`, {
+      method:"POST",
+      headers:{ "content-type":"application/json", apikey:SUPABASE_KEY },
+      body: JSON.stringify({ slug:data.slug, plan:data.plan, interval:data.interval }),
+      signal:AbortSignal.timeout(30000),
+    });
+    const out = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(out.error || "Gift checkout failed.");
+    return out;
+  }
   if (path === "/api/churches" && method === "GET") {
     const r=await supabase.from("tend_churches").select(churchFields).order("created_at"); return result(r.data,r.error);
   }
   if (path === "/api/churches" && method === "POST") {
     const r=await supabase.from("tend_churches").insert({
       name:data.name,slug:data.slug,pastor_name:data.pastorName,pastor_email:session.session.user.email,
-      greeting_message:data.greetingMessage,
+      contact_role:data.contactRole,greeting_message:data.greetingMessage,
     }).select(churchFields).single(); return result(r.data,r.error);
   }
   const churchMatch=path.match(/^\/api\/churches\/(\d+)(?:\/(greeting|prayers|stats))?$/);

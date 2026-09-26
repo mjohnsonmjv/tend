@@ -9,14 +9,25 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Form,FormField,FormItem,FormLabel,FormControl,FormMessage,FormDescription } from "@/components/ui/form";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
 import { SiteHeader,SiteFooter } from "@/components/SiteHeader";
 import { useAuth } from "@/components/Auth";
 import type { Church } from "@shared/schema";
 import { publicChurchUrl } from "@/lib/inbox";
 
+const ROLES=[
+  ["pastor","Pastor","I lead the church."],
+  ["staff","Church staff","I work on the church team."],
+  ["board","Board member","I serve on the board."],
+  ["volunteer","Volunteer","I serve in a ministry."],
+  ["congregant","Congregant","I attend the church."],
+  ["donor","Donor / friend","I want to gift Tend to this church."],
+] as const;
 const schema=z.object({
   name:z.string().trim().min(2,"Enter a church name.").max(120),
   slug:z.string().min(3,"Use at least 3 characters.").max(40).regex(/^[a-z0-9][a-z0-9-]+$/,"Use lowercase letters, numbers, and hyphens.").refine(v=>v!=="demo","Please choose another church URL."),
+  contactRole:z.enum(["pastor","staff","board","volunteer","congregant","donor"],{message:"Choose the option that fits you best."}),
   pastorName:z.string().trim().min(2,"Add a public care-team name.").max(100),
   greetingMessage:z.string().trim().min(1,"Add a confirmation message.").max(300,"Keep the greeting within 300 characters."),
 });
@@ -26,14 +37,15 @@ export default function Signup(){
   const form=useForm<z.infer<typeof schema>>({resolver:zodResolver(schema),defaultValues:{name:"",slug:"",pastorName:"Care team",greetingMessage:"Thank you for sharing. Your request has been received."}});
   const values=form.watch();
   const create=useMutation({mutationFn:async(v:z.infer<typeof schema>)=>(await apiRequest("POST","/api/churches",v)).json() as Promise<Church>,onSuccess:church=>{queryClient.invalidateQueries({queryKey:["/api/churches"]});navigate(`/church/${church.id}/qr`)}});
-  async function next(){if(await form.trigger(["name","slug","pastorName"]))setStep(2)}
+  async function next(){if(await form.trigger(["name","slug","contactRole","pastorName"]))setStep(2)}
   return <><SiteHeader/><main className="max-w-3xl mx-auto px-5 py-12">
     <p className="eyebrow">Set up your church · {step} of 2</p><h1 className="text-3xl mb-3">{step===1?"Make a place for prayer.":"Welcome people in your own words."}</h1><p className="text-muted-foreground mb-8">No payment required to start. Your QR code is ready as soon as you finish.</p>
     <Form {...form}><form className="border rounded-xl bg-card p-6 sm:p-8 space-y-6" onSubmit={form.handleSubmit(v=>create.mutate(v))}>
       {step===1?<>
         <FormField control={form.control} name="name" render={({field})=><FormItem><FormLabel>Church name</FormLabel><FormControl><Input {...field} maxLength={120} data-testid="input-church-name" placeholder="Grace Community Church" onChange={e=>{field.onChange(e);if(!slugEdited)form.setValue("slug",e.target.value.toLowerCase().replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"").slice(0,40))}}/></FormControl><FormMessage/></FormItem>}/>
         <FormField control={form.control} name="slug" render={({field})=><FormItem><FormLabel>Church URL name</FormLabel><FormControl><Input {...field} maxLength={40} data-testid="input-slug" onChange={e=>{setSlugEdited(true);field.onChange(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g,""))}} placeholder="grace-community"/></FormControl><FormDescription className="break-all">{publicChurchUrl(values.slug||"your-church")}</FormDescription><FormMessage/></FormItem>}/>
-        <FormField control={form.control} name="pastorName" render={({field})=><FormItem><FormLabel>Pastor or care-team display name</FormLabel><FormControl><Input {...field} maxLength={100} data-testid="input-pastor-name"/></FormControl><FormDescription>Visible to your congregation. You can use “Care team” instead of a personal name.</FormDescription><FormMessage/></FormItem>}/>
+        <FormField control={form.control} name="contactRole" render={({field})=><FormItem><FormLabel>Your role</FormLabel><FormControl><RadioGroup value={field.value} onValueChange={field.onChange} className="grid sm:grid-cols-2 gap-2" data-testid="input-role">{ROLES.map(([v,label,desc])=><Label key={v} htmlFor={`role-${v}`} className="flex items-start gap-3 rounded-lg border p-3 cursor-pointer hover:bg-muted/50 has-[:checked]:border-primary"><RadioGroupItem id={`role-${v}`} value={v}/><span><span className="block text-sm font-medium">{label}</span><span className="block text-xs text-muted-foreground">{desc}</span></span></Label>)}</RadioGroup></FormControl><FormMessage/></FormItem>}/>
+        <FormField control={form.control} name="pastorName" render={({field})=><FormItem><FormLabel>Care-team display name</FormLabel><FormControl><Input {...field} maxLength={100} data-testid="input-pastor-name"/></FormControl><FormDescription>Visible to your congregation on the prayer page. “Care team” works fine if you prefer no personal name.</FormDescription><FormMessage/></FormItem>}/>
         <p className="text-sm text-muted-foreground break-all">Private account email: {session?.user.email}</p>
         <Button type="button" className="w-full min-h-12" data-testid="button-setup-next" onClick={next}>Continue</Button>
       </>:<>

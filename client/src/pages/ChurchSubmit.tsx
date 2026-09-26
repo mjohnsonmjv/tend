@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useParams, useLocation } from "wouter";
+import { useParams, useLocation, Link } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { Button } from "@/components/ui/button";
@@ -293,6 +293,9 @@ export default function ChurchSubmit() {
           )}
           <p className="text-xs text-center text-muted-foreground pt-2">
             Powered by <span className="font-serif italic">Tend</span> · One QR code for your church
+          </p>
+          <p className="text-xs text-center pt-1">
+            <Link href={`/gift/${slug}`} className="underline text-muted-foreground" data-testid="link-gift-church">Gift Tend to this church</Link>
           </p>
         </form>
       </div>
