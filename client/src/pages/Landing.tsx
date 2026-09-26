@@ -88,7 +88,7 @@ export default function Landing() {
     <div className="brand-site">
       <SiteHeader />
       <main id="main-content">
-        <section className="tend-hero hero-photo">
+        <section className="tend-hero">
           <div className="brand-container hero-grid">
           <div className="hero-copy">
             <motion.p className="eyebrow" {...heroItem(0)}>Inspired by 1 Peter 5:2</motion.p>

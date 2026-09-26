@@ -1,4 +1,4 @@
-# Tend brand direction
+# Tend brand direction: First Light
 
 ## Positioning
 
@@ -10,9 +10,10 @@ Brand line: “Make room for every prayer.”
 
 ## Identity
 
-- A lowercase, bold wordmark paired with an original open-circle/person symbol. Concept: an invitation to be heard, not a closed institution.
-- Cabinet Grotesk for headings and wordmark. Satoshi for body and controls.
-- Forest ink `#203e34`, warm paper `#f7f7f0`, muted leaf `#54615a`, pale field `#e9ede4`. Light yellow-green is reserved for status emphasis.
+- A lowercase wordmark in Instrument Serif paired with an original open-circle/person symbol. Concept: an invitation to be heard, not a closed institution.
+- Instrument Serif for display and headlines. Instrument Sans for body and controls.
+- First Light palette: white `#FFFFFF` canvas, morning ivory `#FBF8F1` surfaces, dawn gold `#EFC65E` signal accent used sparingly (primary CTAs, answered-prayer moments, key highlights), pale blush `#E9D3C6` highlight states, sage `#93A68B` secondary, warm charcoal `#2A2521` text, stone `#E2DACA` hairlines.
+- Feel: quiet morning prayer. Generous whitespace, hairline dividers, light and breathable, reverent. Warm minimal, clean typography.
 - Clear, warm, direct language. No em dashes. No audience-size restriction in the hero.
 - No invented church endorsements, member counts, or popularity claims. Product illustrations are labeled examples.
 - Marketing, public forms, dashboard, favicon, and print poster share the identity.

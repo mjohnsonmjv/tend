@@ -50,27 +50,27 @@ export default function ChurchQR() {
         <head>
           <title>${escapeHtml(church.name)}: Prayer requests</title>
           <meta charset="utf-8"/>
-          <link href="https://api.fontshare.com/v2/css?f[]=cabinet-grotesk@500,700,800&amp;f[]=satoshi@400,500,700&amp;display=swap" rel="stylesheet"/>
+          <link href="https://fonts.googleapis.com/css2?family=Instrument+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&amp;family=Instrument+Serif:ital@0;1&amp;display=swap" rel="stylesheet"/>
           <style>
             @page { size: letter; margin: 0.5in; }
             * { box-sizing: border-box; }
             body {
               margin: 0; padding: 40px;
-              background: #f7f7f0; color: #203e34;
-              font-family: 'Satoshi', sans-serif;
+              background: #FFFFFF; color: #2A2521;
+              font-family: 'Instrument Sans', sans-serif;
               min-height: 100vh;
               display: flex; flex-direction: column; align-items: center; justify-content: center;
               text-align: center;
             }
-            .eyebrow { font-size: 12px; letter-spacing: 0.25em; text-transform: uppercase; color: #6b655c; margin-bottom: 24px; }
-            .title { font-family: 'Cabinet Grotesk', sans-serif; font-weight: 800; font-size: 68px; line-height: 1.05; margin: 0 0 12px; letter-spacing: -0.035em; }
-            .subtitle { font-family: 'Satoshi', sans-serif; font-size: 24px; color: #203e34; margin: 0 0 40px; }
-            .qr-wrap { padding: 32px; background: white; border: 2px solid #dcd6cc; border-radius: 16px; margin-bottom: 32px; }
+            .eyebrow { font-size: 12px; letter-spacing: 0.25em; text-transform: uppercase; color: #6F665B; margin-bottom: 24px; }
+            .title { font-family: 'Instrument Serif', serif; font-weight: 400; font-size: 68px; line-height: 1.05; margin: 0 0 12px; letter-spacing: -0.02em; }
+            .subtitle { font-family: 'Instrument Sans', sans-serif; font-size: 24px; color: #2A2521; margin: 0 0 40px; }
+            .qr-wrap { padding: 32px; background: white; border: 2px solid #E2DACA; border-radius: 16px; margin-bottom: 32px; }
             .qr-wrap img { width: 340px; height: 340px; display: block; }
-            .instructions { font-size: 20px; color: #203e34; margin: 0 0 8px; }
-            .url { font-family: monospace; font-size: 16px; color: #6b655c; margin-bottom: 40px; }
-            .footer { display: flex; align-items: center; gap: 6px; font-size: 12px; color: #6b655c; }
-            .footer .brand { font-family: 'Cabinet Grotesk', sans-serif; font-weight: 800; font-size: 28px; letter-spacing: -0.04em; color: #203e34; }
+            .instructions { font-size: 20px; color: #2A2521; margin: 0 0 8px; }
+            .url { font-family: monospace; font-size: 16px; color: #6F665B; margin-bottom: 40px; }
+            .footer { display: flex; align-items: center; gap: 6px; font-size: 12px; color: #6F665B; }
+            .footer .brand { font-family: 'Instrument Serif', serif; font-weight: 400; font-size: 28px; letter-spacing: -0.02em; color: #2A2521; }
           </style>
         </head>
         <body>
