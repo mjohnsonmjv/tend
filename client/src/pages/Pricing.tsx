@@ -144,6 +144,10 @@ export default function Pricing() {
         ))}
       </section>
 
+      <p className="text-center text-sm text-muted-foreground pb-10 -mt-4" data-testid="text-stripe-note">
+        Payments are processed securely by <span className="font-semibold text-foreground">Stripe</span>.
+      </p>
+
       <section className="max-w-3xl mx-auto px-6 py-16 border-t border-border/60">
         <h2 className="font-serif text-3xl text-foreground text-center mb-10">Common questions</h2>
         <div className="space-y-6 text-foreground/90">

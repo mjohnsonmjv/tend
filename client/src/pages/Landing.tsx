@@ -1,10 +1,27 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { Link } from "wouter";
 import { motion, AnimatePresence, MotionConfig, useReducedMotion } from "framer-motion";
-import { ArrowDown, ArrowRight, Check, Heart, LockKeyhole } from "lucide-react";
+import { ArrowDown, ArrowRight, Check, Heart, LockKeyhole, ShieldCheck } from "lucide-react";
 import { SiteHeader, SiteFooter } from "@/components/SiteHeader";
+import QRCode from "qrcode";
 
 const EASE_OUT = "easeOut" as const;
+
+/** Demo prayer page URL, encoded in the homepage QR code. Generated locally; no third-party QR service is involved. */
+const DEMO_PRAYER_URL = "https://tendpray.com/#/c/demo";
+
+function DemoQr() {
+  const [dataUrl, setDataUrl] = useState("");
+  useEffect(() => {
+    let live = true;
+    QRCode.toDataURL(DEMO_PRAYER_URL, { width: 640, margin: 2, errorCorrectionLevel: "M" })
+      .then((url) => { if (live) setDataUrl(url); })
+      .catch(() => {});
+    return () => { live = false; };
+  }, []);
+  if (!dataUrl) return <div className="try-qr-placeholder" aria-hidden="true" />;
+  return <img src={dataUrl} alt="QR code that opens the Tend demo prayer page" width={220} height={220} />;
+}
 
 /** Fade-up reveal when scrolled into view. */
 function Reveal({ children, delay = 0, className }: { children: ReactNode; delay?: number; className?: string }) {
@@ -125,6 +142,16 @@ export default function Landing() {
         </section>
 
         <section className="brand-container who-section">
+          <div className="try-grid">
+            <Reveal className="section-intro"><p className="eyebrow">Try it right now</p><h2>Scan it. Share a prayer.<br />See how simple it is.</h2><p>This is the real Tend prayer form, running as a demo for Example Church. Nothing you type is saved or sent.</p><p><Link className="text-action" href="/c/demo" data-testid="link-demo-prayer">Open the demo prayer page <ArrowRight size={16} /></Link></p></Reveal>
+            <Reveal delay={0.1} className="try-qr-card">
+              <DemoQr />
+              <p>Point your phone camera at the code.</p>
+            </Reveal>
+          </div>
+        </section>
+
+        <section className="brand-container who-section">
           <div className="kit-intro">
           <Reveal className="section-intro"><p className="eyebrow">Every Sunday, everywhere</p><h2>One code.<br />Slides, cards, lobby.</h2><p>The same QR code works wherever you put it. Drop it into your announcement slides, print it on the weekly cards, hang the poster in the lobby. When someone feels the nudge to ask for prayer, the invitation is already there.</p></Reveal>
           <div className="kit-previews">
@@ -173,6 +200,10 @@ export default function Landing() {
               <Reveal delay={0.2}><p className="care-principle">The care is yours.<br />Tend helps you keep track.</p></Reveal>
             </div>
           </div>
+        </section>
+
+        <section className="brand-container trust-section">
+          <Reveal className="section-intro trust-intro"><p className="eyebrow">Your congregation's trust</p><h2>Private by design.</h2><p>Only your team ever sees prayer requests. They are never sold, never shared, and never used for advertising.</p><p className="trust-items"><span><ShieldCheck size={18} /> Per-church access controls</span><span><ShieldCheck size={18} /> No prayer content in analytics</span><span><ShieldCheck size={18} /> Anonymous sharing welcome</span></p><p><Link className="text-action" href="/privacy" data-testid="link-privacy-promise">Read our privacy promise <ArrowRight size={16} /></Link></p></Reveal>
         </section>
 
         <section className="closing-section photo-band">
