@@ -132,7 +132,7 @@ export default function Pricing() {
               ))}
             </ul>
             <Link
-              href="/signup"
+              href={p.id === "free" ? "/signup" : `/billing/checkout?plan=${p.id}&interval=${annual ? "year" : "month"}`}
               data-testid={`link-plan-${p.id}`}
               className={`mt-8 inline-flex h-11 w-full items-center justify-center rounded-md text-sm font-medium transition-colors ${
                 p.highlighted

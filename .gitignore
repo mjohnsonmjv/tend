@@ -19,3 +19,8 @@ data.db-journal
 # Local historical tests containing credentials for deleted QA accounts
 tests/vercel-login.cjs
 tests/vercel-security.cjs
+
+# Never commit: private lead research, stock sources, supabase CLI temp state
+outreach/church-leads.md
+outreach/stock-sources/
+supabase/.temp/

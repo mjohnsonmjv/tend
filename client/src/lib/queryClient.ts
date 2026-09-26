@@ -50,7 +50,34 @@ export async function apiRequest(method: string, url: string, data?: any): Promi
   }
   const {data:session} = await supabase.auth.getSession();
   if (!session.session) throw new Error("Please sign in to access your church.");
-  if (path === "/api/billing/status") return result({ configured:false, plans:[] });
+  if (path === "/api/billing/status") return result({ configured:true, plans:[
+    { id:"starter", name:"Starter", price:29, description:"For churches under 200. Unlimited requests, custom greeting." },
+    { id:"growth", name:"Growth", price:49, description:"For churches 200 to 500. Multiple QR codes, CSV export." },
+    { id:"large", name:"Large Church", price:99, description:"For churches 500 and up. Team accounts, priority support." },
+  ] });
+  const billingFn = async (fn: string, body: any) => {
+    const res = await fetch(`${SUPABASE_URL}/functions/v1/${fn}`, {
+      method:"POST",
+      headers:{
+        "content-type":"application/json",
+        apikey:SUPABASE_KEY,
+        Authorization:`Bearer ${session.session.access_token}`,
+      },
+      body: JSON.stringify(body),
+      signal:AbortSignal.timeout(30000),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || "Billing request failed.");
+    return result(data);
+  };
+  if (path === "/api/billing/checkout" && method === "POST") {
+    return billingFn("create-checkout-session", {
+      church_id:data.churchId, plan:data.plan, interval:data.interval,
+    });
+  }
+  if (path === "/api/billing/portal" && method === "POST") {
+    return billingFn("create-portal-session", { church_id:data.churchId });
+  }
   if (path === "/api/churches" && method === "GET") {
     const r=await supabase.from("tend_churches").select(churchFields).order("created_at"); return result(r.data,r.error);
   }

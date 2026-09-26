@@ -15,6 +15,8 @@ import PrayerDetail from "@/pages/PrayerDetail";
 import ChurchQR from "@/pages/ChurchQR";
 import ChurchSettings from "@/pages/ChurchSettings";
 import Pricing from "@/pages/Pricing";
+import BillingCheckout from "@/pages/BillingCheckout";
+import BillingSuccess from "@/pages/BillingSuccess";
 import Privacy from "@/pages/Privacy";
 import Terms from "@/pages/Terms";
 import { AuthProvider,RequireAuth,useAuth } from "@/components/Auth";
@@ -46,6 +48,8 @@ function AppRouter() {
       <Route path="/" component={Landing} />
       <Route path="/demo" component={Demo} />
       <Route path="/pricing" component={Pricing} />
+      <Route path="/billing/checkout" component={BillingCheckout} />
+      <Route path="/billing/success" component={BillingSuccess} />
       <Route path="/login">{()=><Login/>}</Route>
       <Route path="/register">{()=><Redirect to="/signup"/>}</Route>
       <Route path="/privacy" component={Privacy} />

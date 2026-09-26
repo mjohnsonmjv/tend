@@ -1,4 +1,4 @@
-import { useParams } from "wouter";
+import { useParams, Link } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
 import { Button } from "@/components/ui/button";
@@ -19,6 +19,15 @@ export default function ChurchSettings() {
   const { data: church, isLoading,error,refetch } = useQuery<Church>({ queryKey: ["/api/churches", churchId] });
   const { data: billing } = useQuery<{ configured: boolean; plans: any[] }>({
     queryKey: ["/api/billing/status"],
+  });
+
+  const portal = useMutation({
+    mutationFn: async () => {
+      const res = await apiRequest("POST", "/api/billing/portal", { churchId });
+      const data = (await res.json()) as { url: string };
+      window.location.assign(data.url);
+    },
+    onError: (e: any) => toast({ title: "Billing", description: e.message || "Could not open billing management.", variant: "destructive" }),
   });
 
   const [greeting, setGreeting] = useState("");
@@ -99,17 +108,43 @@ export default function ChurchSettings() {
             <Section
               title="Billing"
               hint={
-                church.plan === "trial"
-                  ? "You're on the free 30-day trial. No card required."
+                church.plan === "pilot"
+                  ? "You're on the free pilot plan."
                   : `Current plan: ${church.plan}`
               }
             >
-              {!billing?.configured && (
+              {church.plan === "pilot" ? (
                 <div className="rounded-md border border-dashed border-accent/40 bg-accent/5 p-4 text-sm text-foreground/80">
                   <div className="flex items-center gap-2 text-accent mb-1 font-medium">
-                    <CreditCard className="h-4 w-4" /> Free 30-day trial
+                    <CreditCard className="h-4 w-4" /> Free 30-day trial on paid plans
                   </div>
-                  No charges and no card required to start. Plan selection and subscription management are coming soon.
+                  No charges and no card required to start. Upgrade when you're ready.
+                  <div className="mt-3">
+                    <Button asChild variant="outline" size="sm">
+                      <Link href="/pricing">See plans</Link>
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <div className="rounded-md border border-border bg-card p-4 text-sm">
+                  <div className="flex items-center justify-between gap-3 flex-wrap">
+                    <div>
+                      <span className="text-muted-foreground">Current plan: </span>
+                      <span className="font-medium capitalize">{church.plan}</span>
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      disabled={portal.isPending}
+                      onClick={() => portal.mutate()}
+                    >
+                      {portal.isPending ? "Opening..." : "Manage subscription"}
+                      <ExternalLink className="h-3.5 w-3.5 ml-1.5" />
+                    </Button>
+                  </div>
+                  <p className="text-muted-foreground mt-2 text-xs">
+                    Update your card, change plan, or cancel. Changes take effect through Stripe.
+                  </p>
                 </div>
               )}
               {billing?.plans && (
