@@ -28,7 +28,7 @@ async function db(path: string, init?: RequestInit) {
 }
 
 function footer(unsubUrl: string) {
-  return `<p style="color:#888;font-size:12px;margin-top:32px;border-top:1px solid #eee;padding-top:16px;">You are getting this because you tried the Tend demo. <a href="${unsubUrl}">Unsubscribe</a></p>`;
+  return `<p style="color:#888;font-size:12px;margin-top:32px;border-top:1px solid #eee;padding-top:16px;">You are getting this because you tried the Tend demo. <a href="${unsubUrl}">Unsubscribe</a><br/>Mark Johnson Ventures LLC, 551 Settlers Drive, Suite 200, Ada, MI 49301</p>`;
 }
 
 function email1(unsubUrl: string) {

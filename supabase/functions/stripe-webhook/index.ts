@@ -123,7 +123,7 @@ async function sendAbandonedCartEmail(to: string, churchName: string, plan: stri
       from: FROM,
       to,
       subject: "Your Tend trial is still waiting",
-      html: `<p>Hi there,</p><p>You started a Tend ${planLabel} trial for <strong>${churchName}</strong> but did not finish checkout.</p><p>Your 30-day free trial is still available, and no card is needed to start.</p><p><a href="${SITE_URL}/#/pricing">Complete your signup</a></p><p>With care,<br/>The Tend team</p><p style="color:#888;font-size:12px;margin-top:32px;border-top:1px solid #eee;padding-top:16px;">You are getting this because you started a Tend checkout. <a href="${unsubUrl}">Unsubscribe</a></p>`,
+      html: `<p>Hi there,</p><p>You started a Tend ${planLabel} trial for <strong>${churchName}</strong> but did not finish checkout.</p><p>Your 30-day free trial is still available, and no card is needed to start.</p><p><a href="${SITE_URL}/#/pricing">Complete your signup</a></p><p>With care,<br/>The Tend team</p><p style="color:#888;font-size:12px;margin-top:32px;border-top:1px solid #eee;padding-top:16px;">You are getting this because you started a Tend checkout. <a href="${unsubUrl}">Unsubscribe</a><br/>Mark Johnson Ventures LLC, 551 Settlers Drive, Suite 200, Ada, MI 49301</p>`,
       headers: {
         "List-Unsubscribe": `<${unsubUrl}>`,
         "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
