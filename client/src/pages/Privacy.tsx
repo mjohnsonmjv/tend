@@ -16,7 +16,7 @@ export default function Privacy() {
       <main className="max-w-3xl mx-auto px-6 py-16">
         <p className="eyebrow mb-3">Privacy Policy</p>
         <h1 className="font-serif text-4xl mb-4">How Tend handles information</h1>
-        <p className="text-muted-foreground mb-10">Last updated September 23, 2026. Tend is a pilot service, and this policy will evolve as the service does.</p>
+        <p className="text-muted-foreground mb-10">Last updated September 26, 2026. Tend is a pilot service, and this policy will evolve as the service does.</p>
 
         <Section title="What Tend collects">
           <p>When a church signs up, Tend collects the church name, a public care-team display name, a welcome message, and the account holder's email address.</p>
@@ -26,6 +26,11 @@ export default function Privacy() {
         <Section title="How it is used">
           <p>Prayer requests are delivered to the signed-in owner of that church's prayer inbox so they can pray and follow up. Account details are used to operate the service, such as sign-in and account notices.</p>
           <p>Tend does not sell personal information and does not use it for advertising.</p>
+        </Section>
+
+        <Section title="Payments">
+          <p>Paid plans are processed by Stripe. When a church subscribes, Stripe collects the payment details directly; Tend never sees or stores card numbers. Tend keeps only the subscription record needed to operate the plan, such as the plan name, billing interval, and subscription status.</p>
+          <p>Paid plans begin with a 30-day free trial. No card is required to start the trial, and the plan can be cancelled at any time from the church's settings page.</p>
         </Section>
 
         <Section title="Who can see what">

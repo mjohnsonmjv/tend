@@ -53,6 +53,21 @@ async function db(path: string, init?: RequestInit) {
 
 const validPlan = (p: unknown) => (typeof p === "string" && PLANS.includes(p) ? p : null);
 
+async function sendTrialStartedEmail(to: string, churchName: string, plan: string) {
+  if (!RESEND_KEY || !to) return;
+  const planLabel = plan.charAt(0).toUpperCase() + plan.slice(1);
+  await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${RESEND_KEY}`, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      from: FROM,
+      to,
+      subject: `Your Tend ${planLabel} trial has started`,
+      html: `<p>Hello from Tend,</p><p>Your 30-day free trial of the Tend ${planLabel} plan for <strong>${churchName}</strong> has started. Nothing is charged today, and no card is on file.</p><p>When the trial ends, we will email you before anything is charged. You can manage or cancel the plan at any time from your church settings page.</p><p>Thank you for tending your congregation's prayers with us,<br/>The Tend team</p>`,
+    }),
+  }).catch((e) => console.error("trial email failed", e));
+}
+
 async function sendDunningEmail(to: string, churchName: string, churchId: number) {
   if (!RESEND_KEY || !to) return;
   const settingsUrl = `${SITE_URL}/#/church/${churchId}/settings`;
@@ -90,6 +105,9 @@ Deno.serve(async (req) => {
             plan, stripe_customer_id: s.customer, stripe_subscription_id: s.subscription,
           }),
         });
+        const rows = await db(`tend_churches?id=eq.${churchId}&select=name,pastor_email`);
+        const church = Array.isArray(rows) ? rows[0] : null;
+        if (church) await sendTrialStartedEmail(church.pastor_email, church.name, plan);
       }
     } else if (
       type === "customer.subscription.created" ||

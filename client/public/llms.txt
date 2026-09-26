@@ -1,0 +1,29 @@
+# Tend
+
+> The easiest way for churches to collect prayer requests: one QR code, one inbox.
+
+Tend is a QR-code prayer-request collection app for churches. A church signs up,
+prints a QR code, and places it in the sanctuary. Congregants scan it with their
+phone camera and share prayer requests, check-ins, praises, or questions through
+a simple form. Every submission lands in the church's private prayer inbox with
+status tracking (new, praying, prayed for, archived).
+
+## Key facts
+
+- Website: https://tendpray.com/
+- Built for churches; anyone on the church team can set it up, not only the pastor.
+- Congregants need nothing installed: the phone camera opens a web form.
+- Prayer requests are private to the church's signed-in team. Nothing is posted publicly.
+- Free plan: free forever, no card required. One QR code and prayer page.
+- Paid plans (Starter $29/mo, Growth $49/mo, Large Church $99/mo; annual billing
+  available): 30-day free trial, no card required to start. Manage or cancel anytime.
+- Contact: support@tendpray.com
+- Privacy: https://tendpray.com/#/privacy
+- Pricing: https://tendpray.com/#/pricing
+
+## How a church starts
+
+1. Sign up at https://tendpray.com/#/signup
+2. Tend generates a QR code and prayer page for the church
+3. Print the QR poster and place it in the sanctuary
+4. Requests arrive in the church dashboard inbox

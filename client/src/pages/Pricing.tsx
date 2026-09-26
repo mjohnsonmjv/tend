@@ -12,7 +12,6 @@ const PLANS = [
     tag: "Free forever",
     perks: [
       "One QR code + prayer intake page",
-      "Up to 50 prayer requests a month",
       "Prayer inbox with status tracking",
       "Printable QR poster",
     ],
@@ -26,7 +25,6 @@ const PLANS = [
     tag: "For churches under 200",
     perks: [
       "Everything in Free",
-      "Unlimited prayer requests",
       "Custom greeting message",
       "Weekly digest email (planned)",
     ],
@@ -150,7 +148,7 @@ export default function Pricing() {
         <h2 className="font-serif text-3xl text-foreground text-center mb-10">Common questions</h2>
         <div className="space-y-6 text-foreground/90">
           <Faq q="Is the free plan really free?">
-            Yes. One prayer page, one QR code, and up to 50 requests a month, free forever. No card required. Paid plans add unlimited requests, SMS, and multi-campus features.
+            Yes. One prayer page and one QR code, free forever. No card required. Paid plans add a custom greeting, SMS follow-up, and multi-campus features.
           </Faq>
           <Faq q="Does my congregation need to install anything?">
             No. They scan a QR code with their phone camera, land on a simple submission page, and share their request. That's it.
