@@ -1,6 +1,6 @@
 // Stripe webhook: keeps tend_churches plan/subscription in sync.
 // Configure the endpoint in Stripe (or via API) with events:
-//   checkout.session.completed, customer.subscription.created,
+//   checkout.session.completed, checkout.session.expired, customer.subscription.created,
 //   customer.subscription.updated, customer.subscription.deleted,
 //   invoice.payment_failed
 
@@ -44,7 +44,7 @@ async function db(path: string, init?: RequestInit) {
     ...init,
     headers: {
       apikey: SERVICE_KEY, Authorization: `Bearer ${SERVICE_KEY}`,
-      "Content-Type": "application/json", ...(init?.headers || {}),
+      "Content-Type": "application/json", Prefer: "return=representation", ...(init?.headers || {}),
     },
   });
   if (!res.ok) throw new Error(`DB ${path} failed: ${await res.text()}`);
@@ -111,6 +111,25 @@ async function sendDunningEmail(to: string, churchName: string, churchId: number
       html: `<p>Hello from Tend,</p><p>We could not collect payment for <strong>${churchName}</strong>'s Tend subscription. Your prayer page keeps working during the retry period, but please update your payment method to avoid interruption.</p><p><a href="${settingsUrl}">Open billing settings</a></p><p>Thank you,<br/>The Tend team</p>`,
     }),
   }).catch((e) => console.error("dunning email failed", e));
+}
+
+async function sendAbandonedCartEmail(to: string, churchName: string, plan: string, unsubUrl: string) {
+  if (!RESEND_KEY || !to) return;
+  const planLabel = plan.charAt(0).toUpperCase() + plan.slice(1);
+  await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${RESEND_KEY}`, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      from: FROM,
+      to,
+      subject: "Your Tend trial is still waiting",
+      html: `<p>Hi there,</p><p>You started a Tend ${planLabel} trial for <strong>${churchName}</strong> but did not finish checkout.</p><p>Your 30-day free trial is still available, and no card is needed to start.</p><p><a href="${SITE_URL}/#/pricing">Complete your signup</a></p><p>With care,<br/>The Tend team</p><p style="color:#888;font-size:12px;margin-top:32px;border-top:1px solid #eee;padding-top:16px;">You are getting this because you started a Tend checkout. <a href="${unsubUrl}">Unsubscribe</a></p>`,
+      headers: {
+        "List-Unsubscribe": `<${unsubUrl}>`,
+        "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+      },
+    }),
+  }).catch((e) => console.error("abandoned cart email failed", e));
 }
 
 Deno.serve(async (req) => {
@@ -183,6 +202,37 @@ Deno.serve(async (req) => {
           method: "PATCH",
           body: JSON.stringify({ plan: "pilot", stripe_subscription_id: null }),
         });
+      }
+    } else if (type === "checkout.session.expired") {
+      const sess = event.data.object;
+      const churchId = Number(sess.metadata?.church_id);
+      const plan = validPlan(sess.metadata?.plan);
+      const email = sess.customer_details?.email || sess.customer_email || "";
+      if (churchId && plan && email) {
+        const rows = await db(`tend_churches?id=eq.${churchId}&select=name,stripe_subscription_id`);
+        const church = Array.isArray(rows) ? rows[0] : null;
+        if (church && !church.stripe_subscription_id) {
+          const leads = await db(`nurture_leads?email=eq.${encodeURIComponent(email)}&select=id,unsub_token,unsubscribed_at`);
+          const lead = Array.isArray(leads) ? leads[0] : null;
+          if (!lead?.unsubscribed_at) {
+            let token: string;
+            if (lead) {
+              token = lead.unsub_token;
+            } else {
+              const created = await db("nurture_leads", {
+                method: "POST",
+                body: JSON.stringify({ email: email.toLowerCase(), source: "checkout_abandoned", church_id: churchId }),
+              });
+              token = created[0].unsub_token;
+            }
+            const unsubUrl = `${SUPABASE_URL}/functions/v1/nurture-unsubscribe?email=${encodeURIComponent(email.toLowerCase())}&token=${token}`;
+            await sendAbandonedCartEmail(email, church.name, plan, unsubUrl);
+            await db(`nurture_leads?email=eq.${encodeURIComponent(email.toLowerCase())}`, {
+              method: "PATCH",
+              body: JSON.stringify({ emails_sent: 1 }),
+            });
+          }
+        }
       }
     } else if (type === "invoice.payment_failed") {
       const inv = event.data.object;

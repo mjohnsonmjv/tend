@@ -70,6 +70,18 @@ export async function apiRequest(method: string, url: string, data?: any): Promi
     if (!res.ok) throw new Error(data.error || "Billing request failed.");
     return result(data);
   };
+  if (path === "/api/nurture/lead" && method === "POST") {
+    // Public demo email capture. The edge function validates and rate-limits via dedupe.
+    const res = await fetch(`${SUPABASE_URL}/functions/v1/capture-lead`, {
+      method:"POST",
+      headers:{ "content-type":"application/json", apikey:SUPABASE_KEY },
+      body: JSON.stringify({ email:data.email, source:data.source || "demo" }),
+      signal:AbortSignal.timeout(30000),
+    });
+    const out = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(out.error || "Could not save your email.");
+    return result(out);
+  }
   if (path === "/api/billing/checkout" && method === "POST") {
     return billingFn("create-checkout-session", {
       church_id:data.churchId, plan:data.plan, interval:data.interval,
