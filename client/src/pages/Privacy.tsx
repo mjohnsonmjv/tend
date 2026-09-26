@@ -28,6 +28,11 @@ export default function Privacy() {
           <p>Tend does not sell personal information and does not use it for advertising.</p>
         </Section>
 
+        <Section title="Analytics">
+          <p>Tend uses Google Analytics to understand how the site is used, such as which pages are visited and how many churches sign up. Google Analytics receives only anonymous usage information, like page addresses and counts of signups or submitted requests.</p>
+          <p>Prayer request text, names, email addresses, phone numbers, and other pastoral-care content are never sent to Google Analytics. You can opt out of Google Analytics with the <a className="underline" href="https://tools.google.com/dlpage/gaoptout">Google Analytics opt-out browser add-on</a>.</p>
+        </Section>
+
         <Section title="Payments">
           <p>Paid plans are processed by Stripe. When a church subscribes, Stripe collects the payment details directly; Tend never sees or stores card numbers. Tend keeps only the subscription record needed to operate the plan, such as the plan name, billing interval, and subscription status.</p>
           <p>Paid plans begin with a 30-day free trial. No card is required to start the trial, and the plan can be cancelled at any time from the church's settings page.</p>

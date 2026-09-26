@@ -1,7 +1,9 @@
 import { useParams, Link } from "wouter";
+import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Logo } from "@/components/Logo";
 import { Heart } from "lucide-react";
+import { trackPrayerSubmitted } from "@/lib/analytics";
 
 interface PublicChurch {
   slug: string;
@@ -12,6 +14,9 @@ interface PublicChurch {
 
 export default function SubmitThanks() {
   const { slug } = useParams<{ slug: string }>();
+  useEffect(() => {
+    if (slug && slug !== "demo") trackPrayerSubmitted();
+  }, [slug]);
   const { data: church } = useQuery<PublicChurch>({
     queryKey: ["/api/churches/by-slug", slug],
   });

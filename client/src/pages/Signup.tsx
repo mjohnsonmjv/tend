@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useEffect } from "react";
 import { useLocation,Link } from "wouter";
 import { useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
@@ -15,6 +16,7 @@ import { SiteHeader,SiteFooter } from "@/components/SiteHeader";
 import { useAuth } from "@/components/Auth";
 import type { Church } from "@shared/schema";
 import { publicChurchUrl } from "@/lib/inbox";
+import { trackSignupStarted, trackSignupCompleted } from "@/lib/analytics";
 
 const ROLES=[
   ["pastor","Pastor","I lead the church."],
@@ -36,7 +38,8 @@ export default function Signup(){
   const [step,setStep]=useState(1);const [slugEdited,setSlugEdited]=useState(false);
   const form=useForm<z.infer<typeof schema>>({resolver:zodResolver(schema),defaultValues:{name:"",slug:"",pastorName:"Care team",greetingMessage:"Thank you for sharing. Your request has been received."}});
   const values=form.watch();
-  const create=useMutation({mutationFn:async(v:z.infer<typeof schema>)=>(await apiRequest("POST","/api/churches",v)).json() as Promise<Church>,onSuccess:church=>{queryClient.invalidateQueries({queryKey:["/api/churches"]});navigate(`/church/${church.id}/qr`)}});
+  const create=useMutation({mutationFn:async(v:z.infer<typeof schema>)=>(await apiRequest("POST","/api/churches",v)).json() as Promise<Church>,onSuccess:church=>{trackSignupCompleted();queryClient.invalidateQueries({queryKey:["/api/churches"]});navigate(`/church/${church.id}/qr`)}});
+  useEffect(()=>{trackSignupStarted()},[]);
   async function next(){if(await form.trigger(["name","slug","contactRole","pastorName"]))setStep(2)}
   return <><SiteHeader/><main className="max-w-3xl mx-auto px-5 py-12">
     <p className="eyebrow">Set up your church · {step} of 2</p><h1 className="text-3xl mb-3">{step===1?"Make a place for prayer.":"Welcome people in your own words."}</h1><p className="text-muted-foreground mb-8">No payment required to start. Your QR code is ready as soon as you finish.</p>

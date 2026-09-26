@@ -7,7 +7,7 @@
     "dev": "vite --host 0.0.0.0 --port 5000",
     "build": "vite build",
     "start": "vite preview --host 0.0.0.0 --port 5000",
-    "test": "node --import tsx --test tests/inbox.test.ts tests/oauth.test.ts",
+    "test": "node --import tsx --test tests/inbox.test.ts tests/oauth.test.ts tests/analytics.test.ts",
     "check": "tsc",
     "prototype:db:push": "drizzle-kit push"
   },

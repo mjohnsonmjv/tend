@@ -22,6 +22,7 @@ import GiftSuccess from "@/pages/GiftSuccess";
 import Privacy from "@/pages/Privacy";
 import Terms from "@/pages/Terms";
 import { AuthProvider,RequireAuth,useAuth } from "@/components/Auth";
+import { trackPageView, currentHashPath } from "@/lib/analytics";
 import Login from "@/pages/Login";
 import MyChurches from "@/pages/MyChurches";
 import Demo from "@/pages/Demo";
@@ -73,12 +74,23 @@ function AppRouter() {
   );
 }
 
+function AnalyticsTracker() {
+  useEffect(() => {
+    trackPageView(currentHashPath());
+    const onHashChange = () => trackPageView(currentHashPath());
+    window.addEventListener("hashchange", onHashChange);
+    return () => window.removeEventListener("hashchange", onHashChange);
+  }, []);
+  return null;
+}
+
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
         <Toaster />
         <ThemeToggle />
+        <AnalyticsTracker />
         <Router hook={useHashLocation}>
           <AuthProvider><AppRouter /></AuthProvider>
         </Router>
