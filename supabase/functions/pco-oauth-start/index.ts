@@ -53,7 +53,9 @@ Deno.serve(async (req) => {
     client_id: PCO_CLIENT_ID,
     redirect_uri: redirectUri,
     response_type: "code",
-    scope: "openid",
+    // openid alone only yields a subject id from /oauth/userinfo; the people
+    // scope lets the callback read the person's email via /people/v2/me.
+    scope: "openid people",
     state,
     prompt: "select_account",
   });

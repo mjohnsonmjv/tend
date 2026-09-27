@@ -104,10 +104,34 @@ Deno.serve(async (req) => {
       return fail("identity_failed");
     }
     const me = await meRes.json();
-    const email = typeof me.email === "string" ? me.email.trim().toLowerCase() : "";
-    const name = typeof me.name === "string" ? me.name.trim().slice(0, 120) : "";
+    let email = typeof me.email === "string" ? me.email.trim().toLowerCase() : "";
+    let name = typeof me.name === "string" ? me.name.trim().slice(0, 120) : "";
     const pcoSub = typeof me.sub === "string" ? me.sub : "";
-    if (!email || !/^[^\\s@]+@[^\\s@]+\\.[^\\s@]+$/.test(email)) return fail("no_email");
+
+    // PCO's userinfo with the openid scope only returns a subject id. With the
+    // people scope we can read the person's own record to get their email.
+    if (!email) {
+      const personRes = await fetch(
+        "https://api.planningcenteronline.com/people/v2/me?include=email_addresses",
+        { headers: { Authorization: `Bearer ${tokens.access_token}` } },
+      );
+      if (personRes.ok) {
+        const person = await personRes.json();
+        const attrs = person?.data?.attributes || {};
+        const first = typeof attrs.first_name === "string" ? attrs.first_name : "";
+        const last = typeof attrs.last_name === "string" ? attrs.last_name : "";
+        if (!name) name = `${first} ${last}`.trim().slice(0, 120);
+        const emails = Array.isArray(person?.included) ? person.included : [];
+        const primary = emails.find(
+          (e: any) => e?.type === "Email" && e?.attributes?.primary === true,
+        ) || emails.find((e: any) => e?.type === "Email");
+        const addr = primary?.attributes?.address;
+        if (typeof addr === "string") email = addr.trim().toLowerCase();
+      } else {
+        console.error("pco people me failed", await personRes.text());
+      }
+    }
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return fail("no_email");
 
     // 4. Find or create the Supabase auth user. generate_link only needs the
     //    email, so: try creating (idempotent for new users), then issue the
