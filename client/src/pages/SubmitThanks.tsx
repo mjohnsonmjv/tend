@@ -103,7 +103,12 @@ export default function SubmitThanks() {
 
   return (
     <div className="min-h-screen bg-background text-foreground flex flex-col items-center justify-center px-6 py-12 text-center">
-      <div className="max-w-md">
+      <div className="max-w-md w-full">
+        <img
+          src="/tend-thanks-blur.jpg"
+          alt="Morning sunlight through wildflowers"
+          className="w-full aspect-[16/10] object-cover rounded-2xl mb-8"
+        />
         <div className="w-16 h-16 rounded-full bg-primary/10 text-primary flex items-center justify-center mx-auto mb-6">
           <Heart className="h-7 w-7" strokeWidth={1.75} />
         </div>
