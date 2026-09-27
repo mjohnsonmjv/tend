@@ -41,6 +41,20 @@ export default function ChurchSubmit() {
   });
   const [isUrgent, setIsUrgent] = useState(false);
   const [showContact, setShowContact] = useState(false);
+  const [guided, setGuided] = useState(false);
+  const [gWeighing, setGWeighing] = useState("");
+  const [gSomeone, setGSomeone] = useState("");
+  const [gThankful, setGThankful] = useState("");
+
+  // Guided answers stitched into a single request. Skipped prompts are left out.
+  const guidedMessage = () => {
+    const parts: string[] = [];
+    if (gWeighing.trim()) parts.push(`Weighing on me: ${gWeighing.trim()}`);
+    if (gSomeone.trim()) parts.push(`Pray for: ${gSomeone.trim()}`);
+    if (gThankful.trim()) parts.push(`Thankful for: ${gThankful.trim()}`);
+    return parts.join("\n");
+  };
+  const effectiveMessage = guided ? guidedMessage() : message;
   const [submissionKey] = useState(()=>crypto.randomUUID());
   const [website,setWebsite] = useState("");
 
@@ -70,7 +84,7 @@ export default function ChurchSubmit() {
   const submit = useMutation({
     mutationFn: async () => {
       await apiRequest("POST", `/api/churches/by-slug/${slug}/prayers`, {
-        message,
+        message: guided ? guidedMessage() : message,
         category,
         submitterName: isAnonymous ? undefined : name || undefined,
         submitterPhone: isAnonymous ? undefined : phone || undefined,
@@ -128,7 +142,7 @@ export default function ChurchSubmit() {
           <div className="text-xs uppercase tracking-widest text-muted-foreground mb-1">Share a prayer request</div>
           <h1 className="font-serif text-3xl text-foreground leading-tight">{church.name}</h1>
           <p className="mt-2 text-muted-foreground">
-            Share a prayer need with {church.pastorName}.
+            Share a prayer need with {church.pastorName}. A few honest words is enough; nothing is too small.
           </p>
           <p className="preview-notice mt-4 rounded-md">{slug === "demo" ? "Example form. Nothing entered here is saved or sent." : "Your request is shared with this church’s account owner, not posted publicly. Share only information you are comfortable giving your church’s care team. This is not an emergency service."}</p>
         </div>
@@ -168,33 +182,103 @@ export default function ChurchSubmit() {
             </RadioGroup>
           </div>
 
-          {/* Message */}
-          <div>
-            <Label htmlFor="message" className="text-sm font-medium">
-              {category === "prayer" && "What's on your heart?"}
-              {category === "praise" && "What are you thankful for?"}
-              {category === "check_in" && "How are you doing?"}
-              {category === "question" && "What's your question?"}
-            </Label>
-            <Textarea
-              id="message"
-              data-testid="input-message"
-              placeholder={
-                category === "prayer"
-                  ? "Please pray for..."
-                  : category === "praise"
-                    ? "God answered..."
-                    : "I'm here today, and..."
-              }
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              rows={5}
-              minLength={3}
-              maxLength={2000}
-              required
-              className="mt-1.5 font-serif italic text-base"
-            />
-          </div>
+          {/* Message: free write or guided prompts */}
+          {guided ? (
+            <div>
+              <Label className="text-sm font-medium">Answer what you can. Skip the rest.</Label>
+              <div className="mt-2 space-y-4">
+                <div>
+                  <Label htmlFor="g-weighing" className="text-sm font-normal">
+                    What is weighing on you this week?
+                  </Label>
+                  <Input
+                    id="g-weighing"
+                    data-testid="input-guided-weighing"
+                    value={gWeighing}
+                    onChange={(e) => setGWeighing(e.target.value)}
+                    placeholder="e.g. Work has been overwhelming"
+                    maxLength={500}
+                    className="mt-1.5"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="g-someone" className="text-sm font-normal">
+                    Who in your life could use prayer?
+                  </Label>
+                  <Input
+                    id="g-someone"
+                    data-testid="input-guided-someone"
+                    value={gSomeone}
+                    onChange={(e) => setGSomeone(e.target.value)}
+                    placeholder="e.g. My dad, surgery on Thursday"
+                    maxLength={500}
+                    className="mt-1.5"
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="g-thankful" className="text-sm font-normal">
+                    Anything you are thankful for?
+                  </Label>
+                  <Input
+                    id="g-thankful"
+                    data-testid="input-guided-thankful"
+                    value={gThankful}
+                    onChange={(e) => setGThankful(e.target.value)}
+                    placeholder="e.g. The baby slept through the night"
+                    maxLength={500}
+                    className="mt-1.5"
+                  />
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  const stitched = guidedMessage();
+                  if (stitched) setMessage(stitched);
+                  setGuided(false);
+                }}
+                data-testid="button-guided-off"
+                className="mt-4 text-sm text-primary underline underline-offset-4"
+              >
+                Prefer to write it yourself?
+              </button>
+            </div>
+          ) : (
+            <div>
+              <Label htmlFor="message" className="text-sm font-medium">
+                {category === "prayer" && "What's on your heart?"}
+                {category === "praise" && "What are you thankful for?"}
+                {category === "check_in" && "How are you doing?"}
+                {category === "question" && "What's your question?"}
+              </Label>
+              <Textarea
+                id="message"
+                data-testid="input-message"
+                placeholder={
+                  category === "prayer"
+                    ? "Please pray for..."
+                    : category === "praise"
+                      ? "God answered..."
+                      : "I'm here today, and..."
+                }
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                rows={5}
+                minLength={3}
+                maxLength={2000}
+                required
+                className="mt-1.5 font-serif italic text-base"
+              />
+              <button
+                type="button"
+                onClick={() => setGuided(true)}
+                data-testid="button-guided-on"
+                className="mt-3 text-sm text-primary underline underline-offset-4"
+              >
+                Not sure what to write? Answer 3 quick questions instead.
+              </button>
+            </div>
+          )}
 
           {/* Anonymous toggle */}
           <label className="flex items-start gap-3 p-3 rounded-md border border-border bg-card cursor-pointer hover:border-primary/40 transition-colors">
@@ -306,12 +390,12 @@ export default function ChurchSubmit() {
           <Button
             type="submit"
             data-testid="button-submit-prayer"
-            disabled={submit.isPending || !message}
+            disabled={submit.isPending || !effectiveMessage}
             className="w-full h-12 bg-primary hover:bg-primary/90 text-primary-foreground text-base"
           >
             {submit.isPending ? "Sending..." : slug === "demo" ? "Try the example" : "Share prayer request"}
           </Button>
-          {!message && !submit.isPending && (
+          {!effectiveMessage && !submit.isPending && (
             <p className="text-xs text-center text-muted-foreground -mt-3" data-testid="text-submit-hint">
               Share a few words above to send your request.
             </p>
