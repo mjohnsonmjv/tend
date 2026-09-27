@@ -71,11 +71,12 @@ export async function apiRequest(method: string, url: string, data?: any): Promi
     return result(data);
   };
   if (path === "/api/nurture/lead" && method === "POST") {
-    // Public demo email capture. The edge function validates and rate-limits via dedupe.
+    // Public demo email capture. The edge function validates, verifies the
+    // Turnstile token, and rate-limits.
     const res = await fetch(`${SUPABASE_URL}/functions/v1/capture-lead`, {
       method:"POST",
       headers:{ "content-type":"application/json", apikey:SUPABASE_KEY },
-      body: JSON.stringify({ email:data.email, source:data.source || "demo" }),
+      body: JSON.stringify({ email:data.email, source:data.source || "demo", turnstileToken:data.turnstileToken || "" }),
       signal:AbortSignal.timeout(30000),
     });
     const out = await res.json().catch(() => ({}));

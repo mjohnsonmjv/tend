@@ -10,6 +10,26 @@ const SITE_URL = Deno.env.get("SITE_URL") || "https://tendpray.com";
 const UNSUB_BASE = `${SUPABASE_URL}/functions/v1/nurture-unsubscribe`;
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const TURNSTILE_SECRET = Deno.env.get("TURNSTILE_SECRET_KEY") ?? "";
+
+// Verifies the Turnstile token with Cloudflare. When no secret is configured
+// (e.g. local dev), verification is skipped so the form keeps working.
+async function verifyTurnstile(token: string, ip: string): Promise<boolean> {
+  if (!TURNSTILE_SECRET) return true;
+  if (!token || token.length > 2048) return false;
+  try {
+    const res = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: new URLSearchParams({ secret: TURNSTILE_SECRET, response: token, remoteip: ip }),
+    });
+    if (!res.ok) return false;
+    const data = await res.json();
+    return data.success === true;
+  } catch {
+    return false;
+  }
+}
 
 async function db(path: string, init?: RequestInit) {
   const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
@@ -119,7 +139,15 @@ Deno.serve(async (req) => {
   try { body = await req.json(); } catch { return new Response("Bad JSON", { status: 400 }); }
   const email = typeof body.email === "string" ? body.email.trim().toLowerCase() : "";
   const source = typeof body.source === "string" && body.source.length < 40 ? body.source : "demo";
+  const turnstileToken = typeof body.turnstileToken === "string" ? body.turnstileToken : "";
   if (!EMAIL_RE.test(email)) return new Response("Invalid email", { status: 400 });
+  const ip = clientIp(req);
+  if (!(await verifyTurnstile(turnstileToken, ip))) {
+    return new Response(JSON.stringify({ error: "Verification failed. Please try again." }), {
+      status: 403,
+      headers: { "content-type": "application/json" },
+    });
+  }
   if (!RESEND_KEY) return new Response("Email not configured", { status: 500 });
 
   try {

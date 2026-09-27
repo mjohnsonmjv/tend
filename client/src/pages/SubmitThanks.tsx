@@ -15,6 +15,53 @@ interface PublicChurch {
   greetingMessage: string;
 }
 
+const TURNSTILE_SITE_KEY = "0x4AAAAAAFFHL0Ua9nyooYhz"; // public site key
+
+declare global {
+  interface Window { turnstile?: any }
+}
+
+function loadTurnstile(): Promise<void> {
+  if (window.turnstile) return Promise.resolve();
+  return new Promise((resolve, reject) => {
+    const existing = document.querySelector('script[src*="challenges.cloudflare.com/turnstile"]');
+    if (existing) {
+      existing.addEventListener("load", () => resolve());
+      existing.addEventListener("error", () => reject(new Error("captcha unavailable")));
+      return;
+    }
+    const s = document.createElement("script");
+    s.src = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
+    s.async = true;
+    s.defer = true;
+    s.onload = () => resolve();
+    s.onerror = () => reject(new Error("captcha unavailable"));
+    document.head.appendChild(s);
+  });
+}
+
+// Runs the invisible Turnstile challenge and resolves with the token.
+function turnstileToken(): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const t = window.turnstile;
+    if (!t) { reject(new Error("captcha unavailable")); return; }
+    let id: string | undefined;
+    try {
+      id = t.render("#turnstile-holder", {
+        sitekey: TURNSTILE_SITE_KEY,
+        size: "invisible",
+        callback: (token: string) => { try { t.remove(id); } catch {} resolve(token); },
+        "error-callback": () => { try { t.remove(id); } catch {} reject(new Error("verification failed")); },
+        "expired-callback": () => { try { t.remove(id); } catch {} reject(new Error("verification expired")); },
+        "timeout-callback": () => { try { t.remove(id); } catch {} reject(new Error("verification timed out")); },
+      });
+      t.execute(id);
+    } catch {
+      reject(new Error("verification failed"));
+    }
+  });
+}
+
 export default function SubmitThanks() {
   const { slug } = useParams<{ slug: string }>();
   useEffect(() => {
@@ -31,15 +78,25 @@ export default function SubmitThanks() {
 
   const [nurtureEmail, setNurtureEmail] = useState("");
   const [nurtureState, setNurtureState] = useState<"idle" | "saving" | "done" | "error">("idle");
+  const [nurtureError, setNurtureError] = useState("");
+
+  useEffect(() => {
+    if (slug === "demo") loadTurnstile().catch(() => {});
+  }, [slug]);
 
   const submitNurture = async (e: React.FormEvent) => {
     e.preventDefault();
     if (nurtureState === "saving" || nurtureState === "done") return;
     setNurtureState("saving");
+    setNurtureError("");
     try {
-      await apiRequest("POST", "/api/nurture/lead", { email: nurtureEmail, source: "demo" });
+      const token = await turnstileToken();
+      await apiRequest("POST", "/api/nurture/lead", { email: nurtureEmail, source: "demo", turnstileToken: token });
       setNurtureState("done");
-    } catch {
+    } catch (err: any) {
+      setNurtureError(err?.message === "captcha unavailable"
+        ? "Could not load the spam check. Please check your connection and try again."
+        : "Could not save your email. Please check the address and try again.");
       setNurtureState("error");
     }
   };
@@ -103,9 +160,10 @@ export default function SubmitThanks() {
                 {nurtureState === "saving" ? "Saving..." : "Send it"}
               </Button>
             </div>
+            <div id="turnstile-holder" aria-hidden="true" />
             {nurtureState === "error" && (
               <p className="text-sm text-destructive mt-2" role="alert">
-                Could not save your email. Please check the address and try again.
+                {nurtureError || "Could not save your email. Please check the address and try again."}
               </p>
             )}
           </form>
