@@ -72,8 +72,49 @@ async function scheduleEmail(to: string, unsubUrl: string, scheduledAt: Date, tp
   return res.json();
 }
 
+// Best-effort per-IP rate limiting backed by the rate_limits table.
+// Returns true when the caller is over the limit and should be rejected.
+async function overLimit(key: string, max: number, windowSeconds: number): Promise<boolean> {
+  const now = Date.now();
+  const rows = await db(`rate_limits?key=eq.${encodeURIComponent(key)}&select=window_start,count`);
+  const row = Array.isArray(rows) ? rows[0] : null;
+  if (!row || now - new Date(row.window_start).getTime() > windowSeconds * 1000) {
+    await db("rate_limits", {
+      method: "POST",
+      body: JSON.stringify({ key, window_start: new Date(now).toISOString(), count: 1 }),
+      headers: { Prefer: "resolution=merge-duplicates,return=minimal" },
+    }).catch(async () => {
+      // Row appeared concurrently; reset it instead.
+      await db(`rate_limits?key=eq.${encodeURIComponent(key)}`, {
+        method: "PATCH",
+        body: JSON.stringify({ window_start: new Date(now).toISOString(), count: 1 }),
+      });
+    });
+    return false;
+  }
+  if (row.count >= max) return true;
+  await db(`rate_limits?key=eq.${encodeURIComponent(key)}`, {
+    method: "PATCH",
+    body: JSON.stringify({ count: row.count + 1 }),
+  });
+  return false;
+}
+
+function clientIp(req: Request): string {
+  // Supabase sits behind Cloudflare: CF-Connecting-IP is the true client IP,
+  // while x-forwarded-for carries rotating Cloudflare edge IPs.
+  const cf = req.headers.get("cf-connecting-ip");
+  if (cf) return cf.trim().slice(0, 64);
+  const fwd = req.headers.get("x-forwarded-for");
+  if (fwd) return fwd.split(",")[0].trim().slice(0, 64);
+  return "unknown";
+}
+
 Deno.serve(async (req) => {
   if (req.method !== "POST") return new Response("Method not allowed", { status: 405 });
+  if (await overLimit(`capture-lead:${clientIp(req)}`, 5, 3600)) {
+    return new Response("Too many requests. Please try again later.", { status: 429 });
+  }
   let body: any;
   try { body = await req.json(); } catch { return new Response("Bad JSON", { status: 400 }); }
   const email = typeof body.email === "string" ? body.email.trim().toLowerCase() : "";

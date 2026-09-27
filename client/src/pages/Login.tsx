@@ -3,7 +3,7 @@ import { useLocation, Link } from "wouter";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { supabase } from "@/lib/supabase";
+import { supabase, SUPABASE_URL } from "@/lib/supabase";
 import { Form,FormField,FormItem,FormLabel,FormControl,FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -23,6 +23,16 @@ export default function Login({register=false}:{register?:boolean}) {
   const [pending,setPending]=useState(false);
   const [accepted,setAccepted]=useState(false);
   const [socialPending,setSocialPending]=useState<SocialProvider|null>(null);
+  const [pcoPending,setPcoPending]=useState(false);
+  async function pcoSignIn(){
+    setMessage("");setPcoPending(true);
+    try{
+      const res=await fetch(`${SUPABASE_URL}/functions/v1/pco-oauth-start`);
+      const data=await res.json().catch(()=>({}));
+      if(!res.ok||!data.url)throw new Error(data.error||"Planning Center sign-in is not available yet.");
+      window.location.href=data.url;
+    }catch(error:any){setMessage(error.message||"Unable to start Planning Center sign-in. Try email instead.");setPcoPending(false);}
+  }
   const providers=useQuery<Record<SocialProvider,boolean>>({queryKey:["/api/auth/providers"],enabled:!session,staleTime:30000});
   // Microsoft is paused. Only Google's availability controls this section.
   const socialVisible=providers.isError||!providers.data||providers.data.google;
@@ -73,6 +83,10 @@ export default function Login({register=false}:{register?:boolean}) {
           {providers.data?.[provider]!==true&&<span className="text-xs text-muted-foreground">{providers.isLoading?"Checking…":providers.isError?"Unavailable":"Setup pending"}</span>}
         </Button>;
       })}
+      <Button type="button" variant="outline" className="w-full h-auto min-h-12 flex-wrap justify-start px-4 py-3 mt-3" onClick={pcoSignIn} disabled={pending||!!socialPending||pcoPending} data-testid="button-oauth-pco">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2"/><path d="M12 7v5l3 3" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
+        <span className="flex-1 text-left">{pcoPending?"Connecting to Planning Center…":"Continue with Planning Center"}</span>
+      </Button>
       {providers.isError?<div className="text-xs text-muted-foreground" role="status">Couldn’t check social sign-in. Email sign-in is still available. <button type="button" className="underline min-h-11" onClick={()=>providers.refetch()} data-testid="button-retry-providers">Try again</button></div>:
         providers.data&&!providers.data.google?<p className="text-xs text-muted-foreground leading-relaxed" data-testid="text-provider-setup">Google sign-in is not active yet. You can use email below.</p>:<p className="text-xs text-muted-foreground leading-relaxed">Only basic identity is requested. No access to your inbox, contacts, calendar, or church directory.</p>}
       {socialPending&&<div><p role="status" className="text-sm text-primary">Finish signing in in the new window. Keep this page open.</p><button type="button" className="underline text-sm min-h-11" onClick={cancelSocialSignIn} data-testid="button-cancel-oauth">Cancel sign-in</button></div>}
