@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { DashboardShell } from "@/components/DashboardShell";
 import type { Church } from "@shared/schema";
-import { Download, Printer, Copy, ExternalLink } from "lucide-react";
+import { Download, Printer, Copy, ExternalLink, MessageCircle } from "lucide-react";
 import { useMemo, useEffect, useState } from "react";
 import { useToast } from "@/hooks/use-toast";
 import QRCode from "qrcode";
@@ -95,6 +95,17 @@ export default function ChurchQR() {
     catch { toast({title:"Copy this link",description:publicUrl}); }
   };
 
+  const inviteMessage = useMemo(() => {
+    if (!church || !publicUrl) return "";
+    return `Hi everyone! This is our small group's prayer page. Drop a request anytime and we'll be praying for you: ${publicUrl}`;
+  }, [church, publicUrl]);
+
+  const copyInvite = async () => {
+    if (!inviteMessage) return;
+    try { await navigator.clipboard.writeText(inviteMessage); toast({ title: "Invite copied", description: "Paste it into your group text thread." }); }
+    catch { toast({ title: "Copy this invite", description: inviteMessage }); }
+  };
+
   if(error) return <DashboardShell church={church}><AccessProblem retry={()=>refetch()}/></DashboardShell>;
   return (
     <DashboardShell church={church}>
@@ -163,6 +174,26 @@ export default function ChurchQR() {
                 onClick={copyUrl}
                 testId="button-copy-link"
               />
+              <div className="rounded-xl border border-border bg-card p-5">
+                <div className="flex items-center gap-3 text-primary mb-2">
+                  <MessageCircle className="h-5 w-5" />
+                  <div className="font-medium text-foreground">Text it to your small group</div>
+                </div>
+                <p className="text-sm text-muted-foreground leading-relaxed mb-4">
+                  Copy a ready-made invite and drop it in your group thread. Anyone who taps the link can share a request in seconds.
+                </p>
+                <div className="rounded-md border border-border bg-muted/40 p-3 text-sm leading-relaxed mb-4" data-testid="text-group-invite">
+                  {inviteMessage}
+                </div>
+                <Button
+                  data-testid="button-copy-invite"
+                  onClick={copyInvite}
+                  variant="outline"
+                  className="w-full border-primary/30 text-primary hover:bg-primary/5"
+                >
+                  Copy group invite
+                </Button>
+              </div>
               <a
                 href={`#/c/${church.slug}`}
                 target="_blank"

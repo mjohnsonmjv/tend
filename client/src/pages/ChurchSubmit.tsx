@@ -11,6 +11,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { Logo } from "@/components/Logo";
+import { ChevronDown } from "lucide-react";
 import { CATEGORY_LABELS } from "@shared/schema";
 import type { Category } from "@shared/schema";
 
@@ -28,13 +29,18 @@ export default function ChurchSubmit() {
 
   const [message, setMessage] = useState("");
   const [category, setCategory] = useState<Category>("prayer");
-  const [name, setName] = useState("");
+  const [name, setName] = useState(() => {
+    try { return localStorage.getItem("tend_name") || ""; } catch { return ""; }
+  });
   const [phone, setPhone] = useState("");
   const [email, setEmail] = useState("");
   const [emailError, setEmailError] = useState("");
   const [phoneError, setPhoneError] = useState("");
-  const [isAnonymous, setIsAnonymous] = useState(false);
+  const [isAnonymous, setIsAnonymous] = useState(() => {
+    try { return localStorage.getItem("tend_anon") === "1"; } catch { return false; }
+  });
   const [isUrgent, setIsUrgent] = useState(false);
+  const [showContact, setShowContact] = useState(false);
   const [submissionKey] = useState(()=>crypto.randomUUID());
   const [website,setWebsite] = useState("");
 
@@ -79,6 +85,8 @@ export default function ChurchSubmit() {
     onSuccess: () => {
       try {
         sessionStorage.setItem("tend_email_provided", !isAnonymous && email.trim() ? "1" : "");
+        localStorage.setItem("tend_anon", isAnonymous ? "1" : "0");
+        if (!isAnonymous && name.trim()) localStorage.setItem("tend_name", name.trim());
       } catch { /* storage unavailable */ }
       navigate(`/c/${slug}/thanks`);
     },
@@ -204,9 +212,24 @@ export default function ChurchSubmit() {
             </div>
           </label>
 
-          {/* Name & phone (only if not anonymous) */}
+          {/* Name & contact (only if not anonymous), tucked behind an expander */}
           {!isAnonymous && (
-            <div className="space-y-4">
+            <div className="rounded-md border border-border bg-card">
+              <button
+                type="button"
+                onClick={() => setShowContact((v) => !v)}
+                aria-expanded={showContact}
+                data-testid="button-toggle-contact"
+                className="w-full flex items-center justify-between px-4 py-3 text-sm text-left"
+              >
+                <span className="font-medium text-foreground">
+                  {name.trim() ? `Posting as ${name.trim()}` : "Add your name"}
+                  <span className="text-muted-foreground font-normal"> (optional)</span>
+                </span>
+                <ChevronDown className={`h-4 w-4 shrink-0 text-muted-foreground transition-transform ${showContact ? "rotate-180" : ""}`} />
+              </button>
+              {showContact && (
+              <div className="space-y-4 px-4 pb-4">
               <div>
                 <Label htmlFor="name" className="text-sm">
                   Your name <span className="text-muted-foreground font-normal">(optional)</span>
@@ -259,6 +282,8 @@ export default function ChurchSubmit() {
                   <p className="mt-1.5 text-xs text-muted-foreground">So the care team can follow up if needed. We will never share it.</p>
                 )}
               </div>
+              </div>
+              )}
             </div>
           )}
 
