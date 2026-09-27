@@ -7,6 +7,14 @@ const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
 const PCO_CLIENT_ID = Deno.env.get("PCO_CLIENT_ID") ?? "";
 const PCO_AUTHORIZE = "https://api.planningcenteronline.com/oauth/authorize";
 
+const cors = {
+  "Access-Control-Allow-Origin": "https://tendpray.com",
+  "Access-Control-Allow-Headers": "authorization, content-type, apikey",
+  "Access-Control-Allow-Methods": "GET, OPTIONS",
+};
+const json = (status: number, body: unknown) =>
+  new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json", ...cors } });
+
 async function db(path: string, init?: RequestInit) {
   const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
     ...init,
@@ -23,12 +31,10 @@ async function db(path: string, init?: RequestInit) {
 }
 
 Deno.serve(async (req) => {
-  if (req.method !== "GET") return new Response("Method not allowed", { status: 405 });
+  if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: cors });
+  if (req.method !== "GET") return json(405, { error: "Method not allowed" });
   if (!PCO_CLIENT_ID || !SUPABASE_URL || !SERVICE_KEY) {
-    return new Response(
-      JSON.stringify({ error: "Planning Center sign-in is not set up yet." }),
-      { status: 503, headers: { "content-type": "application/json" } },
-    );
+    return json(503, { error: "Planning Center sign-in is not set up yet." });
   }
   const state = Array.from(crypto.getRandomValues(new Uint8Array(24)))
     .map((b) => b.toString(16).padStart(2, "0")).join("");
@@ -40,7 +46,7 @@ Deno.serve(async (req) => {
     });
   } catch (e) {
     console.error("pco-oauth-start: state store failed", e);
-    return new Response("Server error", { status: 500 });
+    return json(500, { error: "Server error" });
   }
   const redirectUri = `${SUPABASE_URL}/functions/v1/pco-oauth-callback`;
   const params = new URLSearchParams({
@@ -51,7 +57,5 @@ Deno.serve(async (req) => {
     state,
     prompt: "select_account",
   });
-  return new Response(JSON.stringify({ url: `${PCO_AUTHORIZE}?${params}` }), {
-    headers: { "content-type": "application/json" },
-  });
+  return json(200, { url: `${PCO_AUTHORIZE}?${params}` });
 });
