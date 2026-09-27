@@ -163,7 +163,7 @@ Deno.serve(async (req) => {
       method: "POST",
       body: JSON.stringify({ type: "magiclink", email }),
     });
-    const ticket = link.data?.properties?.hashed_token;
+    const ticket = link.data?.hashed_token;
     if (!link.ok || !ticket) {
       console.error("pco generate_link failed", link.status);
       return fail("ticket_failed");
