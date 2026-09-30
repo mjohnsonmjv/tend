@@ -176,10 +176,16 @@ Deno.serve(async (req) => {
       { at: new Date(now + 7 * 24 * 60 * 60 * 1000), tpl: email3(unsubUrl) },
     ];
     if (!lead) {
-      for (const s of schedule) await scheduleEmail(email, unsubUrl, s.at, s.tpl);
+      // Keep the Resend IDs so an unsubscribe can cancel the still-scheduled
+      // messages instead of letting them send after the opt-out.
+      const scheduledIds: string[] = [];
+      for (const s of schedule) {
+        const sent = await scheduleEmail(email, unsubUrl, s.at, s.tpl);
+        if (sent && typeof sent.id === "string") scheduledIds.push(sent.id);
+      }
       await db(`nurture_leads?email=eq.${encodeURIComponent(email)}`, {
         method: "PATCH",
-        body: JSON.stringify({ emails_sent: 3 }),
+        body: JSON.stringify({ emails_sent: 3, scheduled_email_ids: scheduledIds }),
       });
     }
     return new Response(JSON.stringify({ ok: true, scheduled: !lead }), {

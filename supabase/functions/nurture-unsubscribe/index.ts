@@ -4,6 +4,7 @@
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "";
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+const RESEND_KEY = Deno.env.get("RESEND_API_KEY") ?? "";
 
 async function db(path: string, init?: RequestInit) {
   const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
@@ -21,6 +22,23 @@ async function db(path: string, init?: RequestInit) {
 
 const page = (title: string, body: string) => `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${title}</title></head><body style="font-family:Georgia,serif;max-width:560px;margin:80px auto;padding:0 24px;color:#2A2521;text-align:center;"><h1 style="font-weight:normal;">${title}</h1><p style="color:#6F665B;">${body}</p></body></html>`;
 
+// Best-effort cancellation of still-scheduled nurture emails in Resend, so an
+// unsubscribe stops the rest of the sequence. Never fails the unsubscribe
+// itself: the opt-out is recorded first and a cancel failure just logs.
+async function cancelScheduled(ids: string[]) {
+  if (!RESEND_KEY) return;
+  for (const id of ids) {
+    try {
+      await fetch(`https://api.resend.com/emails/${encodeURIComponent(id)}/cancel`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${RESEND_KEY}` },
+      });
+    } catch (e) {
+      console.error("cancel scheduled email failed", id, e);
+    }
+  }
+}
+
 Deno.serve(async (req) => {
   const url = new URL(req.url);
   const email = (url.searchParams.get("email") || "").trim().toLowerCase();
@@ -32,7 +50,7 @@ Deno.serve(async (req) => {
   }
   try {
     const rows = await db(
-      `nurture_leads?email=eq.${encodeURIComponent(email)}&unsub_token=eq.${encodeURIComponent(token)}&select=id,unsubscribed_at`
+      `nurture_leads?email=eq.${encodeURIComponent(email)}&unsub_token=eq.${encodeURIComponent(token)}&select=id,unsubscribed_at,scheduled_email_ids`
     );
     const lead = Array.isArray(rows) ? rows[0] : null;
     if (!lead) {
@@ -45,6 +63,17 @@ Deno.serve(async (req) => {
         method: "PATCH",
         body: JSON.stringify({ unsubscribed_at: new Date().toISOString() }),
       });
+    }
+    // Cancel any nurture emails still scheduled in Resend, then clear the IDs.
+    const ids = Array.isArray(lead.scheduled_email_ids)
+      ? lead.scheduled_email_ids.filter((x: unknown) => typeof x === "string")
+      : [];
+    if (ids.length > 0) {
+      await cancelScheduled(ids);
+      await db(`nurture_leads?id=eq.${lead.id}`, {
+        method: "PATCH",
+        body: JSON.stringify({ scheduled_email_ids: [] }),
+      }).catch((e) => console.error("clear scheduled ids failed", e));
     }
     return new Response(page("You are unsubscribed", "You will not get any more Tend emails. If this was a mistake, just try the demo again."), {
       headers: { "content-type": "text/html" },
