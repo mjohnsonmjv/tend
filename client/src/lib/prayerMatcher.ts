@@ -126,15 +126,18 @@ export function matchTranscript(sets: KeywordSet[], transcript: string): number[
       matched.push(set.requestId);
       continue;
     }
-    // Keyword quorum.
+    // Keyword quorum: two hits when the request has two or more keywords,
+    // a single hit when it has only one. Short requests ("My family") can
+    // never reach a quorum of two, so without this they would never check off.
+    const needed = set.keywords.length >= 2 ? 2 : 1;
     let hits = 0;
     for (const kw of set.keywords) {
       if (wordIn(tokens, kw)) {
         hits++;
-        if (hits >= 2) break;
+        if (hits >= needed) break;
       }
     }
-    if (hits >= 2) matched.push(set.requestId);
+    if (hits >= needed) matched.push(set.requestId);
   }
   return matched;
 }

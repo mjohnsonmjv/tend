@@ -60,6 +60,14 @@ test("single common keyword is not enough",()=>{
   assert.deepEqual(matchTranscript(sets,"next"),[]);
 });
 
+test("single-keyword request matches on that one word",()=>{
+  const r=row({id:7,submitterName:"",isAnonymous:true,message:"My family"});
+  const s=[buildKeywordSet(r)];
+  assert.deepEqual(s[0].keywords,["family"]);
+  assert.deepEqual(matchTranscript(s,"Father I lift up my family to you"),[7]);
+  assert.deepEqual(matchTranscript(s,"thank you for this beautiful morning"),[]);
+});
+
 test("one-edit misspelling of a long keyword still matches",()=>{
   assert.ok(oneEditAway("surgery","surgury"));
   assert.ok(!oneEditAway("surgery","sugar"));
