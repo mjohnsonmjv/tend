@@ -7,7 +7,7 @@ import type { Church } from "@shared/schema";
 import { Download, Printer, Copy, ExternalLink, MessageCircle } from "lucide-react";
 import { useMemo, useEffect, useState } from "react";
 import { useToast } from "@/hooks/use-toast";
-import QRCode from "qrcode";
+import { generateChurchQr } from "@/lib/churchQr";
 import { AccessProblem } from "@/components/AccessProblem";
 
 const escapeHtml = (text:string) => text.replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]!));
@@ -26,10 +26,15 @@ export default function ChurchQR() {
   }, [church]);
 
   // Generate locally. No third-party QR service receives church URLs.
+  // The tendpray.com caption is baked into the image so attribution survives
+  // wherever the PNG travels (bulletins, slides).
   useEffect(() => {
     if (!publicUrl) return;
-    QRCode.toDataURL(publicUrl,{width:1024,margin:4,errorCorrectionLevel:"M"})
-      .then(setQrDataUrl).catch(()=>toast({title:"Could not generate QR code",variant:"destructive"}));
+    let cancelled = false;
+    generateChurchQr(publicUrl)
+      .then((url) => { if (!cancelled) setQrDataUrl(url); })
+      .catch(() => { if (!cancelled) toast({title:"Could not generate QR code",variant:"destructive"}); });
+    return () => { cancelled = true; };
   }, [church, publicUrl]);
 
   const downloadPng = async () => {
@@ -66,7 +71,7 @@ export default function ChurchQR() {
             .title { font-family: 'Instrument Serif', serif; font-weight: 400; font-size: 68px; line-height: 1.05; margin: 0 0 12px; letter-spacing: -0.02em; }
             .subtitle { font-family: 'Instrument Sans', sans-serif; font-size: 24px; color: #2A2521; margin: 0 0 40px; }
             .qr-wrap { padding: 32px; background: white; border: 2px solid #E2DACA; border-radius: 16px; margin-bottom: 32px; }
-            .qr-wrap img { width: 340px; height: 340px; display: block; }
+            .qr-wrap img { width: 340px; height: auto; display: block; }
             .instructions { font-size: 20px; color: #2A2521; margin: 0 0 8px; }
             .url { font-family: monospace; font-size: 16px; color: #6F665B; margin-bottom: 40px; }
             .footer { display: flex; align-items: center; gap: 6px; font-size: 12px; color: #6F665B; }
@@ -133,7 +138,7 @@ export default function ChurchQR() {
                   <img
                     src={qrDataUrl}
                     alt="QR code"
-                    className="w-56 h-56"
+                    className="w-56 h-auto"
                     data-testid="img-qr-preview"
                   />
                 ) : (
