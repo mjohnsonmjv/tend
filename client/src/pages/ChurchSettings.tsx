@@ -11,6 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { CreditCard, ExternalLink } from "lucide-react";
 import { AccessProblem } from "@/components/AccessProblem";
 import { publicChurchUrl } from "@/lib/inbox";
+import { isPrayModeEnabled, setPrayModeEnabled } from "@/lib/prayMode";
 
 export default function ChurchSettings() {
   const { id } = useParams<{ id: string }>();
@@ -31,6 +32,7 @@ export default function ChurchSettings() {
   });
 
   const [greeting, setGreeting] = useState("");
+  const [prayMode, setPrayMode] = useState(() => isPrayModeEnabled());
   useEffect(() => {
     if (church) setGreeting(church.greetingMessage);
   }, [church]);
@@ -160,6 +162,22 @@ export default function ChurchSettings() {
                   ))}
                 </div>
               )}
+            </Section>
+
+            <Section title="Early access" hint="Features in testing. They may change or move.">
+              <label className="flex items-start gap-3 rounded-md border border-border bg-card p-4 cursor-pointer min-h-11">
+                <input
+                  type="checkbox"
+                  className="mt-1"
+                  checked={prayMode}
+                  onChange={(e) => { setPrayMode(e.target.checked); setPrayModeEnabled(e.target.checked); }}
+                  data-testid="checkbox-pray-mode"
+                />
+                <span>
+                  <span className="block text-sm font-medium text-foreground">Pray mode</span>
+                  <span className="block text-xs text-muted-foreground mt-1">Adds a Pray button to the inbox: pray aloud and requests are checked off as you name them. Nothing is recorded.</span>
+                </span>
+              </label>
             </Section>
           </>
         )}

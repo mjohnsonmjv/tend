@@ -1,12 +1,14 @@
 import { useMemo,useState } from "react";
 import { Link } from "wouter";
-import { Search,ArrowUpRight,Download,Heart,RefreshCw } from "lucide-react";
+import { Search,ArrowUpRight,Download,Heart,RefreshCw,Mic } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Dialog,DialogContent,DialogHeader,DialogTitle,DialogDescription,DialogFooter } from "@/components/ui/dialog";
 import type { PrayerRequest,Status } from "@shared/schema";
 import { CATEGORY_LABELS,STATUS_LABELS } from "@shared/schema";
 import { filterPrayers,prayerCsv } from "@/lib/inbox";
+import { PraySession } from "@/components/PraySession";
+import { isPrayModeEnabled } from "@/lib/prayMode";
 
 type Props={rows:PrayerRequest[];churchId?:number;onStatus:(id:number,status:Status)=>void;pending?:boolean;refresh?:()=>void;refreshing?:boolean;onOpen?:(p:PrayerRequest)=>void;error?:string;demo?:boolean};
 export function Inbox({rows,churchId,onStatus,pending,refresh,refreshing,onOpen,error,demo}:Props){
@@ -16,7 +18,11 @@ export function Inbox({rows,churchId,onStatus,pending,refresh,refreshing,onOpen,
   const [urgent,setUrgent]=useState(false);
   const [sort,setSort]=useState("newest");
   const [exportOpen,setExportOpen]=useState(false);
+  const [prayOpen,setPrayOpen]=useState(false);
   const visible=useMemo(()=>filterPrayers(rows,search,status,category,urgent,sort),[rows,search,status,category,urgent,sort]);
+  const openCount=useMemo(()=>rows.filter(p=>p.status==="new"||p.status==="praying").length,[rows]);
+  const prayEnabled=isPrayModeEnabled()&&!demo;
+  const micAvailable=typeof navigator!=="undefined"&&!!navigator.mediaDevices?.getUserMedia;
   const clear=()=>{setSearch("");setCategory("all");setUrgent(false);setStatus("all")};
   function download(){
     const url=URL.createObjectURL(new Blob(["\uFEFF",prayerCsv(visible)],{type:"text/csv;charset=utf-8"}));
@@ -27,8 +33,10 @@ export function Inbox({rows,churchId,onStatus,pending,refresh,refreshing,onOpen,
     <div className="flex flex-wrap items-start justify-between gap-4 mb-7">
       <div><p className="eyebrow mb-2">Care, one person at a time</p><h1 className="text-xl">Prayer inbox</h1><p className="text-muted-foreground mt-2 text-sm">Find a request. Remember the details. Take the next step.</p></div>
       <div className="flex gap-2">{refresh&&<Button variant="outline" onClick={refresh} disabled={refreshing} aria-label="Refresh inbox" data-testid="button-refresh"><RefreshCw size={16}/></Button>}
+      {prayEnabled&&<Button onClick={()=>setPrayOpen(true)} disabled={!openCount||!micAvailable} title={!micAvailable?"This browser cannot access a microphone":openCount?"Pray through your open requests":"No open requests to pray through"} data-testid="button-pray-mode"><Mic size={16}/> Pray</Button>}
       <Button variant="outline" disabled={!visible.length} onClick={()=>setExportOpen(true)} data-testid="button-export"><Download size={16}/> Export</Button></div>
     </div>
+    {prayOpen&&churchId&&<PraySession churchId={churchId} requests={rows} onStatus={onStatus} onClose={()=>setPrayOpen(false)}/>}
     <div className="inbox-statuses" role="group" aria-label="Request status">
       {["all","new","praying","prayed_for","archived"].map(s=><button key={s} aria-pressed={status===s} className={status===s?"selected":""} onClick={()=>setStatus(s)} data-testid={`button-tab-${s}`}><span>{s==="all"?"All requests":STATUS_LABELS[s as Status]}</span><strong>{s==="all"?rows.length:rows.filter(p=>p.status===s).length}</strong></button>)}
     </div>

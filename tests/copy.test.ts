@@ -11,6 +11,10 @@ const FILES = [
   "client/src/pages/Landing.tsx",
   "client/src/pages/Pricing.tsx",
   "client/src/pages/SubmitThanks.tsx",
+  "client/src/components/Inbox.tsx",
+  "client/src/components/PraySession.tsx",
+  "client/src/pages/ChurchSettings.tsx",
+  "supabase/functions/pray-session/index.ts",
 ];
 
 for (const f of FILES) {
