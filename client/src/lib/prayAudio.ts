@@ -134,7 +134,15 @@ export class PrayAudioSession {
 
   private connectSocket(token: PrayToken): Promise<void> {
     return new Promise((resolve, reject) => {
-      const ws = new WebSocket(this.buildUrl(token));
+      let ws: WebSocket;
+      try {
+        // Safari throws SecurityError synchronously when a Content-Security-Policy
+        // blocks the socket; surface the friendly message instead of the raw error.
+        ws = new WebSocket(this.buildUrl(token));
+      } catch {
+        reject(new Error("Could not reach the transcription service."));
+        return;
+      }
       this.ws = ws;
       let opened = false;
       const openTimer = setTimeout(() => {
