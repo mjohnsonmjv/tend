@@ -15,6 +15,8 @@ const FILES = [
   "client/src/components/PraySession.tsx",
   "client/src/components/OAuthReturn.tsx",
   "client/src/pages/ChurchSettings.tsx",
+  "client/src/components/PcoSyncSettings.tsx",
+  "client/src/lib/pcoSync.ts",
   "supabase/functions/pray-session/index.ts",
 ];
 

@@ -10,6 +10,7 @@ import type { Church } from "@shared/schema";
 import { useToast } from "@/hooks/use-toast";
 import { CreditCard, ExternalLink } from "lucide-react";
 import { AccessProblem } from "@/components/AccessProblem";
+import { PcoSyncSettings } from "@/components/PcoSyncSettings";
 import { publicChurchUrl } from "@/lib/inbox";
 import { isPrayModeEnabled, setPrayModeEnabled } from "@/lib/prayMode";
 
@@ -162,6 +163,10 @@ export default function ChurchSettings() {
                   ))}
                 </div>
               )}
+            </Section>
+
+            <Section title="Planning Center" hint="Send new prayer requests to Planning Center as workflow cards.">
+              <PcoSyncSettings churchId={churchId} />
             </Section>
 
             <Section title="Early access" hint="Features in testing. They may change or move.">

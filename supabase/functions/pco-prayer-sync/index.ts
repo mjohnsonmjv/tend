@@ -5,12 +5,15 @@
 //
 // Routes (all under /functions/v1/pco-prayer-sync):
 //   GET  /connect?church_id=N          (pastor JWT) start the PCO connect flow
+//   GET  /connect?church_id=N&format=json  same, but returns { url } as JSON
+//                                      (browsers cannot read a cross-origin 302 Location)
 //   GET  /callback?code=..&state=..     PCO redirect target, stores church tokens
 //   GET  ?action=status&church_id=N     (pastor JWT) connection + sync status
 //   GET  ?action=workflows&church_id=N  (pastor JWT) PCO workflows for the picker
 //   POST /                              sync one prayer:
 //                                        { prayer_id } or DB-webhook payload,
 //                                        or { action: "sync_pending", church_id }
+//                                        or { action: "set_workflow", church_id, workflow_id }
 // Auth for POST: x-tend-hook-secret header (DB webhook) or pastor JWT.
 // PCO_CLIENT_ID / PCO_CLIENT_SECRET are project secrets. The PCO app must have
 // this redirect URI registered:
@@ -259,7 +262,14 @@ async function handleConnect(req: Request, url: URL) {
     state,
     prompt: "select_account",
   });
-  return Response.redirect(`${PCO_AUTHORIZE}?${params.toString()}`, 302);
+  const authorizeUrl = `${PCO_AUTHORIZE}?${params.toString()}`;
+  // Browser clients cannot read the Location of a cross-origin 302, so the
+  // Tend settings UI requests the URL as JSON and navigates itself.
+  const wantsJson =
+    url.searchParams.get("format") === "json" ||
+    (req.headers.get("accept") || "").includes("application/json");
+  if (wantsJson) return json(200, { url: authorizeUrl });
+  return Response.redirect(authorizeUrl, 302);
 }
 
 async function handleCallback(url: URL) {
@@ -274,7 +284,29 @@ async function handleCallback(url: URL) {
       302,
     );
 
-  if (oauthError || !code || !state) return fail(null, "invalid_callback");
+  if (oauthError || !code || !state) {
+    // Resolve the church from the single-use state when possible, so provider
+    // errors (e.g. the user cancelling at Planning Center) return to that
+    // church's settings instead of the site root.
+    let churchId: number | null = null;
+    if (state) {
+      try {
+        const rows = await db(
+          `pco_connect_states?state=eq.${encodeURIComponent(state)}&select=church_id,created_at`,
+        );
+        const row = Array.isArray(rows) ? rows[0] : null;
+        await db(`pco_connect_states?state=eq.${encodeURIComponent(state)}`, { method: "DELETE" }).catch(() => {});
+        if (row && Date.now() - new Date(row.created_at).getTime() <= STATE_TTL_MS) {
+          const cid = row.church_id;
+          if (Number.isInteger(cid) && cid > 0) churchId = cid;
+        }
+      } catch {
+        /* fall through to fail(null, ...) */
+      }
+    }
+    if (oauthError) return fail(churchId, oauthError === "access_denied" ? "access_denied" : "invalid_callback");
+    return fail(churchId, "invalid_callback");
+  }
   let churchId: number | null = null;
   try {
     const rows = await db(`pco_connect_states?state=eq.${encodeURIComponent(state)}&select=church_id,created_at`);
@@ -410,6 +442,29 @@ async function handlePost(req: Request) {
       if (results.length >= SYNC_BATCH_LIMIT) break;
     }
     return json(200, { attempted: results.length, results });
+  }
+
+  // Save the church's chosen PCO workflow (pastor JWT required). The sync
+  // reads workflow_id from pco_church_connections; the settings UI writes it
+  // here because those tables are service-role only.
+  if (b.action === "set_workflow") {
+    const churchId = typeof b.church_id === "number" ? b.church_id : parseInt(String(b.church_id ?? ""), 10);
+    if (!Number.isInteger(churchId) || churchId <= 0) return json(400, { error: "church_id required" });
+    const userId = await authorizeChurch(req, churchId);
+    if (!userId) return json(401, { error: "unauthorized" });
+    const conn = await getConnection(churchId);
+    if (!conn) return json(409, { error: "not_connected" });
+    const raw = b.workflow_id;
+    const workflowId = raw == null || raw === "" ? null : String(raw);
+    if (workflowId !== null && !/^[A-Za-z0-9_-]{1,64}$/.test(workflowId)) {
+      return json(400, { error: "invalid_workflow_id" });
+    }
+    await upsert("pco_church_connections", {
+      church_id: churchId,
+      workflow_id: workflowId,
+      updated_at: new Date().toISOString(),
+    });
+    return json(200, { ok: true, workflow_id: workflowId });
   }
 
   // Single-prayer sync: DB webhook (hook secret) or pastor JWT.
