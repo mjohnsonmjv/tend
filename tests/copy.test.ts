@@ -13,6 +13,7 @@ const FILES = [
   "client/src/pages/SubmitThanks.tsx",
   "client/src/components/Inbox.tsx",
   "client/src/components/PraySession.tsx",
+  "client/src/components/OAuthReturn.tsx",
   "client/src/pages/ChurchSettings.tsx",
   "supabase/functions/pray-session/index.ts",
 ];

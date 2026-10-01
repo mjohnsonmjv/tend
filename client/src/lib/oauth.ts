@@ -40,14 +40,25 @@ export function startSocialSignIn(provider:SocialProvider):Promise<void>{
       if(payload.error){finish(new Error(oauthErrorMessage(payload.error)));return;}
       if(!payload.code)return;
       exchanging=true;
+      let ok=false;
       try{
         const {data,error}=await supabase.auth.exchangeCodeForSession(payload.code);
-        if(error||!data.session||!data.user?.email){
-          await supabase.auth.signOut({scope:"local"});
-          finish(new Error(oauthErrorMessage("exchange_failed")));return;
-        }
-        finish();
-      }catch{finish(new Error(oauthErrorMessage("exchange_failed")))}
+        ok=!error&&!!data.session&&!!data.user?.email;
+      }catch{ok=false;}
+      if(!ok){
+        // The return tab may have redeemed the code already (it completes the
+        // exchange itself when the opener is severed, e.g. iOS Safari). A live
+        // session in shared storage still means the user signed in.
+        try{
+          const {data}=await supabase.auth.getSession();
+          ok=!!data.session?.user?.email;
+        }catch{ok=false;}
+      }
+      if(!ok){
+        try{await supabase.auth.signOut({scope:"local"});}catch{}
+        finish(new Error(oauthErrorMessage("exchange_failed")));return;
+      }
+      finish();
     };
     const onMessage=async(event:MessageEvent)=>{
       if(!isTrustedOAuthMessage(event,origin,popup))return;
