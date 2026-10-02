@@ -1,6 +1,6 @@
 export type SocialProvider="google"|"azure";
 export const OAUTH_RETURN="tend:oauth-return";
-export type OAuthReturn={type:typeof OAUTH_RETURN;code?:string;error?:string;channel?:string};
+export type OAuthReturn={type:typeof OAUTH_RETURN;code?:string;error?:string;channel?:string;solo?:boolean};
 export const validOAuthChannel=(value:unknown):value is string=>typeof value==="string"&&/^[A-Za-z0-9_-]{32,64}$/.test(value);
 export function providerOptions(provider:SocialProvider,redirectTo:string){
   return {provider,options:{redirectTo,scopes:"openid email profile",skipBrowserRedirect:true,queryParams:{prompt:"select_account"}}};
@@ -12,11 +12,12 @@ export function providerFlags(payload:unknown):Record<SocialProvider,boolean>{
 export function parseOAuthReturn(href:string):OAuthReturn|null{
   const url=new URL(href),hash=new URLSearchParams(url.hash.slice(1));
   const channel=validOAuthChannel(url.searchParams.get("oauth_channel"))?url.searchParams.get("oauth_channel")!:undefined;
+  const soloFlag=url.searchParams.get("oauth_solo")==="1"?{solo:true as const}:{};
   if(url.searchParams.has("code")) {
     const code=url.searchParams.get("code")||"";
-    return code.length>0&&code.length<=2048?{type:OAUTH_RETURN,code,channel}:{type:OAUTH_RETURN,error:"invalid_callback",channel};
+    return code.length>0&&code.length<=2048?{type:OAUTH_RETURN,code,channel,...soloFlag}:{type:OAUTH_RETURN,error:"invalid_callback",channel,...soloFlag};
   }
-  if(url.searchParams.has("error")||hash.has("error"))return {type:OAUTH_RETURN,error:(url.searchParams.get("error")||hash.get("error"))==="access_denied"?"access_denied":"provider_error",channel};
+  if(url.searchParams.has("error")||hash.has("error"))return {type:OAUTH_RETURN,error:(url.searchParams.get("error")||hash.get("error"))==="access_denied"?"access_denied":"provider_error",channel,...soloFlag};
   if(hash.has("access_token")||hash.has("refresh_token"))return {type:OAUTH_RETURN,error:"restart_required",channel};
   return null;
 }

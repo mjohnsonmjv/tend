@@ -22,6 +22,8 @@ test("callbacks parse codes but do not accept legacy tokens",()=>{
   assert.equal(parseOAuthReturn("https://tend.example/#access_token=secret&refresh_token=other")?.error,"restart_required");
   assert.equal(parseOAuthReturn("https://tend.example/#/login"),null);
   assert.equal(parseOAuthReturn("https://tend.example/?code=")?.error,"invalid_callback");
+  assert.equal(parseOAuthReturn("https://tend.example/?oauth_solo=1&code=abc")?.solo,true);
+  assert.equal(parseOAuthReturn("https://tend.example/?code=abc")?.solo,undefined);
 });
 test("broadcast callbacks require the one-time channel",()=>{
   const channel="b".repeat(48),payload={type:OAUTH_RETURN,code:"abc",channel};

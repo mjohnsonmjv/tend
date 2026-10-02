@@ -40,6 +40,12 @@ export function OAuthReturn({payload}:{payload:Callback}){
       goApp();
     };
 
+    if(payload.solo){
+      // Same-tab redirect flow (used on iOS instead of a popup): no original
+      // tab will ack, so redeem the authorization code immediately.
+      void finishHere();
+      return ()=>{done=true;};
+    }
     const timer=window.setTimeout(finishHere,OAUTH_ACK_TIMEOUT_MS);
     const onAck=(event:MessageEvent)=>{
       if(payload.channel&&event.data?.type==="tend:oauth-finished"&&event.data?.channel===payload.channel){
