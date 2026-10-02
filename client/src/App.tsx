@@ -26,7 +26,6 @@ import { trackPageView, currentHashPath, initAnalytics } from "@/lib/analytics";
 import Login from "@/pages/Login";
 import MyChurches from "@/pages/MyChurches";
 import Demo from "@/pages/Demo";
-import PhotoCallback from "@/pages/PhotoCallback";
 
 function SignupEntry(){
   const {session,loading}=useAuth();
@@ -69,7 +68,6 @@ function AppRouter() {
       <Route path="/church/:id/prayer/:prayerId">{()=><RequireAuth><PrayerDetail/></RequireAuth>}</Route>
       {/* Public prayer submission (QR-code landing) */}
       <Route path="/c/:slug" component={ChurchSubmit} />
-      <Route path="/auth/photo-callback" component={PhotoCallback} />
       <Route path="/c/:slug/thanks" component={SubmitThanks} />
       <Route component={NotFound} />
     </Switch>
