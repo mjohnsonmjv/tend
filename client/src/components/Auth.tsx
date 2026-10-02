@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState, type ReactNode } from "
 import type { Session } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabase";
 import { queryClient } from "@/lib/queryClient";
+import { logAuthEvent } from "@/lib/auth-telemetry";
 import { Link } from "wouter";
 import { Logo } from "./Logo";
 
@@ -13,7 +14,13 @@ export function AuthProvider({children}:{children:ReactNode}) {
     supabase.auth.getSession().then(({data})=>{setSession(data.session);setLoading(false)});
     const {data:{subscription}}=supabase.auth.onAuthStateChange((event,current)=>{
       if(event==="SIGNED_OUT" || event==="SIGNED_IN") queryClient.clear();
-      setSession(current); setLoading(false);
+      // Transition from a live session to signed-out without user action is
+      // most often an expired/invalid session. Telemetry only.
+      setSession(prev=>{
+        if(prev && event==="SIGNED_OUT") logAuthEvent("session_expired",{});
+        return current;
+      });
+      setLoading(false);
     });
     return ()=>subscription.unsubscribe();
   },[]);

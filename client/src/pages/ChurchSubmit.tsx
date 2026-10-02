@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useParams, useLocation, Link } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
+import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -11,7 +12,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { Logo } from "@/components/Logo";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Camera, X, Loader2 } from "lucide-react";
 import { CATEGORY_LABELS } from "@shared/schema";
 import type { Category } from "@shared/schema";
 
@@ -58,6 +59,115 @@ export default function ChurchSubmit() {
   const [submissionKey] = useState(()=>crypto.randomUUID());
   const [website,setWebsite] = useState("");
 
+  // Optional profile photo: either the submitter's Google profile photo
+  // (one-tap import) or an uploaded image. Remembered on this device.
+  const [photoUrl, setPhotoUrl] = useState<string | null>(() => {
+    try { return localStorage.getItem("tend_photo_url"); } catch { return null; }
+  });
+  const [photoPath, setPhotoPath] = useState<string | null>(() => {
+    try { return localStorage.getItem(`tend_photo_path_${slug}`); } catch { return null; }
+  });
+  const [photoPreview, setPhotoPreview] = useState<string | null>(() => photoUrl);
+  const [photoBusy, setPhotoBusy] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  const persistPhoto = (url: string | null, path: string | null, preview: string | null) => {
+    setPhotoUrl(url); setPhotoPath(path); setPhotoPreview(preview);
+    try {
+      if (url) localStorage.setItem("tend_photo_url", url); else localStorage.removeItem("tend_photo_url");
+      if (path) localStorage.setItem(`tend_photo_path_${slug}`, path); else localStorage.removeItem(`tend_photo_path_${slug}`);
+    } catch { /* storage unavailable */ }
+  };
+
+  const useGooglePhoto = async () => {
+    if (photoBusy) return;
+    setPhotoBusy(true);
+    try {
+      const { data: { session: existing } } = await supabase.auth.getSession();
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          skipBrowserRedirect: true,
+          redirectTo: `${window.location.origin}${window.location.pathname}#/auth/photo-callback`,
+        },
+      });
+      if (error || !data?.url) throw error || new Error("oauth");
+      const popup = window.open(data.url, "tend-google-photo", "width=480,height=640");
+      if (!popup) {
+        toast({ title: "Popup blocked", description: "Allow popups for this site, then try again.", variant: "destructive" });
+        setPhotoBusy(false);
+        return;
+      }
+      const cleanup = () => {
+        window.clearInterval(watch);
+        window.removeEventListener("message", onMessage);
+        if (!existing) supabase.auth.signOut().catch(() => {});
+        setPhotoBusy(false);
+      };
+      const onMessage = (e: MessageEvent) => {
+        if (e.origin !== window.location.origin || !e.data || e.data.type !== "tend-photo") return;
+        cleanup();
+        if (e.data.error || !e.data.avatarUrl) {
+          toast({ title: "Google photo not added", description: "Please try again or upload a photo instead.", variant: "destructive" });
+          return;
+        }
+        persistPhoto(e.data.avatarUrl, null, e.data.avatarUrl);
+        if (!name.trim() && e.data.name) setName(e.data.name);
+        toast({ title: "Photo added", description: "Your Google profile photo will appear with your request." });
+      };
+      let watch = 0;
+      watch = window.setInterval(() => {
+        if (popup.closed) {
+          cleanup();
+          toast({ title: "Google photo not added", description: "The sign-in window was closed before finishing." });
+        }
+      }, 500);
+      window.addEventListener("message", onMessage);
+    } catch {
+      toast({ title: "Google photo not added", description: "Please try again or upload a photo instead.", variant: "destructive" });
+      setPhotoBusy(false);
+    }
+  };
+
+  const compressImage = (file: File): Promise<Blob> => new Promise((resolve, reject) => {
+    const src = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      const max = 512;
+      const scale = Math.min(1, max / Math.max(img.width, img.height));
+      const canvas = document.createElement("canvas");
+      canvas.width = Math.round(img.width * scale);
+      canvas.height = Math.round(img.height * scale);
+      canvas.getContext("2d")!.drawImage(img, 0, 0, canvas.width, canvas.height);
+      URL.revokeObjectURL(src);
+      canvas.toBlob((b) => (b ? resolve(b) : reject(new Error("compress"))), "image/jpeg", 0.8);
+    };
+    img.onerror = () => { URL.revokeObjectURL(src); reject(new Error("load")); };
+    img.src = src;
+  });
+
+  const onPhotoFile = async (file: File | undefined) => {
+    if (!file || photoBusy) return;
+    if (!file.type.startsWith("image/")) {
+      toast({ title: "That file isn't an image", description: "Please choose a photo file.", variant: "destructive" });
+      return;
+    }
+    setPhotoBusy(true);
+    try {
+      const blob = await compressImage(file);
+      const path = `photos/${crypto.randomUUID()}.jpg`;
+      const { error } = await supabase.storage.from("prayer-photos").upload(path, blob, { contentType: "image/jpeg", upsert: false });
+      if (error) throw error;
+      persistPhoto(null, path, URL.createObjectURL(blob));
+      toast({ title: "Photo added", description: "Your photo will appear with your request." });
+    } catch {
+      toast({ title: "Photo not added", description: "Please try again in a moment.", variant: "destructive" });
+    } finally {
+      setPhotoBusy(false);
+      if (fileRef.current) fileRef.current.value = "";
+    }
+  };
+
   const validEmail = (v: string) => v === "" || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim());
 
   const validateContact = () => {
@@ -82,6 +192,10 @@ export default function ChurchSubmit() {
   });
 
   const submit = useMutation({
+    // Retry transient failures: the RPC is idempotent via submissionKey,
+    // so a retried submit can never create a duplicate prayer request.
+    retry: 2,
+    retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 5000),
     mutationFn: async () => {
       await apiRequest("POST", `/api/churches/by-slug/${slug}/prayers`, {
         message: guided ? guidedMessage() : message,
@@ -89,6 +203,8 @@ export default function ChurchSubmit() {
         submitterName: isAnonymous ? undefined : name || undefined,
         submitterPhone: isAnonymous ? undefined : phone || undefined,
         submitterEmail: isAnonymous ? undefined : email.trim() || undefined,
+        submitterPhotoUrl: isAnonymous ? undefined : photoUrl || undefined,
+        submitterPhotoPath: isAnonymous ? undefined : photoPath || undefined,
         isAnonymous,
         isUrgent,
         isPrivate: true,
@@ -295,6 +411,41 @@ export default function ChurchSubmit() {
               </div>
             </div>
           </label>
+
+          {/* Profile photo (only if not anonymous, never in demo) */}
+          {!isAnonymous && slug !== "demo" && (
+            <div className="rounded-md border border-border bg-card px-4 py-3" data-testid="section-photo">
+              <div className="flex items-center gap-3">
+                {photoPreview ? (
+                  <img src={photoPreview} alt="Your photo" className="h-12 w-12 rounded-full object-cover border border-border shrink-0" data-testid="img-photo-preview" />
+                ) : (
+                  <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center shrink-0" aria-hidden="true">
+                    <Camera className="h-5 w-5 text-muted-foreground" />
+                  </div>
+                )}
+                <div className="flex-1 min-w-0">
+                  <div className="text-sm font-medium text-foreground">Add your photo <span className="text-muted-foreground font-normal">(optional)</span></div>
+                  <div className="text-xs text-muted-foreground mt-0.5">So the care team can see who they're praying for. Only visible to your church's team.</div>
+                </div>
+                {photoPreview && (
+                  <button type="button" onClick={() => persistPhoto(null, null, null)} aria-label="Remove photo" data-testid="button-photo-remove" className="p-2 -m-1 text-muted-foreground hover:text-foreground">
+                    <X className="h-4 w-4" />
+                  </button>
+                )}
+              </div>
+              {!photoPreview && (
+                <div className="flex flex-wrap gap-2 mt-3">
+                  <Button type="button" variant="outline" size="sm" onClick={useGooglePhoto} disabled={photoBusy} data-testid="button-photo-google">
+                    {photoBusy && <Loader2 className="h-4 w-4 animate-spin" />} Use my Google photo
+                  </Button>
+                  <Button type="button" variant="outline" size="sm" onClick={() => fileRef.current?.click()} disabled={photoBusy} data-testid="button-photo-upload">
+                    Upload a photo
+                  </Button>
+                  <input ref={fileRef} type="file" accept="image/*" className="hidden" aria-label="Upload a photo" onChange={(e) => onPhotoFile(e.target.files?.[0])} data-testid="input-photo-file" />
+                </div>
+              )}
+            </div>
+          )}
 
           {/* Name & contact (only if not anonymous), tucked behind an expander */}
           {!isAnonymous && (
