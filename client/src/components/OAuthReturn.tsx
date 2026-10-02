@@ -14,7 +14,11 @@ export function OAuthReturn({payload}:{payload:Callback}){
   useEffect(()=>{
     let done=false;
     let channel:BroadcastChannel|undefined;
-    const goApp=()=>{if(done)return;done=true;window.location.href="/#/app";};
+    // Hash navigation keeps this tab's JS context (and its in-memory session)
+    // alive. main.tsx's hashchange listener renders the app in place once the
+    // OAuth callback params are gone. A full href navigation would reload and
+    // drop the ephemeral session.
+    const goApp=()=>{if(done)return;done=true;window.location.hash="#/app";};
     const fail=(message:string)=>{if(done)return;done=true;setError(message);};
 
     // No ack from the original tab: finish the sign-in right here. The PKCE
