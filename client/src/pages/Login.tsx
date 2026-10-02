@@ -13,6 +13,7 @@ import { useAuth } from "@/components/Auth";
 import { useQuery } from "@tanstack/react-query";
 import { cancelSocialSignIn, startSocialSignIn } from "@/lib/oauth";
 import type {SocialProvider} from "@/lib/oauth-core";
+import { logAuthEvent, authErrorCode } from "@/lib/auth-telemetry";
 import { SiGoogle } from "react-icons/si";
 
 const schema=z.object({email:z.string().email("Enter a valid email address."),password:z.string().min(8,"Use at least 8 characters.")});
@@ -45,18 +46,24 @@ export default function Login({register=false}:{register?:boolean}) {
   const form=useForm<z.infer<typeof schema>>({resolver:zodResolver(schema),defaultValues:{email:"",password:""}});
   async function submit(values:z.infer<typeof schema>){
     setMessage("");setPending(true);
+    const startTime=Date.now();
     try{
       if(register){
         const {data,error}=await supabase.auth.signUp({...values,options:{emailRedirectTo:location.origin+location.pathname}});
         if(error) throw error;
+        logAuthEvent("email_signup_ok",{provider:"email",duration_ms:Date.now()-startTime});
         if(data.session) navigate("/signup");
         else setMessage("Check your email to confirm your account, then return here to sign in. If the email is delayed, check spam. Already registered? Use Sign in.");
       } else {
         const {error}=await supabase.auth.signInWithPassword(values);
         if(error) throw error;
+        logAuthEvent("email_signin_ok",{provider:"email",duration_ms:Date.now()-startTime});
         navigate("/app");
       }
-    }catch(e:any){setMessage(e.message || "Unable to sign in. Please try again.");}
+    }catch(e:any){
+      logAuthEvent(register?"email_signup_fail":"email_signin_fail",{provider:"email",error_code:authErrorCode(e)});
+      setMessage(e.message || "Unable to sign in. Please try again.");
+    }
     finally{setPending(false)}
   }
   async function forgotPassword(){

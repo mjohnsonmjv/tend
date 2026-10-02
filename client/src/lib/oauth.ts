@@ -1,5 +1,6 @@
 import {supabase,SUPABASE_URL} from "./supabase";
 import {isTrustedOAuthBroadcast,isTrustedOAuthMessage,oauthErrorMessage,providerOptions,type SocialProvider} from "./oauth-core";
+import {logAuthEvent,authErrorCode} from "./auth-telemetry";
 let active=false;
 let cancelActive:(()=>void)|null=null;
 export function cancelSocialSignIn(){cancelActive?.()}
@@ -25,13 +26,17 @@ export function startSocialSignIn(provider:SocialProvider):Promise<void>{
   const origin=window.location.origin;
   const channelId=Array.from(crypto.getRandomValues(new Uint8Array(24)),value=>value.toString(16).padStart(2,"0")).join("");
   const solo=isIOS();
+  const flow=solo?"solo":"popup";
+  const startTime=Date.now();
+  logAuthEvent("oauth_start",{provider,flow});
   const redirectTo=origin+window.location.pathname+`?oauth_channel=${channelId}`+(solo?"&oauth_solo=1":"");
   const authorize=():Promise<string>=>supabase.auth.signInWithOAuth(providerOptions(provider,redirectTo)).then(({data,error})=>{
     if(error||!data.url)throw new Error("This sign-in provider is not available yet. Please use email.");
     const url=new URL(data.url);
     if(url.origin!==SUPABASE_URL||url.pathname!=="/auth/v1/authorize")throw new Error("Unexpected sign-in address.");
+    logAuthEvent("oauth_authorize_ok",{provider,flow,duration_ms:Date.now()-startTime});
     return data.url;
-  });
+  }).catch((e)=>{logAuthEvent("oauth_authorize_fail",{provider,flow,error_code:authErrorCode(e)});throw e;});
   if(solo){
     // Same-tab redirect. The promise never settles: the page unloads on
     // redirect and the OAuth return page completes the sign-in.
@@ -65,9 +70,10 @@ export function startSocialSignIn(provider:SocialProvider):Promise<void>{
     cancelActive=()=>finish(new Error(oauthErrorMessage("closed")));
     const accept=async(payload:{code?:string;error?:string})=>{
       if(finished||exchanging)return;
-      if(payload.error){finish(new Error(oauthErrorMessage(payload.error)));return;}
+      if(payload.error){logAuthEvent("oauth_exchange_fail",{provider,flow,error_code:authErrorCode(payload.error)});finish(new Error(oauthErrorMessage(payload.error)));return;}
       if(!payload.code)return;
       exchanging=true;
+      const exchangeStart=Date.now();
       let ok=false;
       try{
         const {data,error}=await supabase.auth.exchangeCodeForSession(payload.code);
@@ -84,8 +90,10 @@ export function startSocialSignIn(provider:SocialProvider):Promise<void>{
       }
       if(!ok){
         try{await supabase.auth.signOut({scope:"local"});}catch{}
+        logAuthEvent("oauth_exchange_fail",{provider,flow,error_code:"EXCHANGE_FAILED"});
         finish(new Error(oauthErrorMessage("exchange_failed")));return;
       }
+      logAuthEvent("oauth_exchange_ok",{provider,flow,duration_ms:Date.now()-exchangeStart});
       finish();
     };
     const onMessage=async(event:MessageEvent)=>{

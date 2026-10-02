@@ -2,6 +2,7 @@ import {useEffect,useState} from "react";
 import {Logo} from "./Logo";
 import {supabase} from "@/lib/supabase";
 import {oauthErrorMessage,type OAuthReturn as Callback} from "@/lib/oauth-core";
+import {logAuthEvent,authErrorCode} from "@/lib/auth-telemetry";
 
 // How long the return tab waits for the original tab to confirm it redeemed
 // the authorization code before completing the exchange itself. iOS Safari
@@ -25,13 +26,17 @@ export function OAuthReturn({payload}:{payload:Callback}){
     // verifier lives in this origin's shared localStorage, so this tab can
     // redeem the code even when the opener is gone.
     const finishHere=async()=>{
-      if(payload.error){fail(oauthErrorMessage(payload.error));return;}
-      if(!payload.code){fail("We couldn't complete sign-in. Please try again from the Tend sign-in page.");return;}
+      if(payload.error){logAuthEvent("oauth_exchange_fail",{flow:payload.solo?"solo":"popup",error_code:authErrorCode(payload.error)});fail(oauthErrorMessage(payload.error));return;}
+      if(!payload.code){logAuthEvent("oauth_exchange_fail",{flow:payload.solo?"solo":"popup",error_code:"MISSING_CODE"});fail("We couldn't complete sign-in. Please try again from the Tend sign-in page.");return;}
+      logAuthEvent("oauth_return",{flow:payload.solo?"solo":"popup"});
+      const exchangeStart=Date.now();
       let ok=false;
+      let errCode="EXCHANGE_FAILED";
       try{
         const {data,error:exchangeError}=await supabase.auth.exchangeCodeForSession(payload.code);
         ok=!exchangeError&&!!data.session;
-      }catch{ok=false;}
+        if(exchangeError)errCode=authErrorCode(exchangeError);
+      }catch(e){errCode=authErrorCode(e);ok=false;}
       if(!ok){
         // The original tab may have redeemed the code first; a live session
         // in shared storage still means the user signed in.
@@ -40,7 +45,8 @@ export function OAuthReturn({payload}:{payload:Callback}){
           ok=!!data.session;
         }catch{ok=false;}
       }
-      if(!ok){fail("We couldn't complete sign-in. Please try again from the Tend sign-in page.");return;}
+      if(!ok){logAuthEvent("oauth_exchange_fail",{flow:payload.solo?"solo":"popup",error_code:errCode});fail("We couldn't complete sign-in. Please try again from the Tend sign-in page.");return;}
+      logAuthEvent("oauth_exchange_ok",{flow:payload.solo?"solo":"popup",duration_ms:Date.now()-exchangeStart});
       goApp();
     };
 
@@ -51,7 +57,7 @@ export function OAuthReturn({payload}:{payload:Callback}){
       void finishHere();
       return ()=>{done=true;};
     }
-    const timer=window.setTimeout(finishHere,OAUTH_ACK_TIMEOUT_MS);
+    const timer=window.setTimeout(()=>{logAuthEvent("oauth_fallback_redeem",{flow:"popup"});finishHere();},OAUTH_ACK_TIMEOUT_MS);
     const onAck=(event:MessageEvent)=>{
       if(payload.channel&&event.data?.type==="tend:oauth-finished"&&event.data?.channel===payload.channel){
         window.clearTimeout(timer);
