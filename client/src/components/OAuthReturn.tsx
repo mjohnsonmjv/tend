@@ -44,9 +44,10 @@ export function OAuthReturn({payload}:{payload:Callback}){
       goApp();
     };
 
-    if(payload.solo){
-      // Same-tab redirect flow (used on iOS instead of a popup): no original
-      // tab will ack, so redeem the authorization code immediately.
+    // No original tab will ack when there is no channel (e.g. email signup
+    // confirmation links) or in solo mode, so redeem immediately instead of
+    // waiting out the ack timeout.
+    if(payload.solo||!payload.channel){
       void finishHere();
       return ()=>{done=true;};
     }
