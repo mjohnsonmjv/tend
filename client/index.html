@@ -17,15 +17,9 @@
     <meta name="twitter:image" content="https://tendpray.com/og-image.png" />
     <link rel="canonical" href="https://tendpray.com/" />
     <meta name="theme-color" content="#FFFFFF" />
-    <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-BXVRYNV9ZR"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-
-      gtag('config', 'G-BXVRYNV9ZR');
-    </script>
+    <!-- Google Analytics 4 is bootstrapped from client/src/lib/analytics.ts
+         (initAnalytics), so the tag loads within the Content-Security-Policy,
+         which disallows inline scripts and non-allowlisted script hosts. -->
     <script type="application/ld+json">
     {
       "@context": "https://schema.org",

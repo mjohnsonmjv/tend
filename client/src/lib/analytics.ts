@@ -57,3 +57,27 @@ export function trackPrayerSubmitted(): void {
   if (!fn) return;
   fn("event", "prayer_request_submitted", {});
 }
+
+// Bootstrap Google Analytics 4 from the app bundle (rather than an inline
+// <script> in index.html) so the tag loads within the Content-Security-Policy,
+// which disallows inline scripts. Safe to call multiple times; only the first
+// call injects the library. Queues the standard gtag 'js' + 'config' commands
+// so the automatic page_view fires, then later track* calls work as before.
+let analyticsInitialized = false;
+
+export function initAnalytics(): void {
+  if (typeof window === "undefined" || analyticsInitialized) return;
+  analyticsInitialized = true;
+  const w = window as unknown as Record<string, unknown>;
+  w.dataLayer = w.dataLayer || [];
+  const gtagFn = (...args: unknown[]) => {
+    (w.dataLayer as unknown[][]).push(args);
+  };
+  w.gtag = gtagFn;
+  const script = document.createElement("script");
+  script.async = true;
+  script.src = `https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`;
+  document.head.appendChild(script);
+  gtagFn("js", new Date());
+  gtagFn("config", GA_MEASUREMENT_ID);
+}
