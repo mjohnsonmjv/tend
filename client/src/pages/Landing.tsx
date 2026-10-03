@@ -1,7 +1,7 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { Link } from "wouter";
 import { motion, AnimatePresence, MotionConfig, useReducedMotion } from "framer-motion";
-import { ArrowDown, ArrowRight, Check, Heart, LockKeyhole, ShieldCheck } from "lucide-react";
+import { ArrowDown, ArrowRight, Check, Clock, Heart, LockKeyhole, ShieldCheck } from "lucide-react";
 import { SiteHeader, SiteFooter } from "@/components/SiteHeader";
 import QRCode from "qrcode";
 
@@ -200,6 +200,10 @@ export default function Landing() {
               <Reveal delay={0.2}><p className="care-principle">The care is yours.<br />Tend helps you keep track.</p></Reveal>
             </div>
           </div>
+        </section>
+
+        <section className="brand-container trust-section">
+          <Reveal className="section-intro trust-intro"><p className="eyebrow">Around the clock</p><h2>Cover your church<br />in 24/7 prayer.</h2><p>Start a prayer watch and invite your congregation to cover every 15 minutes of the day. When Bill Bright founded Cru, he began with a 24-hour prayer chain in 96 fifteen-minute segments. Every great movement of God starts the same way.</p><p className="trust-items"><span><Clock size={18} /> 96 daily time slots</span><span><Clock size={18} /> Simple signup, no account needed</span><span><Clock size={18} /> See coverage gaps at a glance</span></p><p className="font-serif italic">"Pray continually." <span className="not-italic text-sm">1 Thessalonians 5:17</span></p></Reveal>
         </section>
 
         <section className="brand-container trust-section">
