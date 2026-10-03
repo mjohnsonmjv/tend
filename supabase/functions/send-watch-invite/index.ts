@@ -48,11 +48,20 @@ Deno.serve(async (req: Request) => {
   for (const invite of clean.slice(0, 100)) {
     const subject = `You're invited: ${title} - 24/7 prayer`;
     const text = `You've been invited to cover a time in prayer.\n\n${title}\n\nWhen Bill Bright founded Cru, he began with a 24-hour prayer chain, dividing each day into 96 fifteen-minute segments. Every great movement of God starts the same way: ordinary people surrendering to Him in prayer, around the clock.\n\nPick a 15-minute slot here:\n${signupUrl}\n\nWith care,\nThe Tend team`;
-    const html = `<p>You've been invited to cover a time in prayer.</p>` +
-      `<p><strong>${escapeHtml(title)}</strong></p>` +
-      `<p>When Bill Bright founded Cru, he began with a 24-hour prayer chain, dividing each day into 96 fifteen-minute segments. Every great movement of God starts the same way: ordinary people surrendering to Him in prayer, around the clock.</p>` +
-      `<p><a href="${escapeHtml(signupUrl)}">Pick a 15-minute slot here</a></p>` +
-      `<p>With care,<br/>The Tend team</p>`;
+    const html =
+      `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#FBF8F1;margin:0;padding:0;">` +
+      `<tr><td align="center" style="padding:32px 16px;">` +
+      `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:520px;background-color:#FFFFFF;border-radius:16px;overflow:hidden;">` +
+      `<tr><td align="center" style="padding:32px 32px 8px;font-family:Georgia,serif;font-size:28px;color:#2A2521;">Tend</td></tr>` +
+      `<tr><td align="center" style="padding:0 32px 8px;font-family:Arial,sans-serif;font-size:20px;font-weight:bold;color:#2A2521;">${escapeHtml(title)}</td></tr>` +
+      `<tr><td align="center" style="padding:0 32px 16px;font-family:Arial,sans-serif;font-size:15px;line-height:1.6;color:#5c554e;">You've been invited to cover a time in prayer.</td></tr>` +
+      `<tr><td style="padding:0 32px 16px;font-family:Arial,sans-serif;font-size:14px;line-height:1.6;color:#5c554e;">When Bill Bright founded Cru, he began with a 24-hour prayer chain, dividing each day into 96 fifteen-minute segments. Every great movement of God starts the same way: ordinary people surrendering to Him in prayer, around the clock.</td></tr>` +
+      `<tr><td align="center" style="padding:8px 32px 32px;">` +
+      `<a href="${escapeHtml(signupUrl)}" style="display:inline-block;background-color:#EFC65E;color:#2A2521;font-family:Arial,sans-serif;font-size:16px;font-weight:bold;text-decoration:none;padding:14px 32px;border-radius:999px;">Pick a time to pray</a>` +
+      `</td></tr>` +
+      `</table>` +
+      `<p style="font-family:Arial,sans-serif;font-size:12px;color:#8a8178;margin:16px 0 0;">With care,<br/>The Tend team<br/><a href="mailto:support@tendpray.com" style="color:#8a8178;">support@tendpray.com</a></p>` +
+      `</td></tr></table>`;
     try {
       const res = await fetch("https://api.resend.com/emails", {
         method: "POST",
