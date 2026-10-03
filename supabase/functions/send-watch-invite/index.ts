@@ -47,9 +47,10 @@ Deno.serve(async (req: Request) => {
   const failed: string[] = [];
   for (const invite of clean.slice(0, 100)) {
     const subject = `You're invited: ${title} - 24/7 prayer`;
-    const text = `You've been invited to cover a time in prayer.\n\n${title}\n\nPick a 15-minute slot here:\n${signupUrl}\n\nWith care,\nThe Tend team`;
+    const text = `You've been invited to cover a time in prayer.\n\n${title}\n\nWhen Bill Bright founded Cru, he began with a 24-hour prayer chain, dividing each day into 96 fifteen-minute segments. Every great movement of God starts the same way: ordinary people surrendering to Him in prayer, around the clock.\n\nPick a 15-minute slot here:\n${signupUrl}\n\nWith care,\nThe Tend team`;
     const html = `<p>You've been invited to cover a time in prayer.</p>` +
       `<p><strong>${escapeHtml(title)}</strong></p>` +
+      `<p>When Bill Bright founded Cru, he began with a 24-hour prayer chain, dividing each day into 96 fifteen-minute segments. Every great movement of God starts the same way: ordinary people surrendering to Him in prayer, around the clock.</p>` +
       `<p><a href="${escapeHtml(signupUrl)}">Pick a 15-minute slot here</a></p>` +
       `<p>With care,<br/>The Tend team</p>`;
     try {

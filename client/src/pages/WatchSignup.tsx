@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { Logo } from "@/components/Logo";
-import { ChevronLeft, ChevronRight, Check, Loader2, Clock } from "lucide-react";
+import { ChevronLeft, ChevronRight, Check, Loader2, Clock, ChevronDown } from "lucide-react";
 
 interface WatchInfo {
   id: number; slug: string; title: string; description: string | null;
@@ -33,6 +33,7 @@ export default function WatchSignup() {
   const [website, setWebsite] = useState("");
   const [signupKey] = useState(() => crypto.randomUUID());
   const [done, setDone] = useState<{ startsAt: string; title: string } | null>(null);
+  const [showWhy, setShowWhy] = useState(false);
 
   const watch = useQuery<WatchInfo>({ queryKey: [`/api/watches/by-slug/${slug}`] });
 
@@ -121,6 +122,16 @@ export default function WatchSignup() {
           <h1 className="font-serif text-3xl">{w.title}</h1>
           {w.description && <p className="text-muted-foreground mt-2">{w.description}</p>}
           <p className="text-sm text-muted-foreground mt-3 flex items-center gap-1.5"><Clock className="h-4 w-4" /> Around-the-clock prayer. Pick a 15-minute time to cover.</p>
+          <button onClick={() => setShowWhy(v => !v)} className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-primary">
+            Why 24/7 prayer?
+            <ChevronDown className={`h-4 w-4 transition-transform ${showWhy ? "rotate-180" : ""}`} />
+          </button>
+          {showWhy && (
+            <div className="mt-3 text-sm text-muted-foreground space-y-2.5 leading-relaxed">
+              <p>When Bill Bright founded Cru in 1951, one of the first things he did was organize a 24-hour prayer chain. He divided each day into 96 fifteen-minute segments and invited friends to cover them in prayer. He knew the ministry would only be as effective as God allowed it to be.</p>
+              <p>That is how every great movement of God begins: ordinary people surrendering to Him in prayer, around the clock. When you take a time slot, you are joining that story.</p>
+            </div>
+          )}
         </div>
       </header>
 
