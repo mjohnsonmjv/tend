@@ -56,6 +56,7 @@ Deno.serve(async (req: Request) => {
       `<tr><td align="center" style="padding:0 32px 8px;font-family:Arial,sans-serif;font-size:20px;font-weight:bold;color:#2A2521;">${escapeHtml(title)}</td></tr>` +
       `<tr><td align="center" style="padding:0 32px 16px;font-family:Arial,sans-serif;font-size:15px;line-height:1.6;color:#5c554e;">You've been invited to cover a time in prayer.</td></tr>` +
       `<tr><td style="padding:0 32px 16px;font-family:Arial,sans-serif;font-size:14px;line-height:1.6;color:#5c554e;">When Bill Bright founded Cru, he began with a 24-hour prayer chain, dividing each day into 96 fifteen-minute segments. Every great movement of God starts the same way: ordinary people surrendering to Him in prayer, around the clock.</td></tr>` +
+      `<tr><td align="center" style="padding:0 32px 20px;font-family:Georgia,serif;font-style:italic;font-size:15px;line-height:1.6;color:#2A2521;">"Pray continually."<br/><span style="font-family:Arial,sans-serif;font-style:normal;font-size:12px;color:#8a8178;">1 Thessalonians 5:17</span></td></tr>` +
       `<tr><td align="center" style="padding:8px 32px 32px;">` +
       `<a href="${escapeHtml(signupUrl)}" style="display:inline-block;background-color:#EFC65E;color:#2A2521;font-family:Arial,sans-serif;font-size:16px;font-weight:bold;text-decoration:none;padding:14px 32px;border-radius:999px;">Pick a time to pray</a>` +
       `</td></tr>` +

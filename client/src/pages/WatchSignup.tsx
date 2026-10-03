@@ -130,6 +130,7 @@ export default function WatchSignup() {
             <div className="mt-3 text-sm text-muted-foreground space-y-2.5 leading-relaxed">
               <p>When Bill Bright founded Cru in 1951, one of the first things he did was organize a 24-hour prayer chain. He divided each day into 96 fifteen-minute segments and invited friends to cover them in prayer. He knew the ministry would only be as effective as God allowed it to be.</p>
               <p>That is how every great movement of God begins: ordinary people surrendering to Him in prayer, around the clock. When you take a time slot, you are joining that story.</p>
+              <p className="font-serif italic text-foreground">"Pray continually." <span className="not-italic text-xs">1 Thessalonians 5:17</span></p>
             </div>
           )}
         </div>
