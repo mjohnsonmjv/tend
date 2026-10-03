@@ -142,7 +142,7 @@ declare
   slots jsonb;
   total int; filled int;
 begin
-  select w.* into w from public.tend_prayer_watches w where w.slug = p_slug and w.is_active;
+  select tw.* into w from public.tend_prayer_watches tw where tw.slug = p_slug and w.is_active;
   if not found then raise exception 'Watch not found'; end if;
   if p_date < w.start_date or (w.end_date is not null and p_date > w.end_date) then
     raise exception 'Date is outside this prayer watch';
@@ -206,17 +206,17 @@ begin
   if coalesce(p_website, '') <> '' then raise exception 'Signup could not be accepted'; end if;
   if p_signup_key is null then raise exception 'Missing signup key'; end if;
   if nullif(trim(p_name), '') is null then raise exception 'Please share your name'; end if;
-  select w.* into w from public.tend_prayer_watches w where w.slug = p_slug and w.is_active;
+  select tw.* into w from public.tend_prayer_watches tw where tw.slug = p_slug and w.is_active;
   if not found then raise exception 'Watch not found'; end if;
   perform pg_catalog.pg_advisory_xact_lock(w.id);
   -- Idempotent retry: same key returns the existing signup.
-  select s.* into s from public.tend_prayer_watch_slots s
-    where s.id = p_slot_id and s.watch_id = w.id and s.signup_key = p_signup_key;
+  select s2.* into s from public.tend_prayer_watch_slots s2
+    where s2.id = p_slot_id and s.watch_id = w.id and s.signup_key = p_signup_key;
   if found then
     return jsonb_build_object('ok', true, 'startsAt', s.starts_at, 'title', w.title);
   end if;
-  select s.* into s from public.tend_prayer_watch_slots s
-    where s.id = p_slot_id and s.watch_id = w.id for update;
+  select s2.* into s from public.tend_prayer_watch_slots s2
+    where s2.id = p_slot_id and s.watch_id = w.id for update;
   if not found then raise exception 'Time slot not found'; end if;
   if s.signup_name is not null then raise exception 'That time was just taken. Please pick another.'; end if;
   update public.tend_prayer_watch_slots
@@ -238,7 +238,7 @@ returns jsonb language plpgsql security definer set search_path = '' as $$
 declare s public.tend_prayer_watch_slots;
 begin
   if p_signup_key is null then raise exception 'Missing signup key'; end if;
-  select s.* into s from public.tend_prayer_watch_slots s where s.signup_key = p_signup_key;
+  select s2.* into s from public.tend_prayer_watch_slots s2 where s2.signup_key = p_signup_key;
   if not found then raise exception 'Signup not found'; end if;
   update public.tend_prayer_watch_slots
     set signup_name = null, signup_email = null, signup_phone = null,
@@ -257,7 +257,7 @@ declare
   w public.tend_prayer_watches;
   slots jsonb; total int; filled int;
 begin
-  select w.* into w from public.tend_prayer_watches w where w.id = p_watch_id;
+  select w.* into w from public.tend_prayer_watches tw where tw.id = p_watch_id;
   if not found then raise exception 'Watch not found'; end if;
   if not exists(select 1 from public.tend_churches c
                 where c.id = w.church_id and c.owner_id = (select auth.uid())) then
