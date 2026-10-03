@@ -1,8 +1,13 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.39.0";
 
+const cors = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Headers": "authorization, content-type, apikey, x-client-info",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+};
 const reply = (status: number, body: Record<string, unknown>) =>
   new Response(JSON.stringify(body), {
-    status, headers: { "Content-Type": "application/json", "Cache-Control": "no-store" },
+    status, headers: { "Content-Type": "application/json", "Cache-Control": "no-store", ...cors },
   });
 
 const escapeHtml = (v: string) => v.replace(/&/g, "&amp;").replace(/</g, "&lt;")
@@ -10,6 +15,7 @@ const escapeHtml = (v: string) => v.replace(/&/g, "&amp;").replace(/</g, "&lt;")
 const isEmail = (v: unknown) => typeof v === "string" && v.length <= 320 && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
 
 Deno.serve(async (req: Request) => {
+  if (req.method === "OPTIONS") return new Response(null, { status: 204, headers: cors });
   if (req.method !== "POST") return reply(405, { error: "method_not_allowed" });
   const auth = req.headers.get("Authorization") ?? "";
   if (!auth.startsWith("Bearer ")) return reply(401, { error: "unauthorized" });
@@ -50,7 +56,7 @@ Deno.serve(async (req: Request) => {
       const res = await fetch("https://api.resend.com/emails", {
         method: "POST",
         headers: {
-Authorization: <redacted>
+          "Authorization": `Bearer ${resendKey}`,
           "Content-Type": "application/json",
           "Idempotency-Key": `tend-watch-invite/${invite.token}`,
         },

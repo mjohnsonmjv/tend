@@ -136,7 +136,7 @@ grant execute on function public.tend_public_watch(text) to anon, authenticated;
 -- Day view for the public signup page. Names are NOT exposed publicly;
 -- filled slots just show as taken.
 create function public.tend_watch_day(p_slug text, p_date date)
-returns jsonb language plpgsql stable security definer set search_path = '' as $$
+returns jsonb language plpgsql security definer set search_path = '' as $$
 declare
   w public.tend_prayer_watches;
   slots jsonb;
@@ -252,7 +252,7 @@ grant execute on function public.tend_cancel_watch_signup(uuid) to anon, authent
 
 -- Pastor day dashboard: full slot detail including signup names/contact.
 create function public.tend_watch_day_detail(p_watch_id bigint, p_date date)
-returns jsonb language plpgsql stable security definer set search_path = '' as $$
+returns jsonb language plpgsql security definer set search_path = '' as $$
 declare
   w public.tend_prayer_watches;
   slots jsonb; total int; filled int;
