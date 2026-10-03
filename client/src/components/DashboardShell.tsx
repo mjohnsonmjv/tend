@@ -1,6 +1,6 @@
 import { Link, useRoute } from "wouter";
 import { Logo } from "./Logo";
-import { QrCode, MessageSquareHeart, Settings, ArrowLeft } from "lucide-react";
+import { QrCode, MessageSquareHeart, Settings, ArrowLeft, Clock } from "lucide-react";
 import type { Church } from "@shared/schema";
 import { supabase } from "@/lib/supabase";
 
@@ -13,6 +13,7 @@ export function DashboardShell({ church, children }: Props) {
   const nav = church
     ? [
         { href: `/church/${church.id}/dashboard`, icon: MessageSquareHeart, label: "Prayer inbox" },
+        { href: `/church/${church.id}/watches`, icon: Clock, label: "24/7 prayer" },
         { href: `/church/${church.id}/qr`, icon: QrCode, label: "QR code & poster" },
         { href: `/church/${church.id}/settings`, icon: Settings, label: "Settings" },
       ]

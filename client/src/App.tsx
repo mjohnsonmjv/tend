@@ -26,6 +26,9 @@ import { trackPageView, currentHashPath, initAnalytics } from "@/lib/analytics";
 import Login from "@/pages/Login";
 import MyChurches from "@/pages/MyChurches";
 import Demo from "@/pages/Demo";
+import Watches from "@/pages/Watches";
+import WatchDashboard from "@/pages/WatchDashboard";
+import WatchSignup from "@/pages/WatchSignup";
 
 function SignupEntry(){
   const {session,loading}=useAuth();
@@ -66,9 +69,12 @@ function AppRouter() {
       <Route path="/church/:id/qr">{()=><RequireAuth><ChurchQR/></RequireAuth>}</Route>
       <Route path="/church/:id/settings">{()=><RequireAuth><ChurchSettings/></RequireAuth>}</Route>
       <Route path="/church/:id/prayer/:prayerId">{()=><RequireAuth><PrayerDetail/></RequireAuth>}</Route>
+      <Route path="/church/:id/watches">{()=><RequireAuth><Watches/></RequireAuth>}</Route>
+      <Route path="/church/:id/watches/:watchId">{()=><RequireAuth><WatchDashboard/></RequireAuth>}</Route>
       {/* Public prayer submission (QR-code landing) */}
       <Route path="/c/:slug" component={ChurchSubmit} />
       <Route path="/c/:slug/thanks" component={SubmitThanks} />
+      <Route path="/w/:slug" component={WatchSignup} />
       <Route component={NotFound} />
     </Switch>
   );
