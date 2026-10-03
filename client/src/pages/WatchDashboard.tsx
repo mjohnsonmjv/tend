@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { useParams, Link } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -9,7 +9,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
-import { ChevronLeft, ChevronRight, Copy, Check, Send, Loader2, ArrowLeft } from "lucide-react";
+import { generateChurchQr } from "@/lib/churchQr";
+import { ChevronLeft, ChevronRight, Copy, Check, Send, Loader2, ArrowLeft, Download, QrCode } from "lucide-react";
 import type { Church } from "@shared/schema";
 
 interface Watch {
@@ -34,6 +35,8 @@ export default function WatchDashboard() {
   const [dayISO, setDayISO] = useState(() => toISODate(new Date()));
   const [inviteText, setInviteText] = useState("");
   const [copied, setCopied] = useState(false);
+  const [qrDataUrl, setQrDataUrl] = useState("");
+  const [showQr, setShowQr] = useState(false);
 
   const church = useQuery<Church>({ queryKey: ["/api/churches", churchId] });
   const watch = useQuery<Watch>({ queryKey: [`/api/watches/${wid}`], enabled: !!church.data });
@@ -89,6 +92,24 @@ export default function WatchDashboard() {
     catch { toast({ title: "Copy failed", description: signupUrl }); }
   };
 
+  // QR code for the signup link, generated locally when the pastor opens it.
+  useEffect(() => {
+    if (!showQr || !signupUrl) return;
+    let cancelled = false;
+    generateChurchQr(signupUrl)
+      .then((url) => { if (!cancelled) setQrDataUrl(url); })
+      .catch(() => { if (!cancelled) toast({ title: "Could not generate QR code", variant: "destructive" }); });
+    return () => { cancelled = true; };
+  }, [showQr, signupUrl]);
+
+  const downloadQr = () => {
+    if (!qrDataUrl || !watch.data) return;
+    const a = document.createElement("a");
+    a.href = qrDataUrl;
+    a.download = `tend-${watch.data.slug}-prayer-qr.png`;
+    a.click();
+  };
+
   return (
     <DashboardShell church={church.data}>
       <div className="max-w-5xl mx-auto p-5 sm:p-10">
@@ -102,8 +123,27 @@ export default function WatchDashboard() {
               <Button variant="outline" size="sm" onClick={copyLink}>
                 {copied ? <><Check className="h-3.5 w-3.5 mr-1.5" /> Copied</> : <><Copy className="h-3.5 w-3.5 mr-1.5" /> Copy signup link</>}
               </Button>
+              <Button variant="outline" size="sm" onClick={() => setShowQr(v => !v)}>
+                <QrCode className="h-3.5 w-3.5 mr-1.5" /> QR code
+              </Button>
               <span className="text-xs text-muted-foreground font-mono truncate max-w-full">{signupUrl}</span>
             </div>
+            {showQr && (
+              <div className="border border-border rounded-2xl p-5 bg-card mt-4 flex flex-col sm:flex-row items-center gap-5">
+                {qrDataUrl ? (
+                  <img src={qrDataUrl} alt="QR code for the prayer watch signup page" className="w-44 h-44 rounded-lg border border-border" />
+                ) : (
+                  <Skeleton className="w-44 h-44 rounded-lg" />
+                )}
+                <div className="text-center sm:text-left">
+                  <h2 className="font-serif text-xl mb-1">Share the signup QR</h2>
+                  <p className="text-sm text-muted-foreground mb-3">Print it in the bulletin or show it on screen. Anyone who scans it lands on the signup page.</p>
+                  <Button variant="outline" size="sm" onClick={downloadQr} disabled={!qrDataUrl}>
+                    <Download className="h-3.5 w-3.5 mr-1.5" /> Download PNG
+                  </Button>
+                </div>
+              </div>
+            )}
           </>
         )}
 
