@@ -15,7 +15,7 @@ interface WatchInfo {
   churchName: string; startDate: string; endDate: string | null;
   slotMinutes: number; isActive: boolean;
 }
-interface Slot { id: number; startsAt: string; endsAt: string; taken: boolean; }
+interface Slot { id: number; startsAt: string; endsAt: string; taken: boolean; displayName?: string | null; }
 interface DayView { total: number; filled: number; slots: Slot[]; }
 
 const toISODate = (d: Date) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
@@ -31,6 +31,7 @@ export default function WatchSignup() {
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [website, setWebsite] = useState("");
+  const [anonymous, setAnonymous] = useState(false);
   const [signupKey] = useState(() => crypto.randomUUID());
   const [done, setDone] = useState<{ startsAt: string; title: string } | null>(null);
   const [showWhy, setShowWhy] = useState(false);
@@ -64,7 +65,7 @@ export default function WatchSignup() {
 
   const signup = useMutation({
     mutationFn: async () => (await apiRequest("POST", `/api/watches/by-slug/${slug}/signup`, {
-      slotId: selectedSlot!.id, name, email, phone, website, signupKey,
+      slotId: selectedSlot!.id, name, email, phone, website, signupKey, anonymous,
     })).json(),
     onSuccess: (data) => {
       try { localStorage.setItem("tend_name", name); } catch { /* ignore */ }
@@ -180,7 +181,10 @@ export default function WatchSignup() {
                         ? "border-border bg-muted/60 text-muted-foreground cursor-default"
                         : "border-primary/40 bg-background hover:bg-primary hover:text-primary-foreground hover:border-primary"}`}
                     >
-                      {fmtTime(s.startsAt)}
+                      <span className="block">{fmtTime(s.startsAt)}</span>
+                      {s.taken && s.displayName && (
+                        <span className="block text-xs font-normal opacity-70 truncate">{s.displayName}</span>
+                      )}
                     </button>
                   ))}
                 </div>
@@ -189,7 +193,7 @@ export default function WatchSignup() {
           </div>
         )}
 
-        <p className="text-xs text-muted-foreground text-center mt-8">Your name is only shared with the church prayer team.</p>
+        <p className="text-xs text-muted-foreground text-center mt-8">Your first name shows on taken times so the church can see the prayer chain. Check "Keep my name private" to show as Anonymous instead.</p>
       </main>
 
       {/* Signup sheet */}
@@ -202,6 +206,10 @@ export default function WatchSignup() {
               <div><Label htmlFor="ws-name">Your name</Label><Input id="ws-name" value={name} onChange={e => setName(e.target.value)} placeholder="First and last name" autoFocus /></div>
               <div><Label htmlFor="ws-email">Email <span className="text-muted-foreground font-normal">(optional, for a reminder)</span></Label><Input id="ws-email" type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="you@example.com" /></div>
               <div><Label htmlFor="ws-phone">Phone <span className="text-muted-foreground font-normal">(optional)</span></Label><Input id="ws-phone" type="tel" value={phone} onChange={e => setPhone(e.target.value)} placeholder="(555) 123-4567" /></div>
+              <label className="flex items-start gap-2.5 text-sm cursor-pointer select-none">
+                <input type="checkbox" checked={anonymous} onChange={e => setAnonymous(e.target.checked)} className="mt-0.5 h-4 w-4 rounded border-border accent-primary" />
+                <span>Keep my name private <span className="text-muted-foreground font-normal">(shows as Anonymous)</span></span>
+              </label>
               <input type="text" value={website} onChange={e => setWebsite(e.target.value)} className="hidden" tabIndex={-1} autoComplete="off" aria-hidden />
               <Button className="w-full" disabled={!name.trim() || signup.isPending} onClick={() => signup.mutate()}>
                 {signup.isPending ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Saving…</> : "Sign me up"}

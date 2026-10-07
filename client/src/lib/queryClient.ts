@@ -68,6 +68,7 @@ export async function apiRequest(method: string, url: string, data?: any): Promi
       const r = await supabase.rpc("tend_signup_watch_slot", {
         p_slug: slug, p_slot_id: data.slotId, p_name: data.name, p_signup_key: data.signupKey,
         p_email: data.email || null, p_phone: data.phone || null, p_website: data.website || "",
+        p_anonymous: !!data.anonymous,
       });
       return result(r.data, r.error);
     }
