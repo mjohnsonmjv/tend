@@ -36,7 +36,7 @@ const schema=z.object({
 export default function Signup(){
   const {session}=useAuth();const [,navigate]=useLocation();
   const [step,setStep]=useState(1);const [slugEdited,setSlugEdited]=useState(false);
-  const form=useForm<z.infer<typeof schema>>({resolver:zodResolver(schema),defaultValues:{name:"",slug:"",pastorName:"Care team",greetingMessage:"Thank you for sharing. Your request has been received."}});
+  const form=useForm<z.infer<typeof schema>>({resolver:zodResolver(schema),defaultValues:{name:"",slug:"",pastorName:"Care team",greetingMessage:"Thank you for trusting us with this. Your church family is praying for you."}});
   const values=form.watch();
   const create=useMutation({mutationFn:async(v:z.infer<typeof schema>)=>(await apiRequest("POST","/api/churches",v)).json() as Promise<Church>,onSuccess:church=>{trackSignupCompleted();queryClient.invalidateQueries({queryKey:["/api/churches"]});navigate(`/church/${church.id}/qr`)}});
   useEffect(()=>{trackSignupStarted()},[]);
