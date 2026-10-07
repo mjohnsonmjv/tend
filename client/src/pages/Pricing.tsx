@@ -76,6 +76,10 @@ export default function Pricing() {
         <p className="mt-6 text-lg text-muted-foreground max-w-2xl mx-auto">
           The free plan is free forever, no card required. Paid plans start with a 30-day free trial.
         </p>
+        <div className="mt-8 max-w-2xl mx-auto rounded-2xl border border-primary/30 bg-primary/5 px-6 py-5">
+          <p className="font-serif text-xl text-foreground">100% of profits go to charity.</p>
+          <p className="mt-2 text-sm text-muted-foreground">Every dollar Tend earns beyond costs is donated to support Compassion International orphans. Your subscription feeds kids.</p>
+        </div>
         <div className="mt-8 inline-flex items-center rounded-full border border-border bg-card p-1" role="group" aria-label="Billing period">
           <button
             type="button"
