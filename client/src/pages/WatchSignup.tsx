@@ -43,10 +43,12 @@ export default function WatchSignup() {
     const end = watch.data.endDate ? new Date(watch.data.endDate + "T12:00:00") : null;
     const today = new Date(); today.setHours(0, 0, 0, 0);
     const first = start < today ? today : start;
+    const activeWeekdays: number[] | null = (watch.data as any).activeWeekdays ?? null;
     const list: Date[] = [];
-    for (let i = 0; i < 14; i++) {
+    for (let i = 0; i < 28 && list.length < 8; i++) {
       const d = new Date(first); d.setDate(d.getDate() + i);
       if (end && d > end) break;
+      if (activeWeekdays && !activeWeekdays.includes(d.getDay())) continue;
       list.push(d);
     }
     return list;
