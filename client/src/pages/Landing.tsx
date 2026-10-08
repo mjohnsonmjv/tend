@@ -115,6 +115,7 @@ export default function Landing() {
               <Link className="brand-button" href="/signup" data-testid="link-hero-signup">Get your QR code <ArrowRight size={18} /></Link>
             </motion.div>
             <motion.p className="hero-stat" {...heroItem(0.42)}>45% of young adults say prayer is the top reason they attend church. <span>Barna, 2026</span></motion.p>
+            <motion.p className="hero-note" {...heroItem(0.44)}>Free for small groups and churches. No card required.</motion.p>
             <motion.div {...heroItem(0.46)}>
               <Link className="text-action mr-6" href="/demo" data-testid="link-try-inbox">Try the prayer inbox <ArrowRight size={16}/></Link>
               <button className="text-action" data-testid="button-how-it-works" onClick={() => document.getElementById("how-it-works")?.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth" })}>See how it works <ArrowDown size={16} /></button>
