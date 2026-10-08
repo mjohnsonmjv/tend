@@ -109,12 +109,13 @@ export default function Landing() {
           <div className="brand-container hero-grid">
           <div className="hero-copy">
             <motion.p className="eyebrow" {...heroItem(0)}>Inspired by 1 Peter 5:2</motion.p>
-            <motion.h1 {...heroItem(0.1)}>The easiest way to<br />collect <span>prayer requests.</span></motion.h1>
+            <motion.h1 {...heroItem(0.1)}>Build a <span>culture of prayer.</span></motion.h1>
             <motion.p className="hero-description" {...heroItem(0.2)}>Sign up in minutes. Tend builds a prayer page and QR code for your church, small group, or Bible study. Drop the code on your announcement slides or print it on the weekly cards. Your people scan it, and every request lands in one inbox, ready for care and follow-up.</motion.p>
             <motion.div {...heroItem(0.3)}>
               <Link className="brand-button" href="/signup" data-testid="link-hero-signup">Get your QR code <ArrowRight size={18} /></Link>
             </motion.div>
             <motion.p className="hero-note" {...heroItem(0.38)}>No app for your congregation to download.</motion.p>
+            <motion.p className="hero-stat" {...heroItem(0.42)}>45% of young adults say prayer is the top reason they attend church. <span>Barna, 2026</span></motion.p>
             <motion.div {...heroItem(0.46)}>
               <Link className="text-action mr-6" href="/demo" data-testid="link-try-inbox">Try the prayer inbox <ArrowRight size={16}/></Link>
               <button className="text-action" data-testid="button-how-it-works" onClick={() => document.getElementById("how-it-works")?.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth" })}>See how it works <ArrowDown size={16} /></button>
