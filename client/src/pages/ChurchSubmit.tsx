@@ -556,6 +556,8 @@ export default function ChurchSubmit() {
           </p>
           <p className="text-xs text-center pt-1">
             <Link href={`/gift/${slug}`} className="underline text-muted-foreground" data-testid="link-gift-church">Gift Tend to this church</Link>
+            <span className="text-muted-foreground"> · </span>
+            <Link href={`/c/${slug}/wall`} className="underline text-muted-foreground" data-testid="link-prayer-wall">Pray for others</Link>
           </p>
         </form>
       </div>

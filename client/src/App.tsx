@@ -9,6 +9,7 @@ import NotFound from "@/pages/not-found";
 import Landing from "@/pages/Landing";
 import Signup from "@/pages/Signup";
 import ChurchSubmit from "@/pages/ChurchSubmit";
+import PrayerWall from "@/pages/PrayerWall";
 import SubmitThanks from "@/pages/SubmitThanks";
 import Dashboard from "@/pages/Dashboard";
 import PrayerDetail from "@/pages/PrayerDetail";
@@ -73,6 +74,7 @@ function AppRouter() {
       <Route path="/church/:id/watches/:watchId">{()=><RequireAuth><WatchDashboard/></RequireAuth>}</Route>
       {/* Public prayer submission (QR-code landing) */}
       <Route path="/c/:slug" component={ChurchSubmit} />
+      <Route path="/c/:slug/wall" component={PrayerWall} />
       <Route path="/c/:slug/thanks" component={SubmitThanks} />
       <Route path="/w/:slug" component={WatchSignup} />
       <Route component={NotFound} />

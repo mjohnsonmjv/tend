@@ -166,11 +166,11 @@ export async function apiRequest(method: string, url: string, data?: any): Promi
     }
     const r=await supabase.from("tend_churches").select(churchFields).eq("id",id).single(); return result(r.data,r.error);
   }
-  const prayerMatch=path.match(/^\/api\/prayers\/(\d+)(?:\/(status|notes))?$/);
+  const prayerMatch=path.match(/^\/api\/prayers\/(\d+)(?:\/(status|notes|share))?$/);
   if(prayerMatch){
     const id=Number(prayerMatch[1]);
     if(method==="GET"){const r=await supabase.from("tend_prayers").select(prayerFields).eq("id",id).single();return result(r.data,r.error);}
-    const update=prayerMatch[2]==="status"?{status:data.status}:{pastor_notes:data.notes};
+    const update=prayerMatch[2]==="status"?{status:data.status}:prayerMatch[2]==="share"?{is_private:!data.shared}:{pastor_notes:data.notes};
     const r=await supabase.from("tend_prayers").update(update).eq("id",id).select(prayerFields).single();return result(r.data,r.error);
   }
   // ---- 24/7 prayer watches: pastor management (signed in, RLS enforced) ----

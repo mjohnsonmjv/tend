@@ -55,6 +55,23 @@ export default function PrayerDetail() {
     },
   });
 
+  const toggleWall = useMutation({
+    mutationFn: async () => {
+      const shared = prayer?.isPrivate !== false;
+      const res = await apiRequest("PATCH", `/api/prayers/${prayerId}/share`, { shared });
+      return res.json();
+    },
+    onSuccess: (updated) => {
+      queryClient.setQueryData(["/api/prayers", Number(prayerId)], updated);
+      toast({
+        title: updated.isPrivate === false ? "Shared on prayer wall" : "Removed from prayer wall",
+        description: updated.isPrivate === false
+          ? "Your congregation can now see this request and tap “I prayed.”"
+          : "This request is private to your team again.",
+      });
+    },
+  });
+
   const dirty=!!prayer && notes!==(prayer.pastorNotes??"");
   useEffect(()=>{
     if(!dirty)return;
@@ -159,6 +176,26 @@ export default function PrayerDetail() {
           </div>
         </div>
         {setStatus.isError&&<p role="alert" className="text-destructive text-sm mb-5">Status wasn’t saved. Please try again.</p>}
+
+        {/* Prayer wall sharing */}
+        <div className="rounded-xl border border-border bg-card p-5 mb-6">
+          <div className="flex items-center justify-between gap-4">
+            <div>
+              <div className="text-sm font-medium text-foreground">Share on prayer wall</div>
+              <div className="text-xs text-muted-foreground mt-1">Let your congregation see this request and tap “I prayed.” Only share with the requester’s comfort in mind.</div>
+            </div>
+            <Button
+              variant={prayer.isPrivate === false ? "default" : "outline"}
+              size="sm"
+              data-testid="button-toggle-wall"
+              onClick={() => toggleWall.mutate()}
+              disabled={toggleWall.isPending}
+            >
+              {prayer.isPrivate === false ? "Shared" : "Share"}
+            </Button>
+          </div>
+          {toggleWall.isError&&<p role="alert" className="text-destructive text-sm mt-3">Sharing wasn’t saved. Please try again.</p>}
+        </div>
 
         {/* Care team notes */}
         <div>
