@@ -110,9 +110,9 @@ export default function Landing() {
           <div className="hero-copy">
             <motion.p className="eyebrow" {...heroItem(0)}>Inspired by 1 Peter 5:2</motion.p>
             <motion.h1 {...heroItem(0.1)}>The easiest way to<br />collect <span>prayer requests.</span></motion.h1>
-            <motion.p className="hero-description" {...heroItem(0.2)}>Sign up in minutes. Tend builds your church's prayer page and QR code. Drop the code on your announcement slides or print it on the weekly cards. Your people scan it, and every request lands in one inbox, ready for care and follow-up.</motion.p>
+            <motion.p className="hero-description" {...heroItem(0.2)}>Sign up in minutes. Tend builds a prayer page and QR code for your church, small group, or Bible study. Drop the code on your announcement slides or print it on the weekly cards. Your people scan it, and every request lands in one inbox, ready for care and follow-up.</motion.p>
             <motion.div {...heroItem(0.3)}>
-              <Link className="brand-button" href="/signup" data-testid="link-hero-signup">Get your church’s QR code <ArrowRight size={18} /></Link>
+              <Link className="brand-button" href="/signup" data-testid="link-hero-signup">Get your QR code <ArrowRight size={18} /></Link>
             </motion.div>
             <motion.p className="hero-note" {...heroItem(0.38)}>No app for your congregation to download.</motion.p>
             <motion.div {...heroItem(0.46)}>
@@ -213,7 +213,7 @@ export default function Landing() {
         <section className="closing-section photo-band">
           <div className="brand-container closing-inner">
           <Reveal><p className="eyebrow">An open invitation</p><h2>Grow a culture<br />of prayer.</h2></Reveal>
-          <Reveal delay={0.1}><p>Start with one QR code for your church.<br />Let the conversations grow from there.</p><Link className="brand-button" href="/signup" data-testid="link-cta-signup">Get your church’s QR code <ArrowRight size={18} /></Link></Reveal>
+          <Reveal delay={0.1}><p>Start with one QR code for your church, small group, or Bible study.<br />Let the conversations grow from there.</p><Link className="brand-button" href="/signup" data-testid="link-cta-signup">Get your QR code <ArrowRight size={18} /></Link></Reveal>
           </div>
         </section>
       </main>
