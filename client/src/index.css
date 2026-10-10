@@ -248,7 +248,7 @@
 .care-section.care-photo { background-image: linear-gradient(rgba(251,248,241,.93), rgba(251,248,241,.93)), url('/images/tend-sun-berries.webp'); background-size: cover; background-position: center; color: var(--brand-text); }
 .care-section.care-photo h2, .care-section.care-photo h3 { color: var(--brand-text); }
 .care-section.care-photo .eyebrow { color: var(--brand-accent); }
-.watch-section.photo-band { background-image: linear-gradient(rgba(42,37,33,.72), rgba(42,37,33,.72)), url('/images/tend-dawn-wetland.webp'); background-size: cover; background-position: center; color: #fff; }
+.watch-section.photo-band { background-image: linear-gradient(rgba(42,37,33,.72), rgba(42,37,33,.72)), url('/images/tend-dawn-wetland.webp'); background-size: cover; background-position: center; color: #fff; padding-block: 90px; }
 .watch-section.photo-band .eyebrow { color: #EFC65E; }
 .watch-section.photo-band h2 { color: #FBF8F1; }
 .watch-section.photo-band p { color: rgba(251,248,241,.88); }
