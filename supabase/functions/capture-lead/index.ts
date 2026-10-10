@@ -51,24 +51,28 @@ function footer(unsubUrl: string) {
   return `<p style="color:#888;font-size:12px;margin-top:32px;border-top:1px solid #eee;padding-top:16px;">You are getting this because you tried the Tend demo. <a href="${unsubUrl}">Unsubscribe</a><br/>Mark Johnson Ventures LLC, 551 Settlers Drive, Suite 200, Ada, MI 49301</p>`;
 }
 
+function header() {
+  return `<img src="${SITE_URL}/images/tend-email-header.jpg" alt="Sunlight through trees" width="600" style="width:100%;max-width:600px;height:auto;display:block;border-radius:8px;margin-bottom:24px;" />`;
+}
+
 function email1(unsubUrl: string) {
   return {
     subject: "Your church's prayer page is 5 minutes away",
-    html: `<p>Hi there,</p><p>You just tried the Tend demo. Thank you.</p><p>Your own prayer page and QR code are only a few minutes away. Sign up, and Tend generates everything: the page, the code, the inbox.</p><p><a href="${SITE_URL}/#/signup">Get your church's QR code</a></p><p>No app for your congregation to download. The small-group plan is free forever, and no card is required.</p><p>With care,<br/>The Tend team</p>${footer(unsubUrl)}`,
+    html: `${header()}<p>Hi there,</p><p>You just tried the Tend demo. Thank you.</p><p>Your own prayer page and QR code are only a few minutes away. Sign up, and Tend generates everything: the page, the code, the inbox.</p><p><a href="${SITE_URL}/#/signup">Get your church's QR code</a></p><p>No app for your congregation to download. The small-group plan is free forever, and no card is required.</p><p>With care,<br/>The Tend team</p>${footer(unsubUrl)}`,
   };
 }
 
 function email2(unsubUrl: string) {
   return {
     subject: "What happens after someone scans your QR code?",
-    html: `<p>Hi there,</p><p>Every request lands in one inbox, ready for care and follow-up. Mark requests new, praying, or prayed for, and keep private notes for your next conversation.</p><p><a href="${SITE_URL}/#/demo">Try the prayer inbox</a></p><p>Small moments of follow-up are what turn a scan into a relationship.</p><p>With care,<br/>The Tend team</p>${footer(unsubUrl)}`,
+    html: `${header()}<p>Hi there,</p><p>Every request lands in one inbox, ready for care and follow-up. Mark requests new, praying, or prayed for, and keep private notes for your next conversation.</p><p><a href="${SITE_URL}/#/demo">Try the prayer inbox</a></p><p>Small moments of follow-up are what turn a scan into a relationship.</p><p>With care,<br/>The Tend team</p>${footer(unsubUrl)}`,
   };
 }
 
 function email3(unsubUrl: string) {
   return {
     subject: "Want a hand getting Tend set up?",
-    html: `<p>Hi there,</p><p>If you would like help, just reply to this email and we will walk you through it.</p><p>Your free rollout kit is ready too: an announcement slide and a pew card, each with a slot for your church's QR code.</p><p><a href="${SITE_URL}/#/signup">Get your church's QR code</a></p><p>With care,<br/>The Tend team</p>${footer(unsubUrl)}`,
+    html: `${header()}<p>Hi there,</p><p>If you would like help, just reply to this email and we will walk you through it.</p><p>Your free rollout kit is ready too: an announcement slide and a pew card, each with a slot for your church's QR code.</p><p><a href="${SITE_URL}/#/signup">Get your church's QR code</a></p><p>With care,<br/>The Tend team</p>${footer(unsubUrl)}`,
   };
 }
 
