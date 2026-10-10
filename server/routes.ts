@@ -1,7 +1,6 @@
 import type { Express } from "express";
 import type { Server } from "node:http";
 import { storage } from "./storage";
-import { trackServerSignup, trackServerPrayerSubmitted } from "./analytics";
 import { insertChurchSchema, insertPrayerSchema, STATUSES } from "@shared/schema";
 import type { Status } from "@shared/schema";
 import { z } from "zod";
@@ -28,7 +27,6 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
       return res.status(409).json({ message: "That church URL is already taken. Try another." });
     }
     const church = storage.createChurch({ ...parsed.data, slug });
-    trackServerSignup(req);
     res.json(church);
   });
 
@@ -80,7 +78,6 @@ export async function registerRoutes(httpServer: Server, app: Express): Promise<
       ? { ...parsed.data, submitterName: null, submitterPhone: null, submitterEmail: null }
       : parsed.data;
     const prayer = storage.createPrayer(clean);
-    trackServerPrayerSubmitted(req);
     res.json({ ok: true, id: prayer.id, greetingMessage: church.greetingMessage });
   });
 
