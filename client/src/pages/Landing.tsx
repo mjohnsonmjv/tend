@@ -207,6 +207,28 @@ export default function Landing() {
           <div className="brand-container"><Reveal className="section-intro trust-intro"><p className="eyebrow">Around the clock</p><h2>Cover your church<br />in 24/7 prayer.</h2><p>Start a prayer watch and invite your congregation to cover every 15 minutes of the day. When Bill Bright founded Cru, he began with a 24-hour prayer chain in 96 fifteen-minute segments. Every great movement of God starts the same way.</p><p className="trust-items"><span><Clock size={18} /> 96 daily time slots</span><span><Clock size={18} /> Simple signup, no account needed</span><span><Clock size={18} /> See coverage gaps at a glance</span></p><p className="font-serif italic">"Pray continually." <span className="not-italic text-sm">1 Thessalonians 5:17</span></p></Reveal></div>
         </section>
 
+        <section className="brand-container verse-section">
+          <Reveal className="section-intro"><p className="eyebrow">Why we pray</p><h2>What Scripture<br />says about prayer.</h2></Reveal>
+          <div className="verse-grid">
+            {[
+              { img: "/images/tend-golden-tree.webp", text: "Therefore I tell you, whatever you ask in prayer, believe that you have received it, and it will be yours.", ref: "Mark 11:24" },
+              { img: "/images/tend-sun-sky.webp", text: "Pray without ceasing, give thanks in all circumstances; for this is God's will for you in Christ Jesus.", ref: "1 Thessalonians 5:17-18" },
+              { img: "/images/tend-canopy-1.webp", text: "Likewise the Spirit helps us in our weakness. For we do not know what to pray for as we ought, but the Spirit himself intercedes for us with groanings too deep for words.", ref: "Romans 8:26" },
+              { img: "/images/tend-boardwalk-water.webp", text: "And I tell you, ask, and it will be given to you; seek, and you will find; knock, and it will be opened to you.", ref: "Luke 11:9" },
+              { img: "/images/tend-sun-berries.webp", text: "Therefore, confess your sins to one another and pray for one another, that you may be healed. The prayer of a righteous person has great power as it is working.", ref: "James 5:16" },
+              { img: "/images/tend-canopy-2.webp", text: "Call to me and I will answer you, and will tell you great and hidden things that you have not known.", ref: "Jeremiah 33:3" },
+            ].map((v, i) => (
+              <Reveal key={i} delay={0.05 * i}>
+                <article className="verse-card" style={{ backgroundImage: `linear-gradient(rgba(42,37,33,.55), rgba(42,37,33,.55)), url('${v.img}')` }}>
+                  <p>"{v.text}"</p>
+                  <span>{v.ref} <em>ESV</em></span>
+                  <b className="verse-brand">tendpray.com</b>
+                </article>
+              </Reveal>
+            ))}
+          </div>
+        </section>
+
         <section className="brand-container trust-section">
           <Reveal className="section-intro trust-intro"><p className="eyebrow">Your congregation's trust</p><h2>Private by design.</h2><p>Only your team ever sees prayer requests. They are never sold, never shared, and never used for advertising.</p><p className="trust-items"><span><ShieldCheck size={18} /> Per-church access controls</span><span><ShieldCheck size={18} /> No prayer content in analytics</span><span><ShieldCheck size={18} /> Anonymous sharing welcome</span></p><p><Link className="text-action" href="/privacy" data-testid="link-privacy-promise">Read our privacy promise <ArrowRight size={16} /></Link></p></Reveal>
         </section>
