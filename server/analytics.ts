@@ -18,6 +18,9 @@ async function sendToGA(events: GAEvent[], clientId: string): Promise<void> {
     console.warn("[analytics] GA4_API_SECRET not set; skipping server-side event", events.map(e => e.name).join(","));
     return;
   }
+  // Abort after 3s so analytics can never slow down or block the API response.
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 3000);
   try {
     const res = await fetch(
       `https://www.google-analytics.com/mp/collect?measurement_id=${GA_MEASUREMENT_ID}&api_secret=${GA_API_SECRET}`,
@@ -25,13 +28,19 @@ async function sendToGA(events: GAEvent[], clientId: string): Promise<void> {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ client_id: clientId, events }),
+        signal: controller.signal,
       }
     );
     if (!res.ok) {
       console.warn("[analytics] GA4 MP request failed:", res.status);
     }
   } catch (err) {
-    console.warn("[analytics] GA4 MP error:", (err as Error).message);
+    // AbortError on timeout is expected; don't spam logs for it.
+    if ((err as Error).name !== "AbortError") {
+      console.warn("[analytics] GA4 MP error:", (err as Error).message);
+    }
+  } finally {
+    clearTimeout(timeout);
   }
 }
 
