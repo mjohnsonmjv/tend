@@ -192,7 +192,7 @@ export default function Landing() {
           </div>
         </section>
 
-        <section className="care-section photo-band">
+        <section className="care-section care-photo">
           <div className="brand-container care-grid">
             <Reveal><p className="eyebrow">Built around people, not paperwork</p><h2>Some things are<br />hard to say<br />on a Sunday.</h2><p>Getting prayer requests out of people is one of the hardest parts of church life. A quiet, simple invitation can open the door to a real conversation. Tend helps your church build a culture where asking for prayer feels natural.</p></Reveal>
             <div className="care-details">
@@ -219,7 +219,7 @@ export default function Landing() {
               { img: "/images/tend-canopy-2.webp", text: "Call to me and I will answer you, and will tell you great and hidden things that you have not known.", ref: "Jeremiah 33:3" },
             ].map((v, i) => (
               <Reveal key={i} delay={0.05 * i}>
-                <article className="verse-card" style={{ backgroundImage: `linear-gradient(rgba(42,37,33,.55), rgba(42,37,33,.55)), url('${v.img}')` }}>
+                <article className="verse-card" style={{ backgroundImage: `linear-gradient(rgba(42,37,33,.72), rgba(42,37,33,.72)), url('${v.img}')` }}>
                   <p>"{v.text}"</p>
                   <span>{v.ref} <em>ESV</em></span>
                   <b className="verse-brand">tendpray.com</b>

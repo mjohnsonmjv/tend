@@ -234,7 +234,7 @@
 .new-label { background: #EFC65E; color: #2A2521; padding: 3px 10px; font-size: 12px; border-radius: 4px; margin-left: auto; }
 .inbox-example > p { font-size: 14px; line-height: 1.5; margin: 14px 0; }
 .example-footer { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--brand-muted); }
-.promise-strip { color: #FBF8F1; padding-block: 52px; background-image: linear-gradient(rgba(42,37,33,.58), rgba(42,37,33,.58)), url('/images/tend-sun-leaves.webp'); background-size: cover; background-position: center; }
+.promise-strip { color: #FBF8F1; padding-block: 52px; background-image: linear-gradient(rgba(42,37,33,.72), rgba(42,37,33,.72)), url('/images/tend-sun-leaves.webp'); background-size: cover; background-position: center; }
 .promise-strip > div { display: flex; justify-content: space-between; align-items: center; gap: 20px; font-size: clamp(16px, 1.5vw, 21px); }
 .promise-strip strong { font-weight: 700; }
 .how-section { padding-block: 104px; display: grid; grid-template-columns: 1fr 1fr; gap: 100px; }
@@ -245,8 +245,10 @@
 .step-row h3 { font-size: 22px; font-weight: 700; letter-spacing: -.025em; margin-bottom: 8px; }
 .step-row p { font-size: 15px; color: var(--brand-muted); line-height: 1.6; }
 .care-section { background: var(--brand-soft); padding-block: 90px; }
-.care-section.photo-band { background-image: linear-gradient(rgba(251,248,241,.88), rgba(251,248,241,.88)), url('/images/tend-sun-berries.webp'); background-size: cover; background-position: center; }
-.watch-section.photo-band { background-image: linear-gradient(rgba(42,37,33,.62), rgba(42,37,33,.62)), url('/images/tend-dawn-wetland.webp'); background-size: cover; background-position: center; color: #fff; }
+.care-section.care-photo { background-image: linear-gradient(rgba(251,248,241,.93), rgba(251,248,241,.93)), url('/images/tend-sun-berries.webp'); background-size: cover; background-position: center; color: var(--brand-text); }
+.care-section.care-photo h2, .care-section.care-photo h3 { color: var(--brand-text); }
+.care-section.care-photo .eyebrow { color: var(--brand-accent); }
+.watch-section.photo-band { background-image: linear-gradient(rgba(42,37,33,.72), rgba(42,37,33,.72)), url('/images/tend-dawn-wetland.webp'); background-size: cover; background-position: center; color: #fff; }
 .watch-section.photo-band .eyebrow { color: #EFC65E; }
 .watch-section.photo-band h2 { color: #FBF8F1; }
 .watch-section.photo-band p { color: rgba(251,248,241,.88); }
@@ -273,7 +275,7 @@
 .photo-band .eyebrow { color: #EFC65E; }
 .photo-band h2 { color: #FBF8F1; }
 .photo-band p { color: rgba(251,248,241,.88); }
-.closing-section.photo-band { background-image: linear-gradient(rgba(42,37,33,.60), rgba(42,37,33,.60)), url('/images/tend-boardwalk-water.webp'); }
+.closing-section.photo-band { background-image: linear-gradient(rgba(42,37,33,.72), rgba(42,37,33,.72)), url('/images/tend-boardwalk-water.webp'); }
 .photo-band .verse { font-family: var(--font-serif); font-style: italic; font-size: clamp(17px, 1.6vw, 22px); color: #FBF8F1; margin-top: 20px; max-width: 520px; line-height: 1.5; }
 .photo-band .verse span { display: block; font-family: var(--font-sans); font-style: normal; font-size: 13px; letter-spacing: .08em; text-transform: uppercase; color: #EFC65E; margin-top: 8px; }
 .closing-section:not(.photo-band) > div:last-child p { font-size: 17px; color: var(--brand-muted); margin-bottom: 24px; line-height: 1.6; }
