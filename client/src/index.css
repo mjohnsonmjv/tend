@@ -259,6 +259,8 @@
 .photo-band h2 { color: #FBF8F1; }
 .photo-band p { color: rgba(251,248,241,.88); }
 .closing-section.photo-band { background-image: linear-gradient(rgba(42,37,33,.60), rgba(42,37,33,.60)), url('/images/tend-boardwalk-water.webp'); }
+.photo-band .verse { font-family: var(--font-serif); font-style: italic; font-size: clamp(17px, 1.6vw, 22px); color: #FBF8F1; margin-top: 20px; max-width: 520px; line-height: 1.5; }
+.photo-band .verse span { display: block; font-family: var(--font-sans); font-style: normal; font-size: 13px; letter-spacing: .08em; text-transform: uppercase; color: #EFC65E; margin-top: 8px; }
 .closing-section:not(.photo-band) > div:last-child p { font-size: 17px; color: var(--brand-muted); margin-bottom: 24px; line-height: 1.6; }
 .who-section { padding-block: 104px; }
 .who-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 40px; margin-top: 56px; }

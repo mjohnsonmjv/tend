@@ -213,7 +213,7 @@ export default function Landing() {
 
         <section className="closing-section photo-band">
           <div className="brand-container closing-inner">
-          <Reveal><p className="eyebrow">An open invitation</p><h2>Grow a culture<br />of prayer.</h2></Reveal>
+          <Reveal><p className="eyebrow">An open invitation</p><h2>Grow a culture<br />of prayer.</h2><p className="verse">"Casting all your anxieties on him, because he cares for you." <span>1 Peter 5:7 (ESV)</span></p></Reveal>
           <Reveal delay={0.1}><p>Start with one QR code for your church, small group, or Bible study.<br />Let the conversations grow from there.</p><Link className="brand-button" href="/signup" data-testid="link-cta-signup">Get your QR code <ArrowRight size={18} /></Link></Reveal>
           </div>
         </section>
