@@ -104,17 +104,17 @@ export default function PrayerDetail() {
 
         {/* Meta */}
         <div className="flex flex-wrap items-center gap-3 text-sm text-muted-foreground mb-4">
-          <span className="font-medium text-primary">
+          <span className="font-medium text-[#8a6d1f]">
             {CATEGORY_LABELS[prayer.category as keyof typeof CATEGORY_LABELS]}
           </span>
           <span>·</span>
           <span>{new Date(prayer.createdAt).toLocaleString()}</span>
           {prayer.isUrgent && (
-            <span className="inline-flex items-center gap-1 text-accent">
+            <span className="inline-flex items-center gap-1 text-[#4F6350]">
               <AlertCircle className="h-3 w-3" /> Urgent
             </span>
           )}
-          <span className="ml-auto inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full bg-primary/10 text-primary">
+          <span className="ml-auto inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full bg-primary/10 text-[#8a6d1f]">
             {STATUS_LABELS[prayer.status as Status]}
           </span>
         </div>
@@ -143,7 +143,7 @@ export default function PrayerDetail() {
                   </a>
                   <a
                     href={`sms:${prayer.submitterPhone}`}
-                    className="ml-2 text-xs text-primary underline underline-offset-4"
+                    className="ml-2 text-xs text-[#8a6d1f] underline underline-offset-4"
                   >
                     Open your phone’s text app
                   </a>

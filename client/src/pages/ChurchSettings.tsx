@@ -82,7 +82,7 @@ export default function ChurchSettings() {
                 {save.isPending ? "Saving..." : "Save greeting"}
               </Button>
               {save.isError&&<p role="alert" className="text-destructive text-sm">Couldn’t save the greeting. Please try again.</p>}
-              {save.isSuccess&&<p role="status" className="text-sm text-primary">Greeting saved.</p>}
+              {save.isSuccess&&<p role="status" className="text-sm text-[#8a6d1f]">Greeting saved.</p>}
             </Section>
 
             <Section title="Your church URL" hint="This is what the QR code links to. It's fixed after signup.">
@@ -92,7 +92,7 @@ export default function ChurchSettings() {
                   href={`#/c/${church.slug}`}
                   target="_blank"
                   rel="noreferrer"
-                  className="text-primary hover:text-primary/80"
+                  className="text-[#8a6d1f] hover:text-[#8a6d1f]/80"
                   data-testid="link-open-slug"
                   aria-label="Open your public prayer page"
                 >
@@ -118,7 +118,7 @@ export default function ChurchSettings() {
             >
               {church.plan === "pilot" ? (
                 <div className="rounded-md border border-dashed border-accent/40 bg-accent/5 p-4 text-sm text-foreground/80">
-                  <div className="flex items-center gap-2 text-accent mb-1 font-medium">
+                  <div className="flex items-center gap-2 text-[#4F6350] mb-1 font-medium">
                     <CreditCard className="h-4 w-4" /> Free 30-day trial on paid plans
                   </div>
                   No charges and no card required to start. Upgrade when you're ready.

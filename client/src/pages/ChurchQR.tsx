@@ -183,7 +183,7 @@ export default function ChurchQR() {
                 testId="button-copy-link"
               />
               <div className="rounded-xl border border-border bg-card p-5">
-                <div className="flex items-center gap-3 text-primary mb-2">
+                <div className="flex items-center gap-3 text-[#8a6d1f] mb-2">
                   <MessageCircle className="h-5 w-5" />
                   <div className="font-medium text-foreground">Text it to your small group</div>
                 </div>
@@ -197,7 +197,7 @@ export default function ChurchQR() {
                   data-testid="button-copy-invite"
                   onClick={copyInvite}
                   variant="outline"
-                  className="w-full border-primary/30 text-primary hover:bg-primary/5"
+                  className="w-full border-primary/30 text-[#8a6d1f] hover:bg-primary/5"
                 >
                   Copy group invite
                 </Button>
@@ -209,7 +209,7 @@ export default function ChurchQR() {
                 className="block rounded-xl border border-border bg-card p-5 hover:border-primary/40 transition-colors"
                 data-testid="link-preview-page"
               >
-                <div className="flex items-center gap-3 text-primary mb-1">
+                <div className="flex items-center gap-3 text-[#8a6d1f] mb-1">
                   <ExternalLink className="h-5 w-5" />
                   <span className="font-medium">Preview the public page</span>
                 </div>
@@ -242,7 +242,7 @@ function ActionCard({
 }) {
   return (
     <div className="rounded-xl border border-border bg-card p-5">
-      <div className="flex items-center gap-3 text-primary mb-2">
+      <div className="flex items-center gap-3 text-[#8a6d1f] mb-2">
         {icon}
         <div className="font-medium text-foreground">{title}</div>
       </div>
@@ -251,7 +251,7 @@ function ActionCard({
         data-testid={testId}
         onClick={onClick}
         variant="outline"
-        className="w-full border-primary/30 text-primary hover:bg-primary/5"
+        className="w-full border-primary/30 text-[#8a6d1f] hover:bg-primary/5"
       >
         {cta}
       </Button>

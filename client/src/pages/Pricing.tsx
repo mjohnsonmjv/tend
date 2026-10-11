@@ -156,7 +156,7 @@ export default function Pricing() {
         <h2 className="font-serif text-3xl text-foreground text-center mb-10">Common questions</h2>
         <div className="space-y-6 text-foreground/90">
           <Faq q="Is the free plan really free?">
-            Yes. One prayer page and one QR code, free forever. No card required. Paid plans add a custom greeting, SMS follow-up, and multi-campus features.
+            Yes. One prayer page and one QR code, free forever. No card required. Paid plans add a custom greeting, weekly digest emails, multiple QR codes, automated SMS follow-up, and more.
           </Faq>
           <Faq q="Does my congregation need to install anything?">
             No. They scan a QR code with their phone camera, land on a simple submission page, and share their request. That's it.
