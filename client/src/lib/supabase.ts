@@ -5,26 +5,30 @@ export const SUPABASE_KEY="sb_publishable_UP2-cYmMSsOJsSAvxX2cVw_SS5IyHJZ";
 
 // persistSession must be true for auth-js to use the custom storage adapter
 // below (with false it silently falls back to memory-only storage, which
-// broke OAuth on iOS: the PKCE verifier died with the tab). Ephemerality is
-// enforced by the adapter itself: sessions live only in memory, while
-// *-code-verifier keys are mirrored to localStorage so the verifier survives
-// a full-page navigation (iOS same-tab OAuth redirect) and background-tab
-// eviction (iOS severs popup openers and discards the initiating tab).
+// broke OAuth on iOS: the PKCE verifier died with the tab). Sessions persist
+// in sessionStorage: they survive tab reloads (e.g. iOS evicting the tab
+// when window.open + print opens a new window) but are cleared when the
+// browser closes. *-code-verifier keys are mirrored to localStorage so the
+// verifier survives a full-page navigation (iOS same-tab OAuth redirect) and
+// background-tab eviction (iOS severs popup openers and discards the
+// initiating tab).
 // Publishable key only. Database permissions are enforced by RLS.
 const VERIFIER_SUFFIX="-code-verifier";
 const memoryFallback=new Map<string,string>();
 const hybridStorage={
   getItem(key:string):string|null{
-    if(!key.endsWith(VERIFIER_SUFFIX))return memoryFallback.get(key)??null;
-    try{const v=window.localStorage.getItem(key);if(v!=null)return v;}catch{/* private mode */}
+    const store=key.endsWith(VERIFIER_SUFFIX)?window.localStorage:window.sessionStorage;
+    try{const v=store.getItem(key);if(v!=null)return v;}catch{/* private mode */}
     return memoryFallback.get(key)??null;
   },
   setItem(key:string,value:string):void{
-    if(key.endsWith(VERIFIER_SUFFIX)){try{window.localStorage.setItem(key,value);}catch{/* private mode */}}
+    const store=key.endsWith(VERIFIER_SUFFIX)?window.localStorage:window.sessionStorage;
+    try{store.setItem(key,value);}catch{/* private mode */}
     memoryFallback.set(key,value);
   },
   removeItem(key:string):void{
-    if(key.endsWith(VERIFIER_SUFFIX)){try{window.localStorage.removeItem(key);}catch{/* private mode */}}
+    const store=key.endsWith(VERIFIER_SUFFIX)?window.localStorage:window.sessionStorage;
+    try{store.removeItem(key);}catch{/* private mode */}
     memoryFallback.delete(key);
   },
 };
