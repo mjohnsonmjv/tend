@@ -3,6 +3,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { apiRequest } from "@/lib/queryClient";
+import { useAuth } from "@/components/Auth";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Heart, ArrowLeft, Church } from "lucide-react";
@@ -37,6 +38,7 @@ function timeAgo(iso: string) {
 export default function PrayerWall() {
   const { slug } = useParams<{ slug: string }>();
   const queryClient = useQueryClient();
+  const { session } = useAuth();
   const [prayedIds, setPrayedIds] = useState<Set<number>>(new Set());
 
   const { data: church } = useQuery({
@@ -44,32 +46,43 @@ export default function PrayerWall() {
     queryFn: async () => (await apiRequest("GET", `/api/churches/by-slug/${slug}`)).json(),
   });
 
+  // Load shared prayers via the display-only RPC (works for anonymous visitors).
+  // Fixed: was gated on church?.id, but the public church payload has no id.
   const { data: prayers, isLoading } = useQuery<WallPrayer[]>({
     queryKey: ["prayer-wall", slug],
-    enabled: !!church?.id,
+    enabled: !!slug,
     queryFn: async () => {
-      const { data, error } = await supabase
-        .from("tend_prayers")
-        .select("id,message,category,is_anonymous,submitter_name,created_at,tend_prayer_prays(count)")
-        .eq("church_id", church.id)
-        .eq("is_private", false)
-        .order("created_at", { ascending: false })
-        .limit(100);
+      const { data, error } = await supabase.rpc("get_shared_prayers", { p_slug: slug });
       if (error) throw error;
-      return (data ?? []).map((r: any) => ({
+      return ((data ?? []) as any[]).map((r) => ({
         id: r.id,
         message: r.message,
         category: r.category,
         isAnonymous: r.is_anonymous,
         submitterName: r.submitter_name,
         createdAt: r.created_at,
-        prayCount: r.tend_prayer_prays?.[0]?.count ?? 0,
+        prayCount: Number(r.pray_count ?? 0),
       }));
+    },
+  });
+
+  // Load which prayers the signed-in user already prayed (for "Amen" state).
+  const { data: myPrayedIds } = useQuery<Set<number>>({
+    queryKey: ["my-prays", session?.user?.id],
+    enabled: !!session?.user?.id,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("tend_prayer_prays")
+        .select("prayer_id")
+        .eq("user_id", session!.user!.id);
+      if (error) throw error;
+      return new Set((data ?? []).map((r: any) => r.prayer_id as number));
     },
   });
 
   const pray = useMutation({
     mutationFn: async (prayerId: number) => {
+      if (!session) throw new Error("Sign in to mark that you prayed.");
       const { data, error } = await supabase.rpc("record_prayer_pray", { p_prayer_id: prayerId });
       if (error) throw error;
       return { prayerId, count: data as number };
@@ -83,6 +96,8 @@ export default function PrayerWall() {
       void supabase.functions.invoke("send-prayed-notification", { body: { prayerId } }).catch(() => {});
     },
   });
+
+  const hasPrayed = (id: number) => prayedIds.has(id) || myPrayedIds?.has(id) === true;
 
   return (
     <div className="min-h-screen bg-background">
@@ -114,7 +129,7 @@ export default function PrayerWall() {
         ) : (
           <div className="space-y-4">
             {prayers.map((p) => {
-              const prayed = prayedIds.has(p.id);
+              const prayed = hasPrayed(p.id);
               return (
                 <article key={p.id} className="rounded-xl border border-border bg-card p-5">
                   <div className="flex items-baseline justify-between gap-3 mb-2">
@@ -126,17 +141,28 @@ export default function PrayerWall() {
                     <span className="text-xs text-muted-foreground">
                       {p.prayCount === 0 ? "Be the first to pray" : p.prayCount === 1 ? "1 person prayed" : `${p.prayCount} people prayed`}
                     </span>
-                    <Button
-                      size="sm"
-                      variant={prayed ? "default" : "outline"}
-                      disabled={prayed || pray.isPending}
-                      data-testid={`button-pray-${p.id}`}
-                      onClick={() => pray.mutate(p.id)}
-                      className="min-h-[44px] px-5"
-                    >
-                      <Heart className={`mr-1.5 h-4 w-4 ${prayed ? "fill-current" : ""}`} />
-                      {prayed ? "Amen" : "I prayed"}
-                    </Button>
+                    {session ? (
+                      <Button
+                        size="sm"
+                        variant={prayed ? "default" : "outline"}
+                        disabled={prayed || pray.isPending}
+                        data-testid={`button-pray-${p.id}`}
+                        onClick={() => pray.mutate(p.id)}
+                        className="min-h-[44px] px-5"
+                      >
+                        <Heart className={`mr-1.5 h-4 w-4 ${prayed ? "fill-current" : ""}`} />
+                        {prayed ? "Amen" : "I prayed"}
+                      </Button>
+                    ) : (
+                      <Link
+                        href="/login"
+                        data-testid={`link-signin-pray-${p.id}`}
+                        className="inline-flex items-center min-h-[44px] px-5 rounded-md border border-input text-sm font-medium hover:bg-accent hover:text-accent-foreground"
+                      >
+                        <Heart className="mr-1.5 h-4 w-4" />
+                        Sign in to pray
+                      </Link>
+                    )}
                   </div>
                 </article>
               );
