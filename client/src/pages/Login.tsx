@@ -14,7 +14,7 @@ import { useQuery } from "@tanstack/react-query";
 import { cancelSocialSignIn, startSocialSignIn } from "@/lib/oauth";
 import type {SocialProvider} from "@/lib/oauth-core";
 import { logAuthEvent, authErrorCode } from "@/lib/auth-telemetry";
-import { SiGoogle } from "react-icons/si";
+import { SiGoogle, SiFacebook, SiApple } from "react-icons/si";
 
 const schema=z.object({email:z.string().email("Enter a valid email address."),password:z.string().min(8,"Use at least 8 characters.")});
 export default function Login({register=false}:{register?:boolean}) {
@@ -82,9 +82,9 @@ export default function Login({register=false}:{register?:boolean}) {
     <p className="text-muted-foreground mb-8">{register?"You don't need to be the pastor. Anyone on your church team can create the account, then set up the church and its QR code.":"Sign in to your church's prayer inbox."}</p>
     {session ? <Link className="brand-button" href="/app">Open my churches</Link> :
     <>{socialVisible&&<><div className="space-y-3 mb-7" aria-label="Social sign-in options">
-      {(["google"] as const).map(provider=>{
-        const label="Google";
-        const Icon=SiGoogle;
+      {(["google", "facebook", "apple"] as const).map(provider=>{
+        const label=provider==="google"?"Google":provider==="facebook"?"Facebook":"Apple";
+        const Icon=provider==="google"?SiGoogle:provider==="facebook"?SiFacebook:SiApple;
         return <Button key={provider} type="button" variant="outline" className="w-full h-auto min-h-12 flex-wrap justify-start px-4 py-3" onClick={()=>social(provider)} disabled={pending||!!socialPending||providers.data?.[provider]!==true} data-testid={`button-oauth-${provider}`}>
           <Icon size={18} aria-hidden/><span className="flex-1 text-left">{socialPending===provider?`Connecting to ${label}…`:`Continue with ${label}`}</span>
           {providers.data?.[provider]!==true&&<span className="text-xs text-muted-foreground">{providers.isLoading?"Checking…":providers.isError?"Unavailable":"Setup pending"}</span>}
@@ -111,6 +111,6 @@ export default function Login({register=false}:{register?:boolean}) {
     {message && <p role="status" className="rounded border p-4 mt-5 text-sm" data-testid="text-auth-message">{message}</p>}
     </>}
     <p className="text-sm mt-6">{register?"Already have an account?":"New to Tend?"} <Link href={register?"/login":"/signup"} className="underline" data-testid="link-auth-switch">{register?"Sign in":"Create an account"}</Link></p>
-    <p className="text-xs mt-5 text-muted-foreground">For privacy, sessions are kept in memory. Refreshing or closing the page requires signing in again. Your church data stays saved.</p>
+    <p className="text-xs mt-5 text-muted-foreground">For privacy, your session ends when you close the browser. Your church data stays saved.</p>
   </main><SiteFooter/></div>;
 }

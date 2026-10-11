@@ -1,4 +1,4 @@
-export type SocialProvider="google"|"azure";
+export type SocialProvider="google"|"azure"|"facebook"|"apple";
 export const OAUTH_RETURN="tend:oauth-return";
 export type OAuthReturn={type:typeof OAUTH_RETURN;code?:string;error?:string;channel?:string;solo?:boolean};
 export const validOAuthChannel=(value:unknown):value is string=>typeof value==="string"&&/^[A-Za-z0-9_-]{32,64}$/.test(value);
@@ -7,7 +7,7 @@ export function providerOptions(provider:SocialProvider,redirectTo:string){
 }
 export function providerFlags(payload:unknown):Record<SocialProvider,boolean>{
   const external=(payload as {external?:Record<string,unknown>})?.external;
-  return {google:external?.google===true,azure:external?.azure===true};
+  return {google:external?.google===true,azure:external?.azure===true,facebook:external?.facebook===true,apple:external?.apple===true};
 }
 export function parseOAuthReturn(href:string):OAuthReturn|null{
   const url=new URL(href),hash=new URLSearchParams(url.hash.slice(1));

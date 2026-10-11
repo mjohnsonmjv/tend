@@ -10,7 +10,7 @@ export type AuthEvent =
   | "email_signin_ok" | "email_signin_fail"
   | "session_expired";
 
-export type AuthProvider = "google" | "microsoft" | "azure" | "email";
+export type AuthProvider = "google" | "microsoft" | "azure" | "facebook" | "apple" | "email";
 export type AuthPlatform = "ios" | "android" | "desktop";
 export type AuthFlow = "popup" | "solo";
 
