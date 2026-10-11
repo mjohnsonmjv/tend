@@ -67,11 +67,11 @@ export default function Pricing() {
     <div className="min-h-screen bg-background text-foreground">
       <SiteHeader />
       <section className="max-w-6xl mx-auto px-6 pt-20 pb-16 text-center">
-          <div className="text-xs uppercase tracking-widest text-primary font-medium mb-4">Pricing</div>
+          <div className="text-xs uppercase tracking-widest text-[#8a6d1f] font-medium mb-4">Pricing</div>
         <h1 className="font-serif text-5xl sm:text-6xl text-foreground leading-tight">
           Start free.
           <br />
-          <span className="text-primary">Grow when you're ready.</span>
+          <span className="text-[#8a6d1f]">Grow when you're ready.</span>
         </h1>
         <p className="mt-6 text-lg text-muted-foreground max-w-2xl mx-auto">
           The free plan is free forever, no card required. Paid plans start with a 30-day free trial.
@@ -99,7 +99,7 @@ export default function Pricing() {
           </button>
         </div>
         {annual && (
-          <p className="mt-3 text-sm text-primary font-medium">Annual billing gives you two months free.</p>
+          <p className="mt-3 text-sm text-[#8a6d1f] font-medium">Annual billing gives you two months free.</p>
         )}
       </section>
 

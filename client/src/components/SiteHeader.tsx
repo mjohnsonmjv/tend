@@ -7,7 +7,7 @@ export function SiteHeader() {
   const {session}=useAuth();
   return (
     <header className="brand-header">
-      <a className="skip-link" href="#main-content" onClick={(e) => { e.preventDefault(); document.querySelector("main")?.focus(); document.querySelector("main")?.scrollIntoView(); }}>Skip to content</a>
+      <a className="skip-link" href="#main-content" onClick={(e) => { e.preventDefault(); const m = document.querySelector("main"); if (m) { m.setAttribute("tabindex", "-1"); (m as HTMLElement).focus({ preventScroll: true }); m.scrollIntoView(); } }}>Skip to content</a>
       <div className="brand-container header-inner">
         <Link href="/" data-testid="link-home" aria-label="Tend home"><Logo size={34} showWordmark /></Link>
         <nav aria-label="Main navigation">

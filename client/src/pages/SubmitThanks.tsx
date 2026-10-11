@@ -115,7 +115,7 @@ export default function SubmitThanks() {
         <h1 className="font-serif text-4xl text-foreground leading-tight mb-4">
           {slug === "demo" ? "That’s how simple sharing can be." : "Your request was received."}
         </h1>
-        <p className="font-serif italic text-xl text-primary leading-relaxed">
+        <p className="font-serif italic text-xl text-[#8a6d1f] leading-relaxed">
           "{church?.greetingMessage || "Thank you for sharing."}"
         </p>
         {church?.pastorName && (
