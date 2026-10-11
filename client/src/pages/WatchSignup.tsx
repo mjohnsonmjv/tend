@@ -35,6 +35,8 @@ export default function WatchSignup() {
   const [signupKey] = useState(() => crypto.randomUUID());
   const [done, setDone] = useState<{ startsAt: string; title: string } | null>(null);
   const [showWhy, setShowWhy] = useState(false);
+  const [emailError, setEmailError] = useState("");
+  const validEmail = (v: string) => v === "" || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.trim());
 
   const watch = useQuery<WatchInfo>({ queryKey: [`/api/watches/by-slug/${slug}`] });
 
@@ -64,9 +66,16 @@ export default function WatchSignup() {
   });
 
   const signup = useMutation({
-    mutationFn: async () => (await apiRequest("POST", `/api/watches/by-slug/${slug}/signup`, {
-      slotId: selectedSlot!.id, name, email, phone, website, signupKey, anonymous,
-    })).json(),
+    mutationFn: async () => {
+      if (!validEmail(email)) {
+        setEmailError("Enter a valid email address, or leave this blank.");
+        throw new Error("Enter a valid email address, or leave this blank.");
+      }
+      setEmailError("");
+      return (await apiRequest("POST", `/api/watches/by-slug/${slug}/signup`, {
+        slotId: selectedSlot!.id, name, email, phone, website, signupKey, anonymous,
+      })).json();
+    },
     onSuccess: (data) => {
       try { localStorage.setItem("tend_name", name); } catch { /* ignore */ }
       setDone({ startsAt: data.startsAt, title: data.title });
@@ -117,6 +126,22 @@ export default function WatchSignup() {
   );
   const w = watch.data;
 
+  if (days.length === 0) return (
+    <div className="min-h-screen bg-background text-foreground">
+      <header className="border-b border-border">
+        <div className="max-w-2xl mx-auto px-5 py-6">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2"><Logo size={20} /><span>{w.churchName}</span></div>
+          <h1 className="font-serif text-3xl">{w.title}</h1>
+        </div>
+      </header>
+      <main className="max-w-2xl mx-auto px-5 py-16 text-center">
+        <Check className="h-10 w-10 text-primary mx-auto mb-4" />
+        <h2 className="font-serif text-2xl mb-2">This prayer watch has ended</h2>
+        <p className="text-muted-foreground">Thank you to everyone who covered it in prayer.</p>
+      </main>
+    </div>
+  );
+
   return (
     <div className="min-h-screen bg-background text-foreground">
       <header className="border-b border-border">
@@ -164,7 +189,14 @@ export default function WatchSignup() {
           </div>
         )}
 
-        {day.isLoading ? <div className="space-y-3">{[...Array(6)].map((_, i) => <Skeleton key={i} className="h-14" />)}</div> : (
+        {day.isLoading ? <div className="space-y-3">{[...Array(6)].map((_, i) => <Skeleton key={i} className="h-14" />)}</div> : day.isError ? (
+          <div className="rounded-xl border border-border bg-card p-10 text-center">
+            <Clock className="h-8 w-8 text-muted-foreground mx-auto mb-4" />
+            <p className="font-medium text-foreground mb-2">Couldn’t load this day</p>
+            <p className="text-sm text-muted-foreground mb-4">Something went wrong. Check your connection and try again.</p>
+            <Button variant="outline" onClick={() => day.refetch()}>Try again</Button>
+          </div>
+        ) : (
           <div className="space-y-4">
             {hours.map(([hour, slots]) => (
               <div key={hour}>
@@ -204,7 +236,7 @@ export default function WatchSignup() {
             <p className="text-muted-foreground text-sm mb-4">{activeDay ? fmtDay(activeISO!) : ""} · {fmtTime(selectedSlot.startsAt)} – {fmtTime(selectedSlot.endsAt)}</p>
             <div className="space-y-3">
               <div><Label htmlFor="ws-name">Your name</Label><Input id="ws-name" value={name} onChange={e => setName(e.target.value)} placeholder="First and last name" autoFocus /></div>
-              <div><Label htmlFor="ws-email">Email <span className="text-muted-foreground font-normal">(optional, for a reminder)</span></Label><Input id="ws-email" type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="you@example.com" /></div>
+              <div><Label htmlFor="ws-email">Email <span className="text-muted-foreground font-normal">(optional, for a reminder)</span></Label><Input id="ws-email" type="email" value={email} onChange={e => { setEmail(e.target.value); if (emailError) setEmailError(""); }} placeholder="you@example.com" />{emailError && <p className="text-sm text-destructive mt-1">{emailError}</p>}</div>
               <div><Label htmlFor="ws-phone">Phone <span className="text-muted-foreground font-normal">(optional)</span></Label><Input id="ws-phone" type="tel" value={phone} onChange={e => setPhone(e.target.value)} placeholder="(555) 123-4567" /></div>
               <label className="flex items-start gap-2.5 text-sm cursor-pointer select-none">
                 <input type="checkbox" checked={anonymous} onChange={e => setAnonymous(e.target.checked)} className="mt-0.5 h-4 w-4 rounded border-border accent-primary" />
