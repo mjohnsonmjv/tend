@@ -15,6 +15,7 @@ import { Logo } from "@/components/Logo";
 import { ChevronDown, Camera, X, Loader2 } from "lucide-react";
 import { CATEGORY_LABELS } from "@shared/schema";
 import type { Category } from "@shared/schema";
+import { containsProfanity } from "@/lib/profanity";
 
 interface PublicChurch {
   slug: string;
@@ -260,13 +261,22 @@ export default function ChurchSubmit() {
           <p className="mt-2 text-muted-foreground">
             Share a prayer need with {church.pastorName}. A few honest words is enough; nothing is too small.
           </p>
-          <p className="preview-notice mt-4 rounded-md">{slug === "demo" ? "Example form. Nothing entered here is saved or sent." : "Your request is shared with this church’s account owner, not posted publicly. Share only information you are comfortable giving your church’s care team. This is not an emergency service."}</p>
+          <p className="preview-notice mt-4 rounded-md">{slug === "demo" ? "Example form. Nothing entered here is saved or sent." : "Your request is shared with this church's prayer wall so others can pray for you. Share only information you are comfortable with your church family seeing. This is not an emergency service."}</p>
         </div>
 
         <form
           className="space-y-6"
           onSubmit={(e) => {
             e.preventDefault();
+            const textToCheck = guided ? guidedMessage() : message;
+            if (containsProfanity(textToCheck) || containsProfanity(name)) {
+              toast({
+                title: "Please keep it respectful",
+                description: "Your request contains language we can't share. Please reword it and try again.",
+                variant: "destructive",
+              });
+              return;
+            }
             if (!validateContact()) return;
             submit.mutate();
           }}
