@@ -48,7 +48,10 @@ export default function ChurchQR() {
   const printPoster = () => {
     if (!church) return;
     const win = window.open("", "_blank");
-    if (!win) return;
+    if (!win) {
+      toast({ title: "Popup blocked", description: "Allow popups for tendpray.com, then try again.", variant: "destructive" });
+      return;
+    }
     win.document.write(`
       <!doctype html>
       <html>

@@ -11,6 +11,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { generateChurchQr } from "@/lib/churchQr";
 import { ChevronLeft, ChevronRight, Copy, Check, Send, Loader2, ArrowLeft, Download, QrCode } from "lucide-react";
+import { AccessProblem } from "@/components/AccessProblem";
 import type { Church } from "@shared/schema";
 
 interface Watch {
@@ -116,7 +117,9 @@ export default function WatchDashboard() {
         <Link href={`/church/${churchId}/watches`} className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground mb-4">
           <ArrowLeft className="h-3.5 w-3.5" /> All prayer watches
         </Link>
-        {watch.isLoading ? <Skeleton className="h-10 w-1/2" /> : watch.data && (
+        {watch.isLoading ? <Skeleton className="h-10 w-1/2" /> : watch.data && watch.data.churchId !== churchId ? (
+          <AccessProblem retry={() => watch.refetch()} />
+        ) : watch.data && (
           <>
             <h1 className="font-serif text-3xl">{watch.data.title}</h1>
             <div className="flex flex-wrap items-center gap-2 mt-3">

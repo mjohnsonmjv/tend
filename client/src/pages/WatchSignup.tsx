@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import { useParams, Link } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
@@ -87,6 +87,14 @@ export default function WatchSignup() {
       day.refetch();
     },
   });
+
+  // Escape closes the signup sheet.
+  useEffect(() => {
+    if (!selectedSlot) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") setSelectedSlot(null); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [selectedSlot]);
 
   // Group slots by hour for the timeline grid.
   const hours = useMemo(() => {
