@@ -51,6 +51,7 @@ grant execute on function public.get_shared_prayers(text) to anon, authenticated
 -- gave an email, and no notification sent in the last 24h (throttle).
 -- Atomically stamps last_pray_notification_at so concurrent taps send only one email.
 -- Returns zero rows when the notification should be skipped.
+drop function if exists public.tend_prepare_prayed_notification(bigint);
 create or replace function public.tend_prepare_prayed_notification(p_prayer_id bigint)
 returns table (send_to text, church_name text, pray_count bigint)
 language plpgsql
