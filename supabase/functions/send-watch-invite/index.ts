@@ -27,8 +27,8 @@ Deno.serve(async (req: Request) => {
 
   let body: { watchId?: number; title?: string; signupUrl?: string; invites?: { id: number; email: string; token: string }[] };
   try { body = await req.json(); } catch { return reply(400, { error: "invalid_request" }); }
-  const { watchId, title, signupUrl, invites } = body;
-  if (typeof watchId !== "number" || !title || !signupUrl || !Array.isArray(invites) || !invites.length) {
+  const { watchId, invites } = body;
+  if (typeof watchId !== "number" || !Array.isArray(invites) || !invites.length) {
     return reply(400, { error: "invalid_request" });
   }
   const clean = invites.filter(i => typeof i.id === "number" && isEmail(i.email) && typeof i.token === "string");
@@ -39,9 +39,14 @@ Deno.serve(async (req: Request) => {
     global: { headers: { Authorization: auth } },
   });
   const { data: watch, error: watchErr } = await supabase
-    .from("tend_prayer_watches").select("id").eq("id", watchId).single();
+    .from("tend_prayer_watches").select("id,title,slug").eq("id", watchId).single();
   if (watchErr || !watch) return reply(403, { error: "not_authorized" });
   if (!resendKey) return reply(503, { error: "configuration_unavailable" });
+
+  // Build the invite content server-side from the verified watch row so a
+  // caller cannot send Tend-branded email with an arbitrary link/title.
+  const title = watch.title as string;
+  const signupUrl = `https://tendpray.com/#/w/${watch.slug}`;
 
   let sent = 0;
   const failed: string[] = [];
