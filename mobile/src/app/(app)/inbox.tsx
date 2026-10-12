@@ -317,7 +317,15 @@ export default function Inbox() {
       <View style={{ padding: 16, paddingTop: 0 }}>
         <TouchableOpacity
           style={[styles.button, styles.buttonGold]}
-          onPress={() => router.push(isDemo ? "/(app)/pray?demo=1" : "/(app)/pray")}
+          onPress={() =>
+            router.push(
+              isDemo
+                ? "/(app)/pray?demo=1"
+                : churchId
+                  ? `/(app)/pray?churchId=${churchId}`
+                  : "/(app)/pray"
+            )
+          }
         >
           <Text style={styles.buttonTextDark}>Pray through these requests</Text>
         </TouchableOpacity>
