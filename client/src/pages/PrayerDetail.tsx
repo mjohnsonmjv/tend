@@ -8,9 +8,20 @@ import { DashboardShell } from "@/components/DashboardShell";
 import type { Church, PrayerRequest, Status } from "@shared/schema";
 import { CATEGORY_LABELS, STATUS_LABELS, STATUSES } from "@shared/schema";
 import { useEffect, useState } from "react";
-import { ArrowLeft, Heart, Archive, Undo2, User, Phone, AlertCircle } from "lucide-react";
+import { ArrowLeft, Heart, Archive, Undo2, User, Phone, AlertCircle, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { AccessProblem } from "@/components/AccessProblem";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 export default function PrayerDetail() {
   const { id, prayerId } = useParams<{ id: string; prayerId: string }>();
@@ -52,6 +63,23 @@ export default function PrayerDetail() {
     onSuccess: (updated) => {
       queryClient.setQueryData(["/api/prayers", Number(prayerId)], updated);
       toast({ title: "Notes saved", description: "Your note is saved with this request." });
+    },
+  });
+
+  const deletePrayer = useMutation({
+    mutationFn: async () => {
+      const res = await apiRequest("DELETE", `/api/prayers/${prayerId}`);
+      if (!res.ok) throw new Error("Delete failed");
+      return res.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/churches", churchId, "prayers"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/churches", churchId, "stats"] });
+      toast({ title: "Request deleted", description: "The prayer request was permanently deleted." });
+      navigate(`/church/${churchId}/dashboard`);
+    },
+    onError: () => {
+      toast({ title: "Delete failed", description: "Please try again.", variant: "destructive" });
     },
   });
 
@@ -223,6 +251,41 @@ export default function PrayerDetail() {
           >
             {saveNotes.isPending ? "Saving..." : "Save notes"}
           </Button>
+        </div>
+
+        {/* Danger zone */}
+        <div className="mt-10 pt-6 border-t border-border">
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button
+                variant="outline"
+                size="sm"
+                data-testid="button-delete-prayer"
+                className="text-destructive border-destructive/30 hover:bg-destructive/10"
+              >
+                <Trash2 className="mr-1.5 h-3.5 w-3.5" />
+                Delete this request
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Delete this prayer request?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This permanently deletes the request and its prayer activity. This cannot be undone.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Keep it</AlertDialogCancel>
+                <AlertDialogAction
+                  data-testid="button-confirm-delete"
+                  onClick={() => deletePrayer.mutate()}
+                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                >
+                  {deletePrayer.isPending ? "Deleting..." : "Delete forever"}
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </div>
       </div>
     </DashboardShell>

@@ -1,13 +1,14 @@
 import { useCallback, useEffect, useState } from "react";
 import {
   ActivityIndicator,
+  Alert,
   ScrollView,
   Text,
   TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
-import { useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import {
   supabase,
   CATEGORY_LABELS,
@@ -22,6 +23,7 @@ const STATUS_ACTIONS: PrayerStatus[] = ["new", "praying", "prayed_for", "archive
 
 export default function RequestDetail() {
   const { id, demo } = useLocalSearchParams<{ id: string; demo?: string }>();
+  const router = useRouter();
   const isDemo = demo === "1";
   const [request, setRequest] = useState<PrayerRequest | null>(null);
   const [notes, setNotes] = useState("");
@@ -82,6 +84,39 @@ export default function RequestDetail() {
     }
     setSaving(false);
   };
+
+  const confirmDelete = useCallback(() => {
+    if (!request) return;
+    Alert.alert(
+      "Delete this request?",
+      "This permanently deletes the request and its prayer activity. This cannot be undone.",
+      [
+        { text: "Keep it", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: async () => {
+            setSaving(true);
+            setError(null);
+            if (isDemo) {
+              router.back();
+              return;
+            }
+            const { error: deleteError } = await supabase
+              .from("tend_prayers")
+              .delete()
+              .eq("id", request.id);
+            setSaving(false);
+            if (deleteError) {
+              setError("Could not delete this request. Please try again.");
+            } else {
+              router.back();
+            }
+          },
+        },
+      ]
+    );
+  }, [request, isDemo, router]);
 
   const saveNotes = async () => {
     if (!request) return;
@@ -236,6 +271,24 @@ export default function RequestDetail() {
       </TouchableOpacity>
 
       {error ? <Text style={styles.errorText}>{error}</Text> : null}
+
+      <View style={{ marginTop: 32, paddingTop: 16, borderTopWidth: 1, borderTopColor: colors.stone }}>
+        <TouchableOpacity
+          onPress={confirmDelete}
+          disabled={saving}
+          style={{
+            minHeight: 44,
+            justifyContent: "center",
+            alignItems: "center",
+            borderRadius: 12,
+            borderWidth: 1,
+            borderColor: colors.danger,
+            opacity: saving ? 0.5 : 1,
+          }}
+        >
+          <Text style={{ color: colors.danger, fontWeight: "600" }}>Delete this request</Text>
+        </TouchableOpacity>
+      </View>
     </ScrollView>
   );
 }

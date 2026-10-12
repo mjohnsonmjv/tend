@@ -170,6 +170,7 @@ export async function apiRequest(method: string, url: string, data?: any): Promi
   if(prayerMatch){
     const id=Number(prayerMatch[1]);
     if(method==="GET"){const r=await supabase.from("tend_prayers").select(prayerFields).eq("id",id).single();return result(r.data,r.error);}
+    if(method==="DELETE"&&!prayerMatch[2]){const r=await supabase.from("tend_prayers").delete().eq("id",id);return result(r.data,r.error);}
     const update=prayerMatch[2]==="status"?{status:data.status}:prayerMatch[2]==="share"?{is_private:!data.shared}:{pastor_notes:data.notes};
     const r=await supabase.from("tend_prayers").update(update).eq("id",id).select(prayerFields).single();return result(r.data,r.error);
   }
