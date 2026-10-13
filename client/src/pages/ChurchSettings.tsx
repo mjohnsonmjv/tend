@@ -13,6 +13,7 @@ import { AccessProblem } from "@/components/AccessProblem";
 import { PcoSyncSettings } from "@/components/PcoSyncSettings";
 import { publicChurchUrl } from "@/lib/inbox";
 import { isPrayModeEnabled, setPrayModeEnabled } from "@/lib/prayMode";
+import { CareTeamMembers } from "@/components/CareTeamMembers";
 
 export default function ChurchSettings() {
   const { id } = useParams<{ id: string }>();
@@ -101,10 +102,14 @@ export default function ChurchSettings() {
               </div>
             </Section>
 
-            <Section title="Care team" hint="Contact info shown with your church.">
-              <div className="rounded-md border border-border bg-card px-4 py-3 space-y-1">
-                <div className="text-foreground">{church.pastorName}</div>
-                <div className="text-sm text-muted-foreground">{church.pastorEmail}</div>
+            <Section title="Care team" hint="People who can sign in and help run this church.">
+              <CareTeamMembers churchId={churchId} />
+              <div>
+                <p className="text-sm text-muted-foreground mb-2">Contact info shown with your church.</p>
+                <div className="rounded-md border border-border bg-card px-4 py-3 space-y-1">
+                  <div className="text-foreground">{church.pastorName}</div>
+                  <div className="text-sm text-muted-foreground">{church.pastorEmail}</div>
+                </div>
               </div>
             </Section>
 
