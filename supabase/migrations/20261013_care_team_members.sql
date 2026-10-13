@@ -9,9 +9,10 @@ create table public.tend_care_team_members (
   church_id bigint not null references public.tend_churches(id) on delete cascade,
   email text not null,
   name text not null,
-  created_at timestamptz not null default now(),
-  unique (church_id, lower(email))
+  created_at timestamptz not null default now()
 );
+create unique index tend_care_team_members_church_email_uidx
+  on public.tend_care_team_members(church_id, lower(email));
 create index tend_care_team_members_church_idx on public.tend_care_team_members(church_id);
 create index tend_care_team_members_email_idx on public.tend_care_team_members(lower(email));
 
@@ -164,10 +165,17 @@ create policy tend_watch_invite_owner_all on public.tend_prayer_watch_invites
            or public.tend_is_care_team_member(w.church_id))));
 
 -- device_tokens: all (owner or member of the token's church)
-drop policy if exists device_tokens_owner_all on public.device_tokens;
-create policy device_tokens_owner_all on public.device_tokens
-  for all to authenticated
-  using (user_id = (select auth.uid())
-         or public.tend_is_care_team_member(church_id))
-  with check (user_id = (select auth.uid())
-              or public.tend_is_care_team_member(church_id));
+-- Guarded: the device_tokens table was never created in production
+-- (its 2026-09-30 migration was not applied), so skip if absent.
+do $$
+begin
+  if to_regclass('public.device_tokens') is not null then
+    drop policy if exists device_tokens_owner_all on public.device_tokens;
+    create policy device_tokens_owner_all on public.device_tokens
+      for all to authenticated
+      using (user_id = (select auth.uid())
+             or public.tend_is_care_team_member(church_id))
+      with check (user_id = (select auth.uid())
+                  or public.tend_is_care_team_member(church_id));
+  end if;
+end $$;
