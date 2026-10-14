@@ -17,6 +17,17 @@ interface PublicChurch {
 
 const TURNSTILE_SITE_KEY = "0x4AAAAAAFFHL0Ua9nyooYhz"; // public site key
 
+/** Verses shown on the confirmation screen, rotated randomly per visit.
+ *  Pulled from the homepage "What Scripture says about prayer" cards. */
+const THANKS_VERSES = [
+  { text: "Therefore I tell you, whatever you ask in prayer, believe that you have received it, and it will be yours.", ref: "Mark 11:24" },
+  { text: "Pray without ceasing, give thanks in all circumstances; for this is God's will for you in Christ Jesus.", ref: "1 Thessalonians 5:17-18" },
+  { text: "Likewise the Spirit helps us in our weakness. For we do not know what to pray for as we ought, but the Spirit himself intercedes for us with groanings too deep for words.", ref: "Romans 8:26" },
+  { text: "And I tell you, ask, and it will be given to you; seek, and you will find; knock, and it will be opened to you.", ref: "Luke 11:9" },
+  { text: "Therefore, confess your sins to one another and pray for one another, that you may be healed. The prayer of a righteous person has great power as it is working.", ref: "James 5:16" },
+  { text: "Call to me and I will answer you, and will tell you great and hidden things that you have not known.", ref: "Jeremiah 33:3" },
+];
+
 declare global {
   interface Window { turnstile?: any }
 }
@@ -79,6 +90,7 @@ export default function SubmitThanks() {
   const [nurtureEmail, setNurtureEmail] = useState("");
   const [nurtureState, setNurtureState] = useState<"idle" | "saving" | "done" | "error">("idle");
   const [nurtureError, setNurtureError] = useState("");
+  const [verse] = useState(() => THANKS_VERSES[Math.floor(Math.random() * THANKS_VERSES.length)]);
 
   useEffect(() => {
     if (slug === "demo") loadTurnstile().catch(() => {});
@@ -136,6 +148,11 @@ export default function SubmitThanks() {
             Share another request
           </Link>
         </div>
+
+        <p className="mt-10 font-serif italic text-lg text-[#8a6d1f] leading-relaxed">
+          "{verse.text}"
+        </p>
+        <p className="mt-2 text-sm text-muted-foreground">{verse.ref} (ESV)</p>
 
         {slug === "demo" && nurtureState !== "done" && (
           <form

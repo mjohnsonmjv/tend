@@ -189,6 +189,9 @@
 .tend-hero h1 span { font-style: italic; }
 .dark .tend-hero h1 span { color: #EFC65E; }
 .hero-description { font-size: 18px; line-height: 1.6; color: var(--brand-muted); max-width: 470px; margin: 26px 0; }
+.hero-lede { font-size: 20px; line-height: 1.5; font-weight: 600; max-width: 470px; margin: 24px 0 0; }
+.hero-lede span { font-weight: 400; font-size: 13px; opacity: 0.7; }
+.hero-signup-line { font-size: 18px; margin: 24px 0 18px; }
 .brand-button { background: #EFC65E; color: #2A2521; border: 1px solid #E3B54E; min-height: 54px; display: inline-flex; align-items: center; justify-content: center; gap: 18px; padding: 13px 23px; border-radius: 5px; font-size: 15px; font-weight: 700; transition: background .15s, transform .18s ease, box-shadow .18s ease; }
 .brand-button:hover { background: #F5D17E; transform: translateY(-2px); box-shadow: 0 8px 20px #EFC65E55; }
 .brand-button svg { transition: transform .18s ease; }

@@ -3,6 +3,8 @@ import { Link } from "wouter";
 import { motion, AnimatePresence, MotionConfig, useReducedMotion } from "framer-motion";
 import { ArrowDown, ArrowRight, Check, Clock, Heart, LockKeyhole, ShieldCheck } from "lucide-react";
 import { SiteHeader, SiteFooter } from "@/components/SiteHeader";
+import { getLandingVariant } from "@/lib/landingVariant";
+import { trackLandingVariantViewed } from "@/lib/analytics";
 import QRCode from "qrcode";
 
 const EASE_OUT = "easeOut" as const;
@@ -93,152 +95,285 @@ function HeroVisual() {
   );
 }
 
-export default function Landing() {
-  const heroItem = (delay: number) => ({
+function useHeroItem() {
+  return (delay: number) => ({
     initial: { opacity: 0, y: 30 },
     animate: { opacity: 1, y: 0 },
     transition: { duration: 0.65, delay, ease: EASE_OUT },
   });
+}
+
+function HeroCtas({ heroItem }: { heroItem: (delay: number) => object }) {
+  return (
+    <>
+      <motion.div {...heroItem(0.46)}>
+        <Link className="text-action mr-6" href="/demo" data-testid="link-try-inbox">Try the prayer inbox <ArrowRight size={16}/></Link>
+        <button className="text-action" data-testid="button-how-it-works" onClick={() => document.getElementById("how-it-works")?.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth" })}>See how it works <ArrowDown size={16} /></button>
+      </motion.div>
+    </>
+  );
+}
+
+/** Variant A hero: the current page. */
+function HeroA() {
+  const heroItem = useHeroItem();
+  return (
+    <section className="tend-hero">
+      <div className="brand-container hero-grid">
+      <div className="hero-copy">
+        <motion.p className="eyebrow" {...heroItem(0)}>Inspired by 1 Peter 5:2</motion.p>
+        <motion.h1 {...heroItem(0.1)}>Build a <span>culture of prayer.</span></motion.h1>
+        <motion.p className="hero-description" {...heroItem(0.2)}>Sign up in minutes. Tend builds a prayer page and QR code for your church, small group, or Bible study. Drop the code on your announcement slides or print it on the weekly cards. Your people scan it, and every request lands in one inbox, ready for care and follow-up.</motion.p>
+        <motion.div {...heroItem(0.3)}>
+          <Link className="brand-button" href="/signup" data-testid="link-hero-signup">Get your QR code <ArrowRight size={18} /></Link>
+        </motion.div>
+        <motion.p className="hero-stat" {...heroItem(0.42)}>45% of young adults say prayer is the top reason they attend church. <span>Barna, 2026</span></motion.p>
+        <motion.p className="hero-note" {...heroItem(0.44)}>Free for small groups and churches. No card required.</motion.p>
+        <HeroCtas heroItem={heroItem} />
+      </div>
+      <HeroVisual />
+      </div>
+    </section>
+  );
+}
+
+/** Variant B hero: problem/solution opening, stat first. */
+function HeroB() {
+  const heroItem = useHeroItem();
+  return (
+    <section className="tend-hero">
+      <div className="brand-container hero-grid">
+      <div className="hero-copy">
+        <motion.p className="eyebrow" {...heroItem(0)}>Inspired by 1 Peter 5:2</motion.p>
+        <motion.h1 {...heroItem(0.1)}>Build a <span>culture of prayer.</span></motion.h1>
+        <motion.p className="hero-lede" {...heroItem(0.16)}>45% of young adults say prayer is the top reason they attend church. <span>Barna, 2026</span></motion.p>
+        <motion.p className="hero-description" {...heroItem(0.22)}>Tend builds a prayer page and QR code for your church, small group, or Bible study. Drop the code on your announcement slides or print it on the weekly cards. Your people scan it, and every request lands in one inbox, ready for care and follow-up.</motion.p>
+        <motion.p className="hero-signup-line" {...heroItem(0.28)}><strong>Sign up in minutes.</strong></motion.p>
+        <motion.div {...heroItem(0.32)}>
+          <Link className="brand-button" href="/signup" data-testid="link-hero-signup">Get your QR code <ArrowRight size={18} /></Link>
+        </motion.div>
+        <motion.p className="hero-note" {...heroItem(0.44)}>Free for small groups and churches. No card required.</motion.p>
+        <HeroCtas heroItem={heroItem} />
+      </div>
+      <HeroVisual />
+      </div>
+    </section>
+  );
+}
+
+function PromiseStrip() {
+  return (
+    <section className="promise-strip photo-band"><div className="brand-container"><Reveal><span>"Tend the flock of God."</span><strong>That is why we are called Tend.</strong><span>1 Peter 5:2</span></Reveal></div></section>
+  );
+}
+
+const HOW_STEPS_FULL: [string, string, string][] = [
+  ["01", "Anyone can set it up.", "You do not need to be the pastor. A staff member, a volunteer, a committee, or a giver who wants to sponsor prayer for the church can create the prayer page in minutes. Tend generates the QR code for you."],
+  ["02", "Put it where people gather.", "Download your code for the bulletin or screen. Print a poster for the lobby. The same code keeps working."],
+  ["03", "See the need. Take the next step.", "Read requests in your prayer inbox. Mark what you’re praying for and keep notes for your next conversation."]
+];
+
+const HOW_STEPS_TRIMMED: [string, string, string][] = [
+  ["01", "Anyone can set it up.", "You do not need to be the pastor. A staff member, a volunteer, a committee, or a giver who wants to sponsor prayer for the church can create the prayer page in minutes. Tend generates the QR code for you."],
+  ["02", "See the need. Take the next step.", "Read requests in your prayer inbox. Mark what you’re praying for and keep notes for your next conversation."]
+];
+
+function HowItWorks({ trimmed = false }: { trimmed?: boolean }) {
+  const steps = trimmed ? HOW_STEPS_TRIMMED : HOW_STEPS_FULL;
+  return (
+    <section id="how-it-works" className="brand-container how-section">
+      <Reveal className="section-intro"><p className="eyebrow">From a scan to a conversation</p><h2>A simple invitation.<br />A meaningful connection.</h2><p>Give people an easy way to tell you what’s on their hearts. Technology that sits out of the way, where it belongs.</p></Reveal>
+      <div className="steps-list">
+        {steps.map(([n, title, body], i) => (
+          <Reveal key={n} delay={i * 0.08}>
+            <article className="step-row"><span>{n}</span><div><h3>{title}</h3><p>{body}</p></div></article>
+          </Reveal>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function TryItNow() {
+  return (
+    <section className="brand-container who-section">
+      <div className="try-grid">
+        <Reveal className="section-intro"><p className="eyebrow">Try it right now</p><h2>Scan it. Share a prayer.<br />See how simple it is.</h2><p>This is the real Tend prayer form, running as a demo for Example Church. Nothing you type is saved or sent.</p><p><Link className="text-action" href="/c/demo" data-testid="link-demo-prayer">Open the demo prayer page <ArrowRight size={16} /></Link></p></Reveal>
+        <Reveal delay={0.1} className="try-qr-card">
+          <DemoQr />
+          <p>Point your phone camera at the code.</p>
+        </Reveal>
+      </div>
+    </section>
+  );
+}
+
+function KitSection() {
+  return (
+    <section className="brand-container who-section">
+      <div className="kit-intro">
+      <Reveal className="section-intro"><p className="eyebrow">Every Sunday, everywhere</p><h2>One code.<br />Slides, cards, lobby.</h2><p>The same QR code works wherever you put it. Drop it into your announcement slides, print it on the weekly cards, hang the poster in the lobby. When someone feels the nudge to ask for prayer, the invitation is already there.</p></Reveal>
+      <div className="kit-previews">
+        <motion.img src="/kit/tend-announcement-slide.png" alt="Preview of the Tend announcement slide" loading="lazy"
+          initial={{ opacity: 0, y: 26 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-70px" }}
+          transition={{ duration: 0.6, ease: EASE_OUT }} whileHover={{ y: -6, scale: 1.02 }} />
+        <motion.img src="/kit/tend-pew-card.png" alt="Preview of the Tend printed prayer card" loading="lazy"
+          initial={{ opacity: 0, y: 26 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-70px" }}
+          transition={{ duration: 0.6, delay: 0.12, ease: EASE_OUT }} whileHover={{ y: -6, scale: 1.02 }} />
+      </div>
+      </div>
+      <div className="who-grid">
+        {[
+          ["Announcement slide", "A ready-made slide for your Sunday screens. Add your church's QR code and it is done.", <p key="l"><a className="text-action" href="/kit/tend-announcement-slide.pdf" data-testid="link-kit-slide">Download the slide (PDF) <ArrowRight size={16} /></a></p>],
+          ["Printed card", "A card for the bulletin or the seat backs. Print a stack each week.", <p key="l"><a className="text-action" href="/kit/tend-pew-card.pdf" data-testid="link-kit-card">Download the card (PDF) <ArrowRight size={16} /></a></p>],
+          ["Lobby poster", "Your dashboard generates a printable poster with your church's QR code on it.", <p key="l"><Link className="text-action" href="/signup" data-testid="link-kit-poster">Get your QR code <ArrowRight size={16} /></Link></p>],
+        ].map(([title, body, link], i) => (
+          <Reveal key={title as string} delay={i * 0.08}>
+            <article><h3>{title}</h3><p>{body}</p>{link}</article>
+          </Reveal>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function WhoSection({ renamed = false }: { renamed?: boolean }) {
+  return (
+    <section className="brand-container who-section">
+      <Reveal className="section-intro"><p className="eyebrow">It starts with one person</p><h2>{renamed ? <>For anyone<br />who leads prayer.</> : <>You do not have to<br />be the pastor.</>}</h2><p>Tend was made to be started by whoever cares enough to begin. If that is you, your church's prayer page and QR code can be ready in minutes.</p></Reveal>
+      <div className="who-grid">
+        {[
+          ["Pastors and staff", "Open a door that never closes. Let people share prayer needs the moment they feel them, not just on Sunday morning."],
+          ["Volunteers and committees", "No technical background needed. Create the page, download the QR code, and put it in the bulletin or on the lobby screen."],
+          ["Givers", "Sponsor Tend for your church. It is a simple gift that helps build a lasting culture of prayer."],
+        ].map(([title, body], i) => (
+          <Reveal key={title} delay={i * 0.08}>
+            <article><h3>{title}</h3><p>{body}</p></article>
+          </Reveal>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function CareSection() {
+  return (
+    <section className="care-section care-photo">
+      <div className="brand-container care-grid">
+        <Reveal><p className="eyebrow">Built around people, not paperwork</p><h2>Some things are<br />hard to say<br />on a Sunday.</h2><p>Getting prayer requests out of people is one of the hardest parts of church life. A quiet, simple invitation can open the door to a real conversation. Tend helps your church build a culture where asking for prayer feels natural.</p></Reveal>
+        <div className="care-details">
+          <Reveal delay={0.05}><article><LockKeyhole size={22} /><div><h3>Let people choose how to share.</h3><p>Leave a name and a phone number for follow-up, or submit without identifying details.</p></div></article></Reveal>
+          <Reveal delay={0.13}><article><Heart size={22} /><div><h3>Remember the person behind the request.</h3><p>Move from new to praying to prayed for. Keep the context together so your next conversation starts with care.</p></div></article></Reveal>
+          <Reveal delay={0.2}><p className="care-principle">The care is yours.<br />Tend helps you keep track.</p></Reveal>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function WatchSection() {
+  return (
+    <section className="trust-section watch-section photo-band">
+      <div className="brand-container"><Reveal className="section-intro trust-intro"><p className="eyebrow">Around the clock</p><h2>Cover your church<br />in 24/7 prayer.</h2><p>Start a prayer watch and invite your congregation to cover every 15 minutes of the day. When Bill Bright founded Cru (Campus Crusade for Christ), he began with a 24-hour prayer chain in 96 fifteen-minute segments. Every great movement of God starts the same way.</p><p className="trust-items"><span><Clock size={18} /> 96 daily time slots</span><span><Clock size={18} /> Simple signup, no account needed</span><span><Clock size={18} /> See coverage gaps at a glance</span></p><p className="font-serif italic">"Pray continually." <span className="not-italic text-sm">1 Thessalonians 5:17</span></p></Reveal></div>
+    </section>
+  );
+}
+
+function VerseSection() {
+  return (
+    <section className="brand-container verse-section">
+      <Reveal className="section-intro"><p className="eyebrow">Why we pray</p><h2>What Scripture<br />says about prayer.</h2></Reveal>
+      <div className="verse-grid">
+        {[
+          { img: "/images/tend-golden-tree.webp", text: "Therefore I tell you, whatever you ask in prayer, believe that you have received it, and it will be yours.", ref: "Mark 11:24" },
+          { img: "/images/tend-sun-sky.webp", text: "Pray without ceasing, give thanks in all circumstances; for this is God's will for you in Christ Jesus.", ref: "1 Thessalonians 5:17-18" },
+          { img: "/images/tend-canopy-1.webp", text: "Likewise the Spirit helps us in our weakness. For we do not know what to pray for as we ought, but the Spirit himself intercedes for us with groanings too deep for words.", ref: "Romans 8:26" },
+          { img: "/images/tend-boardwalk-water.webp", text: "And I tell you, ask, and it will be given to you; seek, and you will find; knock, and it will be opened to you.", ref: "Luke 11:9" },
+          { img: "/images/tend-sun-berries.webp", text: "Therefore, confess your sins to one another and pray for one another, that you may be healed. The prayer of a righteous person has great power as it is working.", ref: "James 5:16" },
+          { img: "/images/tend-canopy-2.webp", text: "Call to me and I will answer you, and will tell you great and hidden things that you have not known.", ref: "Jeremiah 33:3" },
+        ].map((v, i) => (
+          <Reveal key={i} delay={0.05 * i}>
+            <article className="verse-card" style={{ backgroundImage: `linear-gradient(rgba(42,37,33,.72), rgba(42,37,33,.72)), url('${v.img}')` }}>
+              <p>"{v.text}"</p>
+              <span>{v.ref} <em>ESV</em></span>
+              <b className="verse-brand">tendpray.com</b>
+            </article>
+          </Reveal>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function PrivacySection() {
+  return (
+    <section className="brand-container trust-section">
+      <Reveal className="section-intro trust-intro"><p className="eyebrow">Your congregation's trust</p><h2>Private by design.</h2><p>Only your team ever sees prayer requests. They are never sold, never shared, and never used for advertising.</p><p className="trust-items"><span><ShieldCheck size={18} /> Per-church access controls</span><span><ShieldCheck size={18} /> No prayer content in analytics</span><span><ShieldCheck size={18} /> Anonymous sharing welcome</span></p><p><Link className="text-action" href="/privacy" data-testid="link-privacy-promise">Read our privacy promise <ArrowRight size={16} /></Link></p></Reveal>
+    </section>
+  );
+}
+
+/** Variant B only: answers wariness about technology in the church. */
+function PrinciplesSection() {
+  return (
+    <section className="brand-container trust-section">
+      <Reveal className="section-intro trust-intro"><p className="eyebrow">How we think about technology</p><h2>A tool for ministry,<br />not a replacement for it.</h2><p>Tend will never pray for you, counsel you, or stand in for a pastor. It handles the logistics so your people can do the human work: listening, showing up, and praying together. Technology that sits out of the way, where it belongs.</p></Reveal>
+    </section>
+  );
+}
+
+function ClosingSection() {
+  return (
+    <section className="closing-section photo-band">
+      <div className="brand-container closing-inner">
+      <Reveal><p className="eyebrow">An open invitation</p><h2>Grow a culture<br />of prayer.</h2><p className="verse">"Casting all your anxieties on him, because he cares for you." <span>1 Peter 5:7 (ESV)</span></p></Reveal>
+      <Reveal delay={0.1}><p>Start with one QR code for your church, small group, or Bible study.<br />Let the conversations grow from there.</p><Link className="brand-button mt-8" href="/signup" data-testid="link-cta-signup">Get your QR code <ArrowRight size={18} /></Link></Reveal>
+      </div>
+    </section>
+  );
+}
+
+export default function Landing() {
+  const [variant] = useState(getLandingVariant);
+  useEffect(() => {
+    trackLandingVariantViewed(variant);
+  }, [variant]);
 
   return (
     <MotionConfig reducedMotion="user">
     <div className="brand-site">
       <SiteHeader />
       <main id="main-content">
-        <section className="tend-hero">
-          <div className="brand-container hero-grid">
-          <div className="hero-copy">
-            <motion.p className="eyebrow" {...heroItem(0)}>Inspired by 1 Peter 5:2</motion.p>
-            <motion.h1 {...heroItem(0.1)}>Build a <span>culture of prayer.</span></motion.h1>
-            <motion.p className="hero-description" {...heroItem(0.2)}>Sign up in minutes. Tend builds a prayer page and QR code for your church, small group, or Bible study. Drop the code on your announcement slides or print it on the weekly cards. Your people scan it, and every request lands in one inbox, ready for care and follow-up.</motion.p>
-            <motion.div {...heroItem(0.3)}>
-              <Link className="brand-button" href="/signup" data-testid="link-hero-signup">Get your QR code <ArrowRight size={18} /></Link>
-            </motion.div>
-            <motion.p className="hero-stat" {...heroItem(0.42)}>45% of young adults say prayer is the top reason they attend church. <span>Barna, 2026</span></motion.p>
-            <motion.p className="hero-note" {...heroItem(0.44)}>Free for small groups and churches. No card required.</motion.p>
-            <motion.div {...heroItem(0.46)}>
-              <Link className="text-action mr-6" href="/demo" data-testid="link-try-inbox">Try the prayer inbox <ArrowRight size={16}/></Link>
-              <button className="text-action" data-testid="button-how-it-works" onClick={() => document.getElementById("how-it-works")?.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth" })}>See how it works <ArrowDown size={16} /></button>
-            </motion.div>
-          </div>
-          <HeroVisual />
-          </div>
-        </section>
-
-        <section className="promise-strip photo-band"><div className="brand-container"><Reveal><span>"Tend the flock of God."</span><strong>That is why we are called Tend.</strong><span>1 Peter 5:2</span></Reveal></div></section>
-
-        <section id="how-it-works" className="brand-container how-section">
-          <Reveal className="section-intro"><p className="eyebrow">From a scan to a conversation</p><h2>A simple invitation.<br />A meaningful connection.</h2><p>Give people an easy way to tell you what’s on their hearts. Keep the technology out of the way.</p></Reveal>
-          <div className="steps-list">
-            {[
-              ["01", "Anyone can set it up.", "You do not need to be the pastor. A staff member, a volunteer, a committee, or a giver who wants to sponsor prayer for the church can create the prayer page in minutes. Tend generates the QR code for you."],
-              ["02", "Put it where people gather.", "Download your code for the bulletin or screen. Print a poster for the lobby. The same code keeps working."],
-              ["03", "See the need. Take the next step.", "Read requests in your prayer inbox. Mark what you’re praying for and keep notes for your next conversation."]
-            ].map(([n, title, body], i) => (
-              <Reveal key={n} delay={i * 0.08}>
-                <article className="step-row"><span>{n}</span><div><h3>{title}</h3><p>{body}</p></div></article>
-              </Reveal>
-            ))}
-          </div>
-        </section>
-
-        <section className="brand-container who-section">
-          <div className="try-grid">
-            <Reveal className="section-intro"><p className="eyebrow">Try it right now</p><h2>Scan it. Share a prayer.<br />See how simple it is.</h2><p>This is the real Tend prayer form, running as a demo for Example Church. Nothing you type is saved or sent.</p><p><Link className="text-action" href="/c/demo" data-testid="link-demo-prayer">Open the demo prayer page <ArrowRight size={16} /></Link></p></Reveal>
-            <Reveal delay={0.1} className="try-qr-card">
-              <DemoQr />
-              <p>Point your phone camera at the code.</p>
-            </Reveal>
-          </div>
-        </section>
-
-        <section className="brand-container who-section">
-          <div className="kit-intro">
-          <Reveal className="section-intro"><p className="eyebrow">Every Sunday, everywhere</p><h2>One code.<br />Slides, cards, lobby.</h2><p>The same QR code works wherever you put it. Drop it into your announcement slides, print it on the weekly cards, hang the poster in the lobby. When someone feels the nudge to ask for prayer, the invitation is already there.</p></Reveal>
-          <div className="kit-previews">
-            <motion.img src="/kit/tend-announcement-slide.png" alt="Preview of the Tend announcement slide" loading="lazy"
-              initial={{ opacity: 0, y: 26 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-70px" }}
-              transition={{ duration: 0.6, ease: EASE_OUT }} whileHover={{ y: -6, scale: 1.02 }} />
-            <motion.img src="/kit/tend-pew-card.png" alt="Preview of the Tend printed prayer card" loading="lazy"
-              initial={{ opacity: 0, y: 26 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, margin: "-70px" }}
-              transition={{ duration: 0.6, delay: 0.12, ease: EASE_OUT }} whileHover={{ y: -6, scale: 1.02 }} />
-          </div>
-          </div>
-          <div className="who-grid">
-            {[
-              ["Announcement slide", "A ready-made slide for your Sunday screens. Add your church's QR code and it is done.", <p key="l"><a className="text-action" href="/kit/tend-announcement-slide.pdf" data-testid="link-kit-slide">Download the slide (PDF) <ArrowRight size={16} /></a></p>],
-              ["Printed card", "A card for the bulletin or the seat backs. Print a stack each week.", <p key="l"><a className="text-action" href="/kit/tend-pew-card.pdf" data-testid="link-kit-card">Download the card (PDF) <ArrowRight size={16} /></a></p>],
-              ["Lobby poster", "Your dashboard generates a printable poster with your church's QR code on it.", <p key="l"><Link className="text-action" href="/signup" data-testid="link-kit-poster">Get your QR code <ArrowRight size={16} /></Link></p>],
-            ].map(([title, body, link], i) => (
-              <Reveal key={title as string} delay={i * 0.08}>
-                <article><h3>{title}</h3><p>{body}</p>{link}</article>
-              </Reveal>
-            ))}
-          </div>
-        </section>
-
-        <section className="brand-container who-section">
-          <Reveal className="section-intro"><p className="eyebrow">It starts with one person</p><h2>You do not have to<br />be the pastor.</h2><p>Tend was made to be started by whoever cares enough to begin. If that is you, your church's prayer page and QR code can be ready in minutes.</p></Reveal>
-          <div className="who-grid">
-            {[
-              ["Pastors and staff", "Open a door that never closes. Let people share prayer needs the moment they feel them, not just on Sunday morning."],
-              ["Volunteers and committees", "No technical background needed. Create the page, download the QR code, and put it in the bulletin or on the lobby screen."],
-              ["Givers", "Sponsor Tend for your church. It is a simple gift that helps build a lasting culture of prayer."],
-            ].map(([title, body], i) => (
-              <Reveal key={title} delay={i * 0.08}>
-                <article><h3>{title}</h3><p>{body}</p></article>
-              </Reveal>
-            ))}
-          </div>
-        </section>
-
-        <section className="care-section care-photo">
-          <div className="brand-container care-grid">
-            <Reveal><p className="eyebrow">Built around people, not paperwork</p><h2>Some things are<br />hard to say<br />on a Sunday.</h2><p>Getting prayer requests out of people is one of the hardest parts of church life. A quiet, simple invitation can open the door to a real conversation. Tend helps your church build a culture where asking for prayer feels natural.</p></Reveal>
-            <div className="care-details">
-              <Reveal delay={0.05}><article><LockKeyhole size={22} /><div><h3>Let people choose how to share.</h3><p>Leave a name and a phone number for follow-up, or submit without identifying details.</p></div></article></Reveal>
-              <Reveal delay={0.13}><article><Heart size={22} /><div><h3>Remember the person behind the request.</h3><p>Move from new to praying to prayed for. Keep the context together so your next conversation starts with care.</p></div></article></Reveal>
-              <Reveal delay={0.2}><p className="care-principle">The care is yours.<br />Tend helps you keep track.</p></Reveal>
-            </div>
-          </div>
-        </section>
-
-        <section className="trust-section watch-section photo-band">
-          <div className="brand-container"><Reveal className="section-intro trust-intro"><p className="eyebrow">Around the clock</p><h2>Cover your church<br />in 24/7 prayer.</h2><p>Start a prayer watch and invite your congregation to cover every 15 minutes of the day. When Bill Bright founded Cru (Campus Crusade for Christ), he began with a 24-hour prayer chain in 96 fifteen-minute segments. Every great movement of God starts the same way.</p><p className="trust-items"><span><Clock size={18} /> 96 daily time slots</span><span><Clock size={18} /> Simple signup, no account needed</span><span><Clock size={18} /> See coverage gaps at a glance</span></p><p className="font-serif italic">"Pray continually." <span className="not-italic text-sm">1 Thessalonians 5:17</span></p></Reveal></div>
-        </section>
-
-        <section className="brand-container verse-section">
-          <Reveal className="section-intro"><p className="eyebrow">Why we pray</p><h2>What Scripture<br />says about prayer.</h2></Reveal>
-          <div className="verse-grid">
-            {[
-              { img: "/images/tend-golden-tree.webp", text: "Therefore I tell you, whatever you ask in prayer, believe that you have received it, and it will be yours.", ref: "Mark 11:24" },
-              { img: "/images/tend-sun-sky.webp", text: "Pray without ceasing, give thanks in all circumstances; for this is God's will for you in Christ Jesus.", ref: "1 Thessalonians 5:17-18" },
-              { img: "/images/tend-canopy-1.webp", text: "Likewise the Spirit helps us in our weakness. For we do not know what to pray for as we ought, but the Spirit himself intercedes for us with groanings too deep for words.", ref: "Romans 8:26" },
-              { img: "/images/tend-boardwalk-water.webp", text: "And I tell you, ask, and it will be given to you; seek, and you will find; knock, and it will be opened to you.", ref: "Luke 11:9" },
-              { img: "/images/tend-sun-berries.webp", text: "Therefore, confess your sins to one another and pray for one another, that you may be healed. The prayer of a righteous person has great power as it is working.", ref: "James 5:16" },
-              { img: "/images/tend-canopy-2.webp", text: "Call to me and I will answer you, and will tell you great and hidden things that you have not known.", ref: "Jeremiah 33:3" },
-            ].map((v, i) => (
-              <Reveal key={i} delay={0.05 * i}>
-                <article className="verse-card" style={{ backgroundImage: `linear-gradient(rgba(42,37,33,.72), rgba(42,37,33,.72)), url('${v.img}')` }}>
-                  <p>"{v.text}"</p>
-                  <span>{v.ref} <em>ESV</em></span>
-                  <b className="verse-brand">tendpray.com</b>
-                </article>
-              </Reveal>
-            ))}
-          </div>
-        </section>
-
-        <section className="brand-container trust-section">
-          <Reveal className="section-intro trust-intro"><p className="eyebrow">Your congregation's trust</p><h2>Private by design.</h2><p>Only your team ever sees prayer requests. They are never sold, never shared, and never used for advertising.</p><p className="trust-items"><span><ShieldCheck size={18} /> Per-church access controls</span><span><ShieldCheck size={18} /> No prayer content in analytics</span><span><ShieldCheck size={18} /> Anonymous sharing welcome</span></p><p><Link className="text-action" href="/privacy" data-testid="link-privacy-promise">Read our privacy promise <ArrowRight size={16} /></Link></p></Reveal>
-        </section>
-
-        <section className="closing-section photo-band">
-          <div className="brand-container closing-inner">
-          <Reveal><p className="eyebrow">An open invitation</p><h2>Grow a culture<br />of prayer.</h2><p className="verse">"Casting all your anxieties on him, because he cares for you." <span>1 Peter 5:7 (ESV)</span></p></Reveal>
-          <Reveal delay={0.1}><p>Start with one QR code for your church, small group, or Bible study.<br />Let the conversations grow from there.</p><Link className="brand-button mt-8" href="/signup" data-testid="link-cta-signup">Get your QR code <ArrowRight size={18} /></Link></Reveal>
-          </div>
-        </section>
+        {variant === "b" ? (
+          <>
+            <HeroB />
+            <PromiseStrip />
+            <CareSection />
+            <PrivacySection />
+            <PrinciplesSection />
+            <HowItWorks trimmed />
+            <TryItNow />
+            <KitSection />
+            <WhoSection renamed />
+            <WatchSection />
+            <VerseSection />
+            <ClosingSection />
+          </>
+        ) : (
+          <>
+            <HeroA />
+            <PromiseStrip />
+            <HowItWorks />
+            <TryItNow />
+            <KitSection />
+            <WhoSection />
+            <CareSection />
+            <WatchSection />
+            <VerseSection />
+            <PrivacySection />
+            <ClosingSection />
+          </>
+        )}
       </main>
       <SiteFooter />
     </div>

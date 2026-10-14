@@ -5,6 +5,8 @@
 
 export const GA_MEASUREMENT_ID = "G-BXVRYNV9ZR";
 
+import { getLandingVariant, type LandingVariant } from "./landingVariant";
+
 type GtagFn = (command: string, target: string, params?: Record<string, unknown>) => void;
 
 function gtag(): GtagFn | null {
@@ -37,10 +39,20 @@ export function currentHashPath(): string {
 }
 
 // A church signup was started (signup page viewed).
+// Carries the landing page A/B variant so conversion can be compared in GA4.
 export function trackSignupStarted(): void {
   const fn = gtag();
   if (!fn) return;
-  fn("event", "signup_started", { method: "church_signup" });
+  fn("event", "signup_started", { method: "church_signup", landing_variant: getLandingVariant() });
+}
+
+// Fired when the landing page is viewed, carrying the A/B variant.
+// Pair with signup_started (which carries the same parameter) to compare
+// variant conversion in a GA4 funnel exploration.
+export function trackLandingVariantViewed(variant: LandingVariant): void {
+  const fn = gtag();
+  if (!fn) return;
+  fn("event", "landing_variant_viewed", { landing_variant: variant });
 }
 
 // A church was created and its QR code issued. Uses GA4's recommended sign_up event.
