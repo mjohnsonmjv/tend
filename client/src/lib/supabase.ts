@@ -1,6 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 
-export const SUPABASE_URL="https://hvrdkrtismqbrkbmcgne.supabase.co";
+export const SUPABASE_URL="https://auth.tendpray.com";
 export const SUPABASE_KEY="sb_publishable_UP2-cYmMSsOJsSAvxX2cVw_SS5IyHJZ";
 
 // persistSession must be true for auth-js to use the custom storage adapter
