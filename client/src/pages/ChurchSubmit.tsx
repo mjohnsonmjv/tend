@@ -385,7 +385,9 @@ export default function ChurchSubmit() {
                     ? "Please pray for..."
                     : category === "praise"
                       ? "God answered..."
-                      : "I'm here today, and..."
+                      : category === "question"
+                        ? "I've been wondering..."
+                        : "I'm here today, and..."
                 }
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}

@@ -73,7 +73,7 @@ function HeroVisual() {
         onBlur={() => setPaused(false)}
         aria-label="Example prayer inbox (auto-rotating demo, pauses on hover or focus)">
         <div className="inbox-example-top"><span><span className="live-dot" aria-hidden="true" /><Heart size={16} /> Prayer inbox</span><span className="sample-label">Example</span></div>
-        <div aria-live="off">
+        <div aria-live="off" style={{ minHeight: 168 }}>
         <AnimatePresence mode="wait">
           <motion.div
             key={index}
@@ -204,7 +204,7 @@ export default function Landing() {
         </section>
 
         <section className="trust-section watch-section photo-band">
-          <div className="brand-container"><Reveal className="section-intro trust-intro"><p className="eyebrow">Around the clock</p><h2>Cover your church<br />in 24/7 prayer.</h2><p>Start a prayer watch and invite your congregation to cover every 15 minutes of the day. When Bill Bright founded Cru, he began with a 24-hour prayer chain in 96 fifteen-minute segments. Every great movement of God starts the same way.</p><p className="trust-items"><span><Clock size={18} /> 96 daily time slots</span><span><Clock size={18} /> Simple signup, no account needed</span><span><Clock size={18} /> See coverage gaps at a glance</span></p><p className="font-serif italic">"Pray continually." <span className="not-italic text-sm">1 Thessalonians 5:17</span></p></Reveal></div>
+          <div className="brand-container"><Reveal className="section-intro trust-intro"><p className="eyebrow">Around the clock</p><h2>Cover your church<br />in 24/7 prayer.</h2><p>Start a prayer watch and invite your congregation to cover every 15 minutes of the day. When Bill Bright founded Cru (Campus Crusade for Christ), he began with a 24-hour prayer chain in 96 fifteen-minute segments. Every great movement of God starts the same way.</p><p className="trust-items"><span><Clock size={18} /> 96 daily time slots</span><span><Clock size={18} /> Simple signup, no account needed</span><span><Clock size={18} /> See coverage gaps at a glance</span></p><p className="font-serif italic">"Pray continually." <span className="not-italic text-sm">1 Thessalonians 5:17</span></p></Reveal></div>
         </section>
 
         <section className="brand-container verse-section">
@@ -236,7 +236,7 @@ export default function Landing() {
         <section className="closing-section photo-band">
           <div className="brand-container closing-inner">
           <Reveal><p className="eyebrow">An open invitation</p><h2>Grow a culture<br />of prayer.</h2><p className="verse">"Casting all your anxieties on him, because he cares for you." <span>1 Peter 5:7 (ESV)</span></p></Reveal>
-          <Reveal delay={0.1}><p>Start with one QR code for your church, small group, or Bible study.<br />Let the conversations grow from there.</p><Link className="brand-button" href="/signup" data-testid="link-cta-signup">Get your QR code <ArrowRight size={18} /></Link></Reveal>
+          <Reveal delay={0.1}><p>Start with one QR code for your church, small group, or Bible study.<br />Let the conversations grow from there.</p><Link className="brand-button mt-8" href="/signup" data-testid="link-cta-signup">Get your QR code <ArrowRight size={18} /></Link></Reveal>
           </div>
         </section>
       </main>
