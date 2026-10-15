@@ -13,7 +13,7 @@ export function SiteHeader() {
         <nav aria-label="Main navigation">
           <Link href={session?"/app":"/login"} data-testid="link-login">{session?"My churches":"Sign in"}</Link>
           <Link href="/pricing" data-testid="link-pricing">Pricing</Link>
-          <Link href="/signup" data-testid="link-signup" className="header-cta">{session?"New church":"Get your QR code"} <ArrowRight size={16} /></Link>
+          <Link href="/signup" data-testid="link-signup" className="header-cta">{session?"New church or group":"Get your QR code"} <ArrowRight size={16} /></Link>
         </nav>
       </div>
     </header>
@@ -25,7 +25,7 @@ export function SiteFooter() {
     <footer className="brand-footer">
       <div className="brand-container footer-inner">
         <div><Link href="/" data-testid="link-footer-home"><Logo size={30} showWordmark /></Link><p>Make room for every prayer.</p><p>100% of profits donated to support Compassion International orphans.</p></div>
-        <div className="footer-links"><Link href="/pricing" data-testid="link-footer-pricing">Pricing</Link><Link href="/signup" data-testid="link-footer-signup">Create your church</Link><Link href="/privacy" data-testid="link-footer-privacy">Privacy</Link><Link href="/terms" data-testid="link-footer-terms">Terms</Link><a href="mailto:support@tendpray.com" data-testid="link-footer-contact">support@tendpray.com</a></div>
+        <div className="footer-links"><Link href="/pricing" data-testid="link-footer-pricing">Pricing</Link><Link href="/signup" data-testid="link-footer-signup">Create your church or group</Link><Link href="/privacy" data-testid="link-footer-privacy">Privacy</Link><Link href="/terms" data-testid="link-footer-terms">Terms</Link><a href="mailto:support@tendpray.com" data-testid="link-footer-contact">support@tendpray.com</a></div>
         <span className="footer-scripture">Inspired by 1 Peter 5:2</span>
       </div>
     </footer>

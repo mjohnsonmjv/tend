@@ -39,7 +39,7 @@ export default function BillingCheckout() {
         setChurches(list);
         if (list.length === 1) startCheckout(list[0].id);
       } catch (e: any) {
-        setError(e.message || "Could not load your churches.");
+        setError(e.message || "Could not load your churches or groups.");
       }
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
