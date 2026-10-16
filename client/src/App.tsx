@@ -4,32 +4,49 @@ import { queryClient } from "./lib/queryClient";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useState, type ComponentType } from "react";
 import NotFound from "@/pages/not-found";
-import Landing from "@/pages/Landing";
-import Signup from "@/pages/Signup";
-import ChurchSubmit from "@/pages/ChurchSubmit";
-import PrayerWall from "@/pages/PrayerWall";
-import SubmitThanks from "@/pages/SubmitThanks";
-import Dashboard from "@/pages/Dashboard";
-import PrayerDetail from "@/pages/PrayerDetail";
-import ChurchQR from "@/pages/ChurchQR";
-import ChurchSettings from "@/pages/ChurchSettings";
-import Pricing from "@/pages/Pricing";
-import BillingCheckout from "@/pages/BillingCheckout";
-import BillingSuccess from "@/pages/BillingSuccess";
-import Gift from "@/pages/Gift";
-import GiftSuccess from "@/pages/GiftSuccess";
-import Privacy from "@/pages/Privacy";
-import Terms from "@/pages/Terms";
 import { AuthProvider,RequireAuth,useAuth } from "@/components/Auth";
 import { trackPageView, currentHashPath, initAnalytics } from "@/lib/analytics";
-import Login from "@/pages/Login";
-import MyChurches from "@/pages/MyChurches";
-import Demo from "@/pages/Demo";
-import Watches from "@/pages/Watches";
-import WatchDashboard from "@/pages/WatchDashboard";
-import WatchSignup from "@/pages/WatchSignup";
+
+// After a deploy, an open tab may request a chunk that no longer exists.
+// Reload once to pick up the new build instead of showing a blank page.
+const RELOAD_KEY = "tend_chunk_reload";
+function page<T extends ComponentType<any>>(load: () => Promise<{ default: T }>) {
+  return lazy(() => load().catch((err) => {
+    try {
+      if (!sessionStorage.getItem(RELOAD_KEY)) { sessionStorage.setItem(RELOAD_KEY, "1"); location.reload(); }
+    } catch { /* storage unavailable */ }
+    throw err;
+  }).then((m) => { try { sessionStorage.removeItem(RELOAD_KEY); } catch {} return m; }));
+}
+
+const Landing = page(() => import("@/pages/Landing"));
+const Signup = page(() => import("@/pages/Signup"));
+const ChurchSubmit = page(() => import("@/pages/ChurchSubmit"));
+const PrayerWall = page(() => import("@/pages/PrayerWall"));
+const SubmitThanks = page(() => import("@/pages/SubmitThanks"));
+const Dashboard = page(() => import("@/pages/Dashboard"));
+const PrayerDetail = page(() => import("@/pages/PrayerDetail"));
+const ChurchQR = page(() => import("@/pages/ChurchQR"));
+const ChurchSettings = page(() => import("@/pages/ChurchSettings"));
+const Pricing = page(() => import("@/pages/Pricing"));
+const BillingCheckout = page(() => import("@/pages/BillingCheckout"));
+const BillingSuccess = page(() => import("@/pages/BillingSuccess"));
+const Gift = page(() => import("@/pages/Gift"));
+const GiftSuccess = page(() => import("@/pages/GiftSuccess"));
+const Privacy = page(() => import("@/pages/Privacy"));
+const Terms = page(() => import("@/pages/Terms"));
+const Login = page(() => import("@/pages/Login"));
+const MyChurches = page(() => import("@/pages/MyChurches"));
+const Demo = page(() => import("@/pages/Demo"));
+const Watches = page(() => import("@/pages/Watches"));
+const WatchDashboard = page(() => import("@/pages/WatchDashboard"));
+const WatchSignup = page(() => import("@/pages/WatchSignup"));
+
+function PageFallback(){
+  return <div className="min-h-screen" aria-busy="true" />;
+}
 
 function SignupEntry(){
   const {session,loading}=useAuth();
@@ -101,7 +118,7 @@ function App() {
         <ThemeToggle />
         <AnalyticsTracker />
         <Router hook={useAppLocation}>
-          <AuthProvider><AppRouter /></AuthProvider>
+          <AuthProvider><Suspense fallback={<PageFallback />}><AppRouter /></Suspense></AuthProvider>
         </Router>
       </TooltipProvider>
     </QueryClientProvider>

@@ -158,7 +158,7 @@ export default function WatchSignup() {
           <h1 className="font-serif text-3xl">{w.title}</h1>
           {w.description && <p className="text-muted-foreground mt-2">{w.description}</p>}
           <p className="text-sm text-muted-foreground mt-3 flex items-center gap-1.5"><Clock className="h-4 w-4" /> Around-the-clock prayer. Pick a 15-minute time to cover.</p>
-          <button onClick={() => setShowWhy(v => !v)} className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-primary">
+          <button onClick={() => setShowWhy(v => !v)} className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-foreground underline decoration-primary decoration-2 underline-offset-4">
             Why 24/7 prayer?
             <ChevronDown className={`h-4 w-4 transition-transform ${showWhy ? "rotate-180" : ""}`} />
           </button>

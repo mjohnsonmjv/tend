@@ -30,6 +30,8 @@ export const prayerRequests = sqliteTable("prayer_requests", {
   submitterName: text("submitter_name"),
   submitterPhone: text("submitter_phone"),
   submitterEmail: text("submitter_email"),
+  submitterPhotoUrl: text("submitter_photo_url"),
+  submitterPhotoPath: text("submitter_photo_path"),
   message: text("message").notNull(),
   category: text("category").notNull().default("prayer"), // prayer | check_in | praise | question
   isAnonymous: integer("is_anonymous", { mode: "boolean" }).notNull().default(false),

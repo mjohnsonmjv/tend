@@ -285,12 +285,12 @@ function VerseSection() {
       <Reveal className="section-intro"><p className="eyebrow">Why we pray</p><h2>What Scripture<br />says about prayer.</h2></Reveal>
       <div className="verse-grid">
         {[
-          { img: "/images/tend-golden-tree.webp", text: "Therefore I tell you, whatever you ask in prayer, believe that you have received it, and it will be yours.", ref: "Mark 11:24" },
-          { img: "/images/tend-sun-sky.webp", text: "Pray without ceasing, give thanks in all circumstances; for this is God's will for you in Christ Jesus.", ref: "1 Thessalonians 5:17-18" },
-          { img: "/images/tend-canopy-1.webp", text: "Likewise the Spirit helps us in our weakness. For we do not know what to pray for as we ought, but the Spirit himself intercedes for us with groanings too deep for words.", ref: "Romans 8:26" },
-          { img: "/images/tend-boardwalk-water.webp", text: "And I tell you, ask, and it will be given to you; seek, and you will find; knock, and it will be opened to you.", ref: "Luke 11:9" },
-          { img: "/images/tend-sun-berries.webp", text: "Therefore, confess your sins to one another and pray for one another, that you may be healed. The prayer of a righteous person has great power as it is working.", ref: "James 5:16" },
-          { img: "/images/tend-canopy-2.webp", text: "Call to me and I will answer you, and will tell you great and hidden things that you have not known.", ref: "Jeremiah 33:3" },
+          { img: "/images/tend-golden-tree-sm.webp", text: "Therefore I tell you, whatever you ask in prayer, believe that you have received it, and it will be yours.", ref: "Mark 11:24" },
+          { img: "/images/tend-sun-sky-sm.webp", text: "Pray without ceasing, give thanks in all circumstances; for this is God's will for you in Christ Jesus.", ref: "1 Thessalonians 5:17-18" },
+          { img: "/images/tend-canopy-1-sm.webp", text: "Likewise the Spirit helps us in our weakness. For we do not know what to pray for as we ought, but the Spirit himself intercedes for us with groanings too deep for words.", ref: "Romans 8:26" },
+          { img: "/images/tend-boardwalk-water-sm.webp", text: "And I tell you, ask, and it will be given to you; seek, and you will find; knock, and it will be opened to you.", ref: "Luke 11:9" },
+          { img: "/images/tend-sun-berries-sm.webp", text: "Therefore, confess your sins to one another and pray for one another, that you may be healed. The prayer of a righteous person has great power as it is working.", ref: "James 5:16" },
+          { img: "/images/tend-canopy-2-sm.webp", text: "Call to me and I will answer you, and will tell you great and hidden things that you have not known.", ref: "Jeremiah 33:3" },
         ].map((v, i) => (
           <Reveal key={i} delay={0.05 * i}>
             <article className="verse-card" style={{ backgroundImage: `linear-gradient(rgba(42,37,33,.72), rgba(42,37,33,.72)), url('${v.img}')` }}>

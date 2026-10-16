@@ -364,7 +364,7 @@ export default function ChurchSubmit() {
                   setGuided(false);
                 }}
                 data-testid="button-guided-off"
-                className="mt-4 text-sm text-primary underline underline-offset-4"
+                className="mt-4 text-sm text-foreground underline decoration-primary decoration-2 underline-offset-4"
               >
                 Prefer to write it yourself?
               </button>
@@ -401,7 +401,7 @@ export default function ChurchSubmit() {
                 type="button"
                 onClick={() => setGuided(true)}
                 data-testid="button-guided-on"
-                className="mt-3 text-sm text-primary underline underline-offset-4"
+                className="mt-3 text-sm text-foreground underline decoration-primary decoration-2 underline-offset-4"
               >
                 Not sure what to write? Answer 3 quick questions instead.
               </button>

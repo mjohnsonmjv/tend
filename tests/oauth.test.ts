@@ -10,9 +10,9 @@ test("Google and Microsoft request identity-only scopes and account selection",(
   }
 });
 test("provider configuration fails closed",()=>{
-  assert.deepEqual(providerFlags({external:{google:true,azure:false}}),{google:true,azure:false});
-  assert.deepEqual(providerFlags({external:{google:"true",azure:1}}),{google:false,azure:false});
-  assert.deepEqual(providerFlags(null),{google:false,azure:false});
+  assert.deepEqual(providerFlags({external:{google:true,azure:false}}),{google:true,azure:false,facebook:false,apple:false});
+  assert.deepEqual(providerFlags({external:{google:"true",azure:1}}),{google:false,azure:false,facebook:false,apple:false});
+  assert.deepEqual(providerFlags(null),{google:false,azure:false,facebook:false,apple:false});
 });
 test("callbacks parse codes but do not accept legacy tokens",()=>{
   assert.equal(parseOAuthReturn("https://tend.example/?code=abc")?.code,"abc");
