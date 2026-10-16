@@ -16,10 +16,16 @@ export default function Terms() {
       <main className="max-w-3xl mx-auto px-6 py-16">
         <p className="eyebrow mb-3">Terms of Service</p>
         <h1 className="font-serif text-4xl mb-4">The ground rules</h1>
-        <p className="text-muted-foreground mb-10">Last updated September 23, 2026. Tend is a pilot service, and these terms will evolve as the service does.</p>
+        <p className="text-muted-foreground mb-10">Last updated October 16, 2026. Tend is a pilot service, and these terms will evolve as the service does.</p>
 
         <Section title="What Tend is">
           <p>Tend gives churches a QR code that opens a simple prayer-request page, plus a private inbox where the church's account owner can read and track requests. Tend is operated by Mark Johnson Ventures LLC. Every plan starts with a 30-day free trial. Automated notifications are not active during the pilot, and features may change or pause without notice. Tend is provided as is.</p>
+        </Section>
+
+        <Section title="Text messaging">
+          <p>Tend Prayer Requests is a text-messaging program operated by Mark Johnson Ventures LLC. When you text a prayer request to a Tend number, it is shared with that church's care team and you receive one confirmation reply. Texting the number is your consent to that reply. Message frequency varies with the messages you send.</p>
+          <p>Message and data rates may apply. Reply STOP to opt out at any time; you will receive one message confirming the opt-out. Reply HELP for help, or contact <a className="underline" href="mailto:support@tendpray.com">support@tendpray.com</a>. Carriers are not liable for delayed or undelivered messages. Text messaging is not monitored for emergencies; call 911 in an emergency.</p>
+          <p>See the <a className="underline" href="#/privacy">Privacy Policy</a> for how mobile numbers are handled. Mobile numbers are never shared for marketing.</p>
         </Section>
 
         <Section title="Church accounts">
