@@ -5,7 +5,7 @@ the `twilio-sms-inbound` Edge Function verifies Twilio's signature, routes
 by the receiving number, and stores the prayer. The sender gets one
 confirmation text.
 
-**Do not start this until Twilio compliance rejection 18601 is resolved.**
+**Status 2026-10-16:** brand approved, Low Volume campaign in carrier review. Number +1 616-816-4172 is on messaging service "Tend Prayer Requests" and routes to the "Tend Text Line" inbox.
 Nothing below can receive texts without an approved profile.
 
 ## 1. Fix the Twilio compliance profile (owner action, Twilio console)
