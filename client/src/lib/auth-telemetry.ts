@@ -1,16 +1,18 @@
 import { supabase } from "./supabase";
 
 /** Events the auth flow reports. Keep the list in sync with the
- *  auth_events table check constraint (migration 20261002_auth_events). */
+ *  auth_events table check constraint (migrations 20261002_auth_events,
+ *  20261017100003_auth_events_phone). */
 export type AuthEvent =
   | "oauth_start" | "oauth_authorize_ok" | "oauth_authorize_fail"
   | "oauth_return" | "oauth_exchange_ok" | "oauth_exchange_fail"
   | "oauth_fallback_redeem"
   | "email_signup_ok" | "email_signup_fail"
   | "email_signin_ok" | "email_signin_fail"
+  | "phone_code_sent" | "phone_code_verify_ok" | "phone_code_verify_fail"
   | "session_expired";
 
-export type AuthProvider = "google" | "microsoft" | "azure" | "facebook" | "apple" | "email";
+export type AuthProvider = "google" | "microsoft" | "azure" | "facebook" | "apple" | "email" | "phone";
 export type AuthPlatform = "ios" | "android" | "desktop";
 export type AuthFlow = "popup" | "solo";
 

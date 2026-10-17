@@ -7,6 +7,9 @@ import {join} from "node:path";
 const FILES = [
   "supabase/functions/capture-lead/index.ts",
   "supabase/functions/stripe-webhook/index.ts",
+  "supabase/functions/twilio-sms-inbound/index.ts",
+  "supabase/functions/send-prayer-alert/index.ts",
+  "supabase/functions/send-prayer-alert/handler.ts",
   "supabase/functions/nurture-unsubscribe/index.ts",
   "client/src/pages/Landing.tsx",
   "client/src/pages/Pricing.tsx",

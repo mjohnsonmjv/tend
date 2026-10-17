@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { normalizeUsPhone } from "@/lib/oauth-core";
 import { loadTurnstile, turnstileToken } from "@/lib/turnstile";
+import { logAuthEvent } from "@/lib/auth-telemetry";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Smartphone } from "lucide-react";
@@ -42,6 +43,7 @@ export function PhoneSignIn({ onSignedIn, onNeedEmail }: { onSignedIn: () => voi
     const { error } = await supabase.auth.signInWithOtp({ phone: target, options: { shouldCreateUser: true, channel: "sms", captchaToken } });
     setBusy(false);
     if (error) { setMsg(error.message || "Couldn't send a code. Try again in a minute."); return false; }
+    logAuthEvent("phone_code_sent", { provider: "phone" });
     setPhone(target); setWait(60); return true;
   }
   async function start(e: React.FormEvent) {
@@ -56,7 +58,13 @@ export function PhoneSignIn({ onSignedIn, onNeedEmail }: { onSignedIn: () => voi
     setBusy(true); setMsg("");
     const { data, error } = await supabase.auth.verifyOtp({ phone, token: code, type: "sms" });
     setBusy(false);
-    if (error) { setMsg("That code didn't work. Check it, or send a new one."); return; }
+    if (error) {
+      setMsg("That code didn't work. Check it, or send a new one.");
+      logAuthEvent("phone_code_verify_fail", { provider: "phone",
+        error_code: /expired/i.test(error.message) ? "CODE_EXPIRED" : "CODE_INVALID" });
+      return;
+    }
+    logAuthEvent("phone_code_verify_ok", { provider: "phone" });
     if (!data.user?.email && onNeedEmail) { onNeedEmail(); return; }
     onSignedIn();
   }

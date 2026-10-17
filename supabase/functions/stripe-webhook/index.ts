@@ -9,6 +9,8 @@ const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
 const WEBHOOK_SECRET = Deno.env.get("STRIPE_WEBHOOK_SECRET") ?? "";
 const RESEND_KEY = Deno.env.get("RESEND_API_KEY") ?? "";
 const FROM = Deno.env.get("CONFIRM_FROM") || "Tend <support@tendpray.com>";
+const ALERT_TO = Deno.env.get("ALERT_TO") || "mrmarkjohnson@gmail.com";
+const ALERT_FROM = Deno.env.get("ALERT_FROM") || "Tend Alerts <support@tendpray.com>";
 const SITE_URL = Deno.env.get("SITE_URL") || "https://tendpray.com";
 
 const PLANS = ["starter", "growth", "large"];
@@ -52,6 +54,74 @@ async function db(path: string, init?: RequestInit) {
 }
 
 const validPlan = (p: unknown) => (typeof p === "string" && PLANS.includes(p) ? p : null);
+
+function escapeHtml(value: string): string {
+  return value.replace(/&/g, "&amp;").replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+}
+
+type DigestEvent = { type: string; detail: string | null; at: string };
+type Digest = { events: DigestEvent[]; phone_fail_count: number; phone_spike: boolean };
+
+function composeDigestEmail(digest: Digest): { subject: string; text: string; html: string } {
+  const counts = new Map<string, number>();
+  for (const e of digest.events) counts.set(e.type, (counts.get(e.type) ?? 0) + 1);
+  const parts: string[] = [];
+  for (const [t, c] of counts) parts.push(`${c} ${t.replace(/_/g, " ")}`);
+  if (digest.phone_spike) parts.push(`phone verification spike (${digest.phone_fail_count} failed in the last hour)`);
+  else if (digest.phone_fail_count > 0) parts.push(`${digest.phone_fail_count} phone verification failures in the last hour`);
+  const subject = `Tend alert: ${parts.join("; ") || "errors detected"}`;
+  const lines = digest.events.slice(0, 10)
+    .map((e) => `- [${e.type}] ${e.detail ?? "no detail"} (${e.at})`);
+  const text =
+    `Tend detected errors that need a look.\n\n` +
+    (lines.length ? lines.join("\n") + "\n\n" : "") +
+    `Phone code verification failures in the last hour: ${digest.phone_fail_count}` +
+    (digest.phone_spike ? " (SPIKE)" : "") + `\n\n` +
+    `This digest sends at most once per hour per alert type while failures continue.`;
+  const html = `<p>Tend detected errors that need a look.</p>` +
+    (lines.length
+      ? `<ul>${digest.events.slice(0, 10).map((e) =>
+          `<li>[${escapeHtml(e.type)}] ${escapeHtml(e.detail ?? "no detail")} (${escapeHtml(e.at)})</li>`).join("")}</ul>`
+      : "") +
+    `<p>Phone code verification failures in the last hour: ${digest.phone_fail_count}` +
+    (digest.phone_spike ? " (SPIKE)" : "") + `</p>` +
+    `<p style="color:#888;font-size:12px">This digest sends at most once per hour per alert type while failures continue.</p>`;
+  return { subject, text, html };
+}
+
+async function sendErrorDigest(digest: Digest): Promise<void> {
+  if (!RESEND_KEY || !ALERT_TO) return;
+  const { subject, text, html } = composeDigestEmail(digest);
+  await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${RESEND_KEY}`, "Content-Type": "application/json" },
+    body: JSON.stringify({ from: ALERT_FROM, to: ALERT_TO, subject, text, html }),
+    signal: AbortSignal.timeout(15000),
+  }).catch((e) => console.error("alert digest failed", e));
+}
+
+/**
+ * Log a Stripe webhook failure for the error-alert digest. Best-effort and
+ * never throws: alerting must never change webhook behavior (Stripe must still
+ * get its 200). Details are machine-readable codes only, never PII.
+ */
+async function logAlert(detail: string): Promise<void> {
+  try {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/tend_log_alert_event`, {
+      method: "POST",
+      headers: { apikey: SERVICE_KEY, Authorization: `Bearer ${SERVICE_KEY}`, "Content-Type": "application/json" },
+      body: JSON.stringify({ p_alert_type: "stripe_webhook_error", p_detail: detail }),
+      signal: AbortSignal.timeout(10000),
+    });
+    if (!res.ok) return;
+    const data = await res.json();
+    if (!data?.send) return;
+    await sendErrorDigest(data.digest as Digest);
+  } catch (e) {
+    console.error("alert logging failed", e);
+  }
+}
 
 /**
  * True only when the church owner's email address is confirmed AND matches
@@ -285,6 +355,7 @@ Deno.serve(async (req) => {
     }
   } catch (e) {
     console.error("webhook handler failed", event?.type, e);
+    await logAlert(`webhook_handler_failed:${typeof event?.type === "string" ? event.type : "unknown"}`);
     // Return 200 anyway so Stripe does not retry a poison event forever.
   }
   return new Response(JSON.stringify({ received: true }), {
