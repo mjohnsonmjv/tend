@@ -6,10 +6,23 @@ declare global {
   interface Window { turnstile?: any }
 }
 
+/** Hard ceiling: a challenge must never hang the UI forever. */
+const TURNSTILE_TIMEOUT_MS = 25000;
+
+function withTimeout<T>(p: Promise<T>, label: string): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const t = setTimeout(() => reject(new Error(label)), TURNSTILE_TIMEOUT_MS);
+    p.then(
+      (v) => { clearTimeout(t); resolve(v); },
+      (e) => { clearTimeout(t); reject(e); },
+    );
+  });
+}
+
 export function loadTurnstile(): Promise<void> {
   if (typeof window === "undefined") return Promise.reject(new Error("captcha unavailable"));
   if (window.turnstile) return Promise.resolve();
-  return new Promise((resolve, reject) => {
+  return withTimeout(new Promise<void>((resolve, reject) => {
     const existing = document.querySelector('script[src*="challenges.cloudflare.com/turnstile"]');
     if (existing) {
       existing.addEventListener("load", () => resolve());
@@ -23,7 +36,7 @@ export function loadTurnstile(): Promise<void> {
     s.onload = () => resolve();
     s.onerror = () => reject(new Error("captcha unavailable"));
     document.head.appendChild(s);
-  });
+  }), "captcha unavailable");
 }
 
 /**
@@ -32,7 +45,7 @@ export function loadTurnstile(): Promise<void> {
  * Each token is single-use: call again for each protected request.
  */
 export function turnstileToken(holderId = "turnstile-holder"): Promise<string> {
-  return new Promise((resolve, reject) => {
+  return withTimeout(new Promise<string>((resolve, reject) => {
     const t = window.turnstile;
     if (!t) { reject(new Error("captcha unavailable")); return; }
     let id: string | undefined;
@@ -51,5 +64,5 @@ export function turnstileToken(holderId = "turnstile-holder"): Promise<string> {
       cleanup();
       reject(new Error("verification failed"));
     }
-  });
+  }), "verification timed out");
 }
