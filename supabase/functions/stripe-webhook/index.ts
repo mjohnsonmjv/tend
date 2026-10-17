@@ -53,6 +53,31 @@ async function db(path: string, init?: RequestInit) {
 
 const validPlan = (p: unknown) => (typeof p === "string" && PLANS.includes(p) ? p : null);
 
+/**
+ * True only when the church owner's email address is confirmed AND matches
+ * the address on the church record. Owner emails (trial, gift, dunning) must
+ * not go out to an address nobody confirmed: a phone-first signup could
+ * otherwise make Tend email a stranger.
+ * Fails open on lookup errors so a Supabase hiccup never blocks a real receipt;
+ * fails closed when we positively know the address is unconfirmed.
+ */
+async function ownerEmailVerified(ownerId: string, pastorEmail: string): Promise<boolean> {
+  if (!ownerId || !pastorEmail) return false;
+  try {
+    const res = await fetch(`${SUPABASE_URL}/auth/v1/admin/users/${ownerId}`, {
+      headers: { apikey: SERVICE_KEY, Authorization: `Bearer ${SERVICE_KEY}` },
+    });
+    if (!res.ok) { console.error("owner email check lookup failed", res.status); return true; }
+    const u = await res.json();
+    const confirmed = !!u.email_confirmed_at;
+    const matches = typeof u.email === "string" && u.email.toLowerCase() === pastorEmail.toLowerCase();
+    return confirmed && matches;
+  } catch (e) {
+    console.error("owner email check unavailable", e);
+    return true;
+  }
+}
+
 async function sendTrialStartedEmail(to: string, churchName: string, plan: string) {
   if (!RESEND_KEY || !to) return;
   const planLabel = plan.charAt(0).toUpperCase() + plan.slice(1);
@@ -155,15 +180,21 @@ Deno.serve(async (req) => {
             plan, stripe_customer_id: s.customer, stripe_subscription_id: s.subscription,
           }),
         });
-        const rows = await db(`tend_churches?id=eq.${churchId}&select=name,pastor_email`);
+        const rows = await db(`tend_churches?id=eq.${churchId}&select=name,pastor_email,owner_id`);
         const church = Array.isArray(rows) ? rows[0] : null;
         if (church) {
           if (isGift) {
             const donorEmail = s.customer_details?.email || s.customer_email || "";
-            await sendGiftReceivedEmail(church.pastor_email, church.name, plan);
+            if (await ownerEmailVerified(church.owner_id, church.pastor_email)) {
+              await sendGiftReceivedEmail(church.pastor_email, church.name, plan);
+            } else {
+              console.log("skipping gift email: owner email unconfirmed", churchId);
+            }
             if (donorEmail) await sendGiftReceiptEmail(donorEmail, church.name, plan);
-          } else {
+          } else if (await ownerEmailVerified(church.owner_id, church.pastor_email)) {
             await sendTrialStartedEmail(church.pastor_email, church.name, plan);
+          } else {
+            console.log("skipping trial email: owner email unconfirmed", churchId);
           }
         }
       }
@@ -237,10 +268,16 @@ Deno.serve(async (req) => {
     } else if (type === "invoice.payment_failed") {
       const inv = event.data.object;
       const rows = await db(
-        `tend_churches?stripe_customer_id=eq.${inv.customer}&select=id,name,pastor_email`
+        `tend_churches?stripe_customer_id=eq.${inv.customer}&select=id,name,pastor_email,owner_id`
       );
       const church = Array.isArray(rows) ? rows[0] : null;
-      if (church) await sendDunningEmail(church.pastor_email, church.name, church.id);
+      if (church) {
+        if (await ownerEmailVerified(church.owner_id, church.pastor_email)) {
+          await sendDunningEmail(church.pastor_email, church.name, church.id);
+        } else {
+          console.log("skipping dunning email: owner email unconfirmed", church.id);
+        }
+      }
     }
   } catch (e) {
     console.error("webhook handler failed", event?.type, e);

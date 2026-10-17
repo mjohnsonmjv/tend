@@ -5,6 +5,7 @@ import { Logo } from "@/components/Logo";
 import { Heart } from "lucide-react";
 import { trackPrayerSubmitted } from "@/lib/analytics";
 import { apiRequest } from "@/lib/queryClient";
+import { loadTurnstile, turnstileToken } from "@/lib/turnstile";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 
@@ -14,8 +15,6 @@ interface PublicChurch {
   pastorName: string;
   greetingMessage: string;
 }
-
-const TURNSTILE_SITE_KEY = "0x4AAAAAAFFHL0Ua9nyooYhz"; // public site key
 
 /** Verses shown on the confirmation screen, rotated randomly per visit.
  *  Pulled from the homepage "What Scripture says about prayer" cards. */
@@ -27,51 +26,6 @@ const THANKS_VERSES = [
   { text: "Therefore, confess your sins to one another and pray for one another, that you may be healed. The prayer of a righteous person has great power as it is working.", ref: "James 5:16" },
   { text: "Call to me and I will answer you, and will tell you great and hidden things that you have not known.", ref: "Jeremiah 33:3" },
 ];
-
-declare global {
-  interface Window { turnstile?: any }
-}
-
-function loadTurnstile(): Promise<void> {
-  if (window.turnstile) return Promise.resolve();
-  return new Promise((resolve, reject) => {
-    const existing = document.querySelector('script[src*="challenges.cloudflare.com/turnstile"]');
-    if (existing) {
-      existing.addEventListener("load", () => resolve());
-      existing.addEventListener("error", () => reject(new Error("captcha unavailable")));
-      return;
-    }
-    const s = document.createElement("script");
-    s.src = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
-    s.async = true;
-    s.defer = true;
-    s.onload = () => resolve();
-    s.onerror = () => reject(new Error("captcha unavailable"));
-    document.head.appendChild(s);
-  });
-}
-
-// Runs the invisible Turnstile challenge and resolves with the token.
-function turnstileToken(): Promise<string> {
-  return new Promise((resolve, reject) => {
-    const t = window.turnstile;
-    if (!t) { reject(new Error("captcha unavailable")); return; }
-    let id: string | undefined;
-    try {
-      id = t.render("#turnstile-holder", {
-        sitekey: TURNSTILE_SITE_KEY,
-        size: "invisible",
-        callback: (token: string) => { try { t.remove(id); } catch {} resolve(token); },
-        "error-callback": () => { try { t.remove(id); } catch {} reject(new Error("verification failed")); },
-        "expired-callback": () => { try { t.remove(id); } catch {} reject(new Error("verification expired")); },
-        "timeout-callback": () => { try { t.remove(id); } catch {} reject(new Error("verification timed out")); },
-      });
-      t.execute(id);
-    } catch {
-      reject(new Error("verification failed"));
-    }
-  });
-}
 
 export default function SubmitThanks() {
   const { slug } = useParams<{ slug: string }>();
