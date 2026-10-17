@@ -10,16 +10,16 @@ const validEmail = (v: string) => /.+@.+\..+/.test(v.trim());
 
 /**
  * Sign in with a texted code. A number that is not on any account creates a
- * new Tend account, then the user adds an email (needed for church setup).
+ * new Tend account. When the verified user has no email, onNeedEmail fires so
+ * the parent can show the email step (it must live outside this panel: the
+ * sign-in page swaps to its signed-in view the moment verification succeeds,
+ * which would unmount this panel first).
  */
-export function PhoneSignIn({ onSignedIn }: { onSignedIn: () => void }) {
+export function PhoneSignIn({ onSignedIn, onNeedEmail }: { onSignedIn: () => void; onNeedEmail?: () => void }) {
   const [open, setOpen] = useState(false);
   const [raw, setRaw] = useState("");
   const [phone, setPhone] = useState<string | null>(null);
   const [code, setCode] = useState("");
-  const [needEmail, setNeedEmail] = useState(false);
-  const [email, setEmail] = useState("");
-  const [emailDone, setEmailDone] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState("");
   const [wait, setWait] = useState(0);
@@ -45,24 +45,8 @@ export function PhoneSignIn({ onSignedIn }: { onSignedIn: () => void }) {
     const { data, error } = await supabase.auth.verifyOtp({ phone, token: code, type: "sms" });
     setBusy(false);
     if (error) { setMsg("That code didn't work. Check it, or send a new one."); return; }
-    if (!data.user?.email) { setNeedEmail(true); setMsg(""); return; }
+    if (!data.user?.email && onNeedEmail) { onNeedEmail(); return; }
     onSignedIn();
-  }
-  async function saveEmail(e: React.FormEvent) {
-    e.preventDefault();
-    const next = email.trim();
-    if (!validEmail(next)) { setMsg("Enter a valid email address."); return; }
-    setBusy(true); setMsg("");
-    const { error } = await supabase.auth.updateUser({ email: next });
-    setBusy(false);
-    if (error) {
-      setMsg(/already/i.test(error.message)
-        ? "That email is already on a Tend account. Sign in with email instead, or use a different email."
-        : error.message || "Couldn't save that email. Try again.");
-      return;
-    }
-    try { sessionStorage.setItem("tend_pending_email", next); } catch { /* private mode */ }
-    setNeedEmail(false); setEmailDone(next); setMsg("");
   }
 
   if (!open) return (
@@ -72,20 +56,7 @@ export function PhoneSignIn({ onSignedIn }: { onSignedIn: () => void }) {
   );
   return (
     <div className="rounded-md border border-border p-4 space-y-3" data-testid="panel-phone-signin">
-      {emailDone ? (
-        <div className="space-y-3">
-          <p className="text-sm">Your account is ready. We sent a confirmation link to <strong>{emailDone}</strong>.</p>
-          <Button type="button" className="w-full" onClick={onSignedIn} data-testid="button-phone-email-continue">Continue</Button>
-        </div>
-      ) : needEmail ? (
-        <form onSubmit={saveEmail} className="space-y-3">
-          <p className="text-sm font-medium">One more step: add your email.</p>
-          <p className="text-xs text-muted-foreground">Your church setup and receipts need an email address.</p>
-          <label className="block text-sm font-medium" htmlFor="phone-email">Email</label>
-          <Input id="phone-email" type="email" autoComplete="email" placeholder="you@example.com" value={email} onChange={(e) => setEmail(e.target.value)} data-testid="input-phone-email" />
-          <Button type="submit" className="w-full" disabled={busy} data-testid="button-phone-email-save">{busy ? "Saving…" : "Save email"}</Button>
-        </form>
-      ) : !phone ? (
+      {!phone ? (
         <form onSubmit={start} className="space-y-3">
           <label className="block text-sm font-medium" htmlFor="phone-signin">Mobile number</label>
           <Input id="phone-signin" type="tel" inputMode="tel" autoComplete="tel-national" placeholder="(616) 555-0123" value={raw} onChange={(e) => setRaw(e.target.value)} data-testid="input-phone" />
@@ -105,6 +76,42 @@ export function PhoneSignIn({ onSignedIn }: { onSignedIn: () => void }) {
       )}
       {msg && <p role="status" className="text-sm text-foreground" data-testid="text-phone-message">{msg}</p>}
     </div>
+  );
+}
+
+/**
+ * Email capture for phone-first signups. Rendered by the parent in its
+ * signed-in view, since the phone panel unmounts on verification.
+ */
+export function PhoneEmailStep({ onDone }: { onDone: () => void }) {
+  const [email, setEmail] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [msg, setMsg] = useState("");
+  async function save(e: React.FormEvent) {
+    e.preventDefault();
+    const next = email.trim();
+    if (!validEmail(next)) { setMsg("Enter a valid email address."); return; }
+    setBusy(true); setMsg("");
+    const { error } = await supabase.auth.updateUser({ email: next });
+    setBusy(false);
+    if (error) {
+      setMsg(/already/i.test(error.message)
+        ? "That email is already on a Tend account. Sign in with email instead, or use a different email."
+        : error.message || "Couldn't save that email. Try again.");
+      return;
+    }
+    try { sessionStorage.setItem("tend_pending_email", next); } catch { /* private mode */ }
+    onDone();
+  }
+  return (
+    <form onSubmit={save} className="space-y-3" data-testid="panel-phone-email">
+      <p className="text-sm font-medium">One more step: add your email.</p>
+      <p className="text-xs text-muted-foreground">Your church setup and receipts need an email address. We'll send a confirmation link.</p>
+      <label className="block text-sm font-medium" htmlFor="phone-email">Email</label>
+      <Input id="phone-email" type="email" autoComplete="email" placeholder="you@example.com" value={email} onChange={(e) => setEmail(e.target.value)} data-testid="input-phone-email" />
+      <Button type="submit" className="w-full min-h-12" disabled={busy} data-testid="button-phone-email-save">{busy ? "Saving…" : "Save email"}</Button>
+      {msg && <p role="status" className="text-sm text-foreground">{msg}</p>}
+    </form>
   );
 }
 

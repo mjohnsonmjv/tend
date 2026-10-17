@@ -15,7 +15,7 @@ import { cancelSocialSignIn, startSocialSignIn } from "@/lib/oauth";
 import type {SocialProvider} from "@/lib/oauth-core";
 import { logAuthEvent, authErrorCode } from "@/lib/auth-telemetry";
 import { SiGoogle, SiFacebook, SiApple } from "react-icons/si";
-import { PhoneSignIn } from "@/components/PhoneSignIn";
+import { PhoneSignIn, PhoneEmailStep } from "@/components/PhoneSignIn";
 
 const schema=z.object({email:z.string().email("Enter a valid email address."),password:z.string().min(8,"Use at least 8 characters.")});
 export default function Login({register=false}:{register?:boolean}) {
@@ -24,6 +24,7 @@ export default function Login({register=false}:{register?:boolean}) {
   const [message,setMessage]=useState("");
   const [pending,setPending]=useState(false);
   const [accepted,setAccepted]=useState(false);
+  const [needPhoneEmail,setNeedPhoneEmail]=useState(false);
   const [socialPending,setSocialPending]=useState<SocialProvider|null>(null);
   const [pcoPending,setPcoPending]=useState(false);
   async function pcoSignIn(){
@@ -81,7 +82,9 @@ export default function Login({register=false}:{register?:boolean}) {
   return <div><SiteHeader/><main className="max-w-lg mx-auto px-6 py-16">
     <h1 className="text-3xl mb-3">{register?"Create your account":"Welcome back."}</h1>
     <p className="text-muted-foreground mb-8">{register?"You don't need to be the pastor. Anyone on your church team can create the account, then set up the church and its QR code.":"Sign in to your church's prayer inbox."}</p>
-    {session ? <Link className="brand-button" href="/app">Open my churches</Link> :
+    {session ? (needPhoneEmail
+      ? <PhoneEmailStep onDone={()=>{setNeedPhoneEmail(false);navigate(register?"/signup":"/app");}}/>
+      : <Link className="brand-button" href="/app">Open my churches</Link>) :
     <>{socialVisible&&<><div className="space-y-3 mb-7" aria-label="Social sign-in options">
       {(["google", "facebook", "apple"] as const).filter(provider=>provider==="google"||providers.data?.[provider]===true).map(provider=>{
         const label=provider==="google"?"Google":provider==="facebook"?"Facebook":"Apple";
@@ -91,7 +94,7 @@ export default function Login({register=false}:{register?:boolean}) {
           {providers.data?.[provider]!==true&&<span className="text-xs text-muted-foreground">{providers.isLoading?"Checking…":providers.isError?"Unavailable":"Setup pending"}</span>}
         </Button>;
       })}
-      {providers.data?.phone===true&&<PhoneSignIn onSignedIn={()=>navigate(register?"/signup":"/app")}/>}
+      {providers.data?.phone===true&&<PhoneSignIn onSignedIn={()=>navigate(register?"/signup":"/app")} onNeedEmail={()=>setNeedPhoneEmail(true)}/>}
       <Button type="button" variant="outline" className="w-full h-auto min-h-12 flex-wrap justify-start px-4 py-3 mt-3" onClick={pcoSignIn} disabled={pending||!!socialPending||pcoPending} data-testid="button-oauth-pco">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2"/><path d="M12 7v5l3 3" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/></svg>
         <span className="flex-1 text-left">{pcoPending?"Connecting to Planning Center…":"Continue with Planning Center"}</span>

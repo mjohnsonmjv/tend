@@ -2,9 +2,11 @@ import { Link } from "wouter";
 import { Logo } from "./Logo";
 import { ArrowRight } from "lucide-react";
 import { useAuth } from "./Auth";
+import { supabase } from "@/lib/supabase";
 
 export function SiteHeader() {
   const {session}=useAuth();
+  async function signOut(){ await supabase.auth.signOut().catch(()=>{}); window.location.href="/login"; }
   return (
     <header className="brand-header">
       <a className="skip-link" href="#main-content" onClick={(e) => { e.preventDefault(); const m = document.querySelector("main"); if (m) { m.setAttribute("tabindex", "-1"); (m as HTMLElement).focus({ preventScroll: true }); m.scrollIntoView(); } }}>Skip to content</a>
@@ -13,6 +15,7 @@ export function SiteHeader() {
         <nav aria-label="Main navigation">
           <Link href={session?"/app":"/login"} data-testid="link-login">{session?"My churches":"Sign in"}</Link>
           <Link href="/pricing" data-testid="link-pricing">Pricing</Link>
+          {session&&<button type="button" onClick={signOut} data-testid="button-signout">Sign out</button>}
           <Link href="/signup" data-testid="link-signup" className="header-cta">{session?"New church or group":"Get your QR code"} <ArrowRight size={16} /></Link>
         </nav>
       </div>
