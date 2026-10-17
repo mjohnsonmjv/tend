@@ -1,3 +1,4 @@
+import { PhoneSettings } from "@/components/PhoneSignIn";
 import { useParams, Link } from "wouter";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import { apiRequest, queryClient } from "@/lib/queryClient";
@@ -16,6 +17,7 @@ import { isPrayModeEnabled, setPrayModeEnabled } from "@/lib/prayMode";
 import { CareTeamMembers } from "@/components/CareTeamMembers";
 
 export default function ChurchSettings() {
+  const phoneOn = useQuery<{phone?:boolean}>({queryKey:["/api/auth/providers"],staleTime:30000}).data?.phone===true;
   const { id } = useParams<{ id: string }>();
   const churchId = Number(id);
   const { toast } = useToast();
@@ -169,6 +171,10 @@ export default function ChurchSettings() {
                 </div>
               )}
             </Section>
+
+            {phoneOn && <Section title="Phone sign-in" hint="Sign in with a code texted to your phone.">
+              <PhoneSettings />
+            </Section>}
 
             <Section title="Planning Center" hint="Send new prayer requests to Planning Center as workflow cards.">
               <PcoSyncSettings churchId={churchId} />

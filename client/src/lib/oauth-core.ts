@@ -39,3 +39,13 @@ export function oauthErrorMessage(reason:string){
   if(reason==="frame")return "Social sign-in needs Tend open in its own browser tab, not inside an embedded preview.";
   return "We couldn’t complete sign-in. Please try again from the original Tend sign-in page.";
 }
+export function phoneEnabled(payload:unknown):boolean{
+  return (payload as {external?:Record<string,unknown>})?.external?.phone===true;
+}
+/** US numbers only: returns E.164 (+1XXXXXXXXXX) or null. */
+export function normalizeUsPhone(input:string):string|null{
+  const digits=input.replace(/\D/g,"");
+  const ten=digits.length===11&&digits.startsWith("1")?digits.slice(1):digits;
+  if(!/^[2-9]\d{2}[2-9]\d{6}$/.test(ten))return null;
+  return "+1"+ten;
+}

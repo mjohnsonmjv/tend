@@ -1,6 +1,6 @@
 import { QueryClient, type QueryFunction } from "@tanstack/react-query";
 import { supabase,SUPABASE_URL,SUPABASE_KEY } from "./supabase";
-import { providerFlags } from "./oauth-core";
+import { providerFlags,phoneEnabled } from "./oauth-core";
 
 const churchFields = "id,slug,name,pastorName:pastor_name,pastorEmail:pastor_email,contactRole:contact_role,greetingMessage:greeting_message,plan,createdAt:created_at";
 const prayerFields = "id,churchId:church_id,submitterName:submitter_name,submitterPhone:submitter_phone,submitterEmail:submitter_email,submitterPhotoUrl:submitter_photo_url,submitterPhotoPath:submitter_photo_path,message,category,isAnonymous:is_anonymous,isUrgent:is_urgent,isPrivate:is_private,status,pastorNotes:pastor_notes,createdAt:created_at";
@@ -19,7 +19,8 @@ export async function apiRequest(method: string, url: string, data?: any): Promi
   if(path==="/api/auth/providers"&&method==="GET"){
     const response=await fetch(SUPABASE_URL+"/auth/v1/settings",{headers:{apikey:SUPABASE_KEY},signal:AbortSignal.timeout(10000)});
     if(!response.ok)throw new Error("Unable to check sign-in options.");
-    return result(providerFlags(await response.json()));
+    const settings=await response.json();
+    return result({...providerFlags(settings),phone:phoneEnabled(settings)});
   }
   const publicMatch = path.match(/^\/api\/churches\/by-slug\/([^/]+)(\/prayers)?$/);
   if (publicMatch) {

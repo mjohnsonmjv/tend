@@ -46,3 +46,13 @@ test("cross-window messages require both exact origin and exact popup",()=>{
 test("recoverable errors explain the next step",()=>{
   for(const reason of ["blocked","closed","timeout","frame","provider_error"])assert.ok(oauthErrorMessage(reason).length>20);
 });
+test("US phone numbers normalize to E.164 and reject others",async()=>{
+  const {normalizeUsPhone,phoneEnabled}=await import("../client/src/lib/oauth-core.ts");
+  assert.equal(normalizeUsPhone("(616) 816-4172"),"+16168164172");
+  assert.equal(normalizeUsPhone("1-616-816-4172"),"+16168164172");
+  assert.equal(normalizeUsPhone("+44 20 7946 0958"),null);
+  assert.equal(normalizeUsPhone("555-0123"),null);
+  assert.equal(normalizeUsPhone("011 616 816 4172"),null);
+  assert.equal(phoneEnabled({external:{phone:true}}),true);
+  assert.equal(phoneEnabled({external:{phone:"true"}}),false);
+});
