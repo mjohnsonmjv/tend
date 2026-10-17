@@ -82,7 +82,7 @@ export default function Login({register=false}:{register?:boolean}) {
     <p className="text-muted-foreground mb-8">{register?"You don't need to be the pastor. Anyone on your church team can create the account, then set up the church and its QR code.":"Sign in to your church's prayer inbox."}</p>
     {session ? <Link className="brand-button" href="/app">Open my churches</Link> :
     <>{socialVisible&&<><div className="space-y-3 mb-7" aria-label="Social sign-in options">
-      {(["google", "facebook", "apple"] as const).map(provider=>{
+      {(["google", "facebook", "apple"] as const).filter(provider=>provider==="google"||providers.data?.[provider]===true).map(provider=>{
         const label=provider==="google"?"Google":provider==="facebook"?"Facebook":"Apple";
         const Icon=provider==="google"?SiGoogle:provider==="facebook"?SiFacebook:SiApple;
         return <Button key={provider} type="button" variant="outline" className="w-full h-auto min-h-12 flex-wrap justify-start px-4 py-3" onClick={()=>social(provider)} disabled={pending||!!socialPending||providers.data?.[provider]!==true} data-testid={`button-oauth-${provider}`}>
