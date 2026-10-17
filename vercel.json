@@ -10,7 +10,8 @@
     {"source": "/demo", "destination": "/#/demo", "permanent": false},
     {"source": "/pricing", "destination": "/#/pricing", "permanent": false},
     {"source": "/privacy", "destination": "/#/privacy", "permanent": false},
-    {"source": "/terms", "destination": "/#/terms", "permanent": false}
+    {"source": "/terms", "destination": "/#/terms", "permanent": false},
+    {"source": "/text", "destination": "/#/text", "permanent": false}
   ],
   "headers": [
     {"source": "/(.*)", "headers": [

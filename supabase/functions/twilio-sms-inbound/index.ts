@@ -15,8 +15,8 @@ const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "";
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
 const PUBLIC_URL = `${SUPABASE_URL}/functions/v1/twilio-sms-inbound`;
 const KEYWORDS = new Set(["STOP","STOPALL","UNSUBSCRIBE","CANCEL","END","QUIT","START","UNSTOP","YES","HELP","INFO"]);
-const REPLY = "Tend: Thanks, your prayer request was shared with your church's care team. Reply STOP to opt out, HELP for help. Msg & data rates may apply.";
-const EMPTY_REPLY = "Tend: Reply with your prayer request and we'll share it with your church's care team. Reply STOP to opt out.";
+const REPLY = "Tend Prayer Requests: Thanks, your prayer request was received and shared privately with the prayer team. You get one reply per request. Msg & data rates may apply. Reply HELP for help, STOP to opt out.";
+const EMPTY_REPLY = "Tend Prayer Requests: Reply with your prayer request and we'll share it privately with the prayer team. Reply STOP to opt out.";
 
 const supabase = createClient(SUPABASE_URL, SERVICE_KEY, { auth: { persistSession: false } });
 let cachedToken: string | null = null;

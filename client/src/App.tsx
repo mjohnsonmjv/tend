@@ -37,6 +37,7 @@ const Gift = page(() => import("@/pages/Gift"));
 const GiftSuccess = page(() => import("@/pages/GiftSuccess"));
 const Privacy = page(() => import("@/pages/Privacy"));
 const Terms = page(() => import("@/pages/Terms"));
+const TextLine = page(() => import("@/pages/TextLine"));
 const Login = page(() => import("@/pages/Login"));
 const MyChurches = page(() => import("@/pages/MyChurches"));
 const Demo = page(() => import("@/pages/Demo"));
@@ -80,6 +81,7 @@ function AppRouter() {
       <Route path="/register">{()=><Redirect to="/signup"/>}</Route>
       <Route path="/privacy" component={Privacy} />
       <Route path="/terms" component={Terms} />
+      <Route path="/text" component={TextLine} />
       <Route path="/app">{()=><RequireAuth><MyChurches/></RequireAuth>}</Route>
       <Route path="/signup">{()=><SignupEntry/>}</Route>
       {/* Dashboard */}

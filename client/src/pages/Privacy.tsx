@@ -39,7 +39,7 @@ export default function Privacy() {
         </Section>
 
         <Section title="Text messages">
-          <p>If you text a prayer request to a Tend number, Tend collects your mobile number, the message, and the time it was sent. They are delivered only to the care team of the church that uses that number, and Tend sends one confirmation reply.</p>
+          <p>If you text a prayer request to a Tend number, Tend collects your mobile number, the message, and the time it was sent. They are delivered only to the care team of the church that uses that number, or to the Tend prayer team for the main Tend line, and Tend sends one confirmation reply.</p>
           <p>Mobile numbers and text-messaging consent are never sold, rented, or shared with third parties or affiliates for marketing or promotional purposes. They are shared only with the service providers needed to deliver messages, such as our text-messaging carrier.</p>
           <p>Reply STOP to opt out at any time, or HELP for help. Message and data rates may apply.</p>
         </Section>
