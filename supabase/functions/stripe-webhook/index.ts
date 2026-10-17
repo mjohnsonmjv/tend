@@ -240,9 +240,12 @@ Deno.serve(async (req) => {
       const plan = validPlan(sess.metadata?.plan);
       const email = sess.customer_details?.email || sess.customer_email || "";
       if (churchId && plan && email) {
-        const rows = await db(`tend_churches?id=eq.${churchId}&select=name,stripe_subscription_id`);
+        const rows = await db(`tend_churches?id=eq.${churchId}&select=name,stripe_subscription_id,owner_id`);
         const church = Array.isArray(rows) ? rows[0] : null;
         if (church && !church.stripe_subscription_id) {
+          if (!(await ownerEmailVerified(church.owner_id, email))) {
+            console.log("skipping abandoned cart email: owner email unconfirmed", churchId);
+          } else {
           const leads = await db(`nurture_leads?email=eq.${encodeURIComponent(email)}&select=id,unsub_token,unsubscribed_at`);
           const lead = Array.isArray(leads) ? leads[0] : null;
           if (!lead?.unsubscribed_at) {
@@ -262,6 +265,7 @@ Deno.serve(async (req) => {
               method: "PATCH",
               body: JSON.stringify({ emails_sent: 1 }),
             });
+          }
           }
         }
       }
