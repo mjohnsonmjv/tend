@@ -137,8 +137,12 @@ export async function apiRequest(method: string, url: string, data?: any): Promi
     const r=await supabase.from("tend_churches").select(churchFields).order("created_at"); return result(r.data,r.error);
   }
   if (path === "/api/churches" && method === "POST") {
+    // Phone-first signups add their email after verification; it may still be
+    // unconfirmed, so fall back to the address saved during signup.
+    let pendingEmail = "";
+    try { pendingEmail = sessionStorage.getItem("tend_pending_email") || ""; } catch { /* private mode */ }
     const r=await supabase.from("tend_churches").insert({
-      name:data.name,slug:data.slug,pastor_name:data.pastorName,pastor_email:session.session.user.email,
+      name:data.name,slug:data.slug,pastor_name:data.pastorName,pastor_email:session.session.user.email||pendingEmail,
       contact_role:data.contactRole,greeting_message:data.greetingMessage,
     }).select(churchFields).single(); return result(r.data,r.error);
   }

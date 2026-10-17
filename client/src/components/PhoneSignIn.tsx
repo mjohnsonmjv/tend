@@ -6,13 +6,20 @@ import { Button } from "@/components/ui/button";
 import { Smartphone } from "lucide-react";
 
 const display = (e164: string) => `(${e164.slice(2, 5)}) ${e164.slice(5, 8)}-${e164.slice(8)}`;
+const validEmail = (v: string) => /.+@.+\..+/.test(v.trim());
 
-/** Sign in with a texted code. Codes only go to numbers already on a Tend account. */
+/**
+ * Sign in with a texted code. A number that is not on any account creates a
+ * new Tend account, then the user adds an email (needed for church setup).
+ */
 export function PhoneSignIn({ onSignedIn }: { onSignedIn: () => void }) {
   const [open, setOpen] = useState(false);
   const [raw, setRaw] = useState("");
   const [phone, setPhone] = useState<string | null>(null);
   const [code, setCode] = useState("");
+  const [needEmail, setNeedEmail] = useState(false);
+  const [email, setEmail] = useState("");
+  const [emailDone, setEmailDone] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [msg, setMsg] = useState("");
   const [wait, setWait] = useState(0);
@@ -20,14 +27,9 @@ export function PhoneSignIn({ onSignedIn }: { onSignedIn: () => void }) {
 
   async function send(target: string) {
     setBusy(true); setMsg("");
-    const { error } = await supabase.auth.signInWithOtp({ phone: target, options: { shouldCreateUser: false, channel: "sms" } });
+    const { error } = await supabase.auth.signInWithOtp({ phone: target, options: { shouldCreateUser: true, channel: "sms" } });
     setBusy(false);
-    if (error) {
-      setMsg(/signups? not allowed|not found|user/i.test(error.message)
-        ? "That number isn't on a Tend account yet. Sign in another way, then add your phone in your church's Settings."
-        : error.message || "Couldn't send a code. Try again in a minute.");
-      return false;
-    }
+    if (error) { setMsg(error.message || "Couldn't send a code. Try again in a minute."); return false; }
     setPhone(target); setWait(60); return true;
   }
   async function start(e: React.FormEvent) {
@@ -40,10 +42,27 @@ export function PhoneSignIn({ onSignedIn }: { onSignedIn: () => void }) {
     e.preventDefault();
     if (!phone || !/^\d{6}$/.test(code)) { setMsg("Enter the 6-digit code."); return; }
     setBusy(true); setMsg("");
-    const { error } = await supabase.auth.verifyOtp({ phone, token: code, type: "sms" });
+    const { data, error } = await supabase.auth.verifyOtp({ phone, token: code, type: "sms" });
     setBusy(false);
     if (error) { setMsg("That code didn't work. Check it, or send a new one."); return; }
+    if (!data.user?.email) { setNeedEmail(true); setMsg(""); return; }
     onSignedIn();
+  }
+  async function saveEmail(e: React.FormEvent) {
+    e.preventDefault();
+    const next = email.trim();
+    if (!validEmail(next)) { setMsg("Enter a valid email address."); return; }
+    setBusy(true); setMsg("");
+    const { error } = await supabase.auth.updateUser({ email: next });
+    setBusy(false);
+    if (error) {
+      setMsg(/already/i.test(error.message)
+        ? "That email is already on a Tend account. Sign in with email instead, or use a different email."
+        : error.message || "Couldn't save that email. Try again.");
+      return;
+    }
+    try { sessionStorage.setItem("tend_pending_email", next); } catch { /* private mode */ }
+    setNeedEmail(false); setEmailDone(next); setMsg("");
   }
 
   if (!open) return (
@@ -53,7 +72,20 @@ export function PhoneSignIn({ onSignedIn }: { onSignedIn: () => void }) {
   );
   return (
     <div className="rounded-md border border-border p-4 space-y-3" data-testid="panel-phone-signin">
-      {!phone ? (
+      {emailDone ? (
+        <div className="space-y-3">
+          <p className="text-sm">Your account is ready. We sent a confirmation link to <strong>{emailDone}</strong>.</p>
+          <Button type="button" className="w-full" onClick={onSignedIn} data-testid="button-phone-email-continue">Continue</Button>
+        </div>
+      ) : needEmail ? (
+        <form onSubmit={saveEmail} className="space-y-3">
+          <p className="text-sm font-medium">One more step: add your email.</p>
+          <p className="text-xs text-muted-foreground">Your church setup and receipts need an email address.</p>
+          <label className="block text-sm font-medium" htmlFor="phone-email">Email</label>
+          <Input id="phone-email" type="email" autoComplete="email" placeholder="you@example.com" value={email} onChange={(e) => setEmail(e.target.value)} data-testid="input-phone-email" />
+          <Button type="submit" className="w-full" disabled={busy} data-testid="button-phone-email-save">{busy ? "Saving…" : "Save email"}</Button>
+        </form>
+      ) : !phone ? (
         <form onSubmit={start} className="space-y-3">
           <label className="block text-sm font-medium" htmlFor="phone-signin">Mobile number</label>
           <Input id="phone-signin" type="tel" inputMode="tel" autoComplete="tel-national" placeholder="(616) 555-0123" value={raw} onChange={(e) => setRaw(e.target.value)} data-testid="input-phone" />
