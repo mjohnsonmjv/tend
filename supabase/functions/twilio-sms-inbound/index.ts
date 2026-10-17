@@ -1,8 +1,8 @@
 // Twilio inbound SMS webhook -> private Tend prayer request.
 //
-// A congregant texts a church's Tend number. This function verifies Twilio's
-// signature, saves the text privately for the church that owns the number
-// (never on the public prayer wall), and replies once.
+// A congregant texts a church keyword (e.g. PRAY) or a church's own Tend number.
+// Tend replies "How can we pray for you?" and the next text is saved privately
+// to that church's prayer inbox (never the public wall), with one confirmation.
 //
 // Secrets: the Twilio auth token is read from Supabase Vault through the
 // service-role-only RPC tend_twilio_auth_token(). SUPABASE_URL and
@@ -15,8 +15,9 @@ const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "";
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
 const PUBLIC_URL = `${SUPABASE_URL}/functions/v1/twilio-sms-inbound`;
 const KEYWORDS = new Set(["STOP","STOPALL","UNSUBSCRIBE","CANCEL","END","QUIT","START","UNSTOP","YES","HELP","INFO"]);
-const REPLY = "Tend Prayer Requests: Thanks, your prayer request was received and shared privately with the prayer team. You get one reply per request. Msg & data rates may apply. Reply HELP for help, STOP to opt out.";
-const EMPTY_REPLY = "Tend Prayer Requests: Reply with your prayer request and we'll share it privately with the prayer team. Reply STOP to opt out.";
+const team = (church?: string) => !church || church === "Tend Text Line" ? "the Tend prayer team" : `${church}'s prayer team`;
+const PROMPT = (church?: string) => `Tend Prayer Requests${church && church !== "Tend Text Line" ? ` for ${church}` : ""}: How can we pray for you? Reply with your prayer request and it will be shared privately with ${team(church)}. Msg & data rates may apply. Reply HELP for help, STOP to opt out.`;
+const CONFIRM = (church?: string) => `Tend Prayer Requests: Thank you. Your request was shared privately with ${team(church)}. Msg & data rates may apply. Reply STOP to opt out.`;
 
 const supabase = createClient(SUPABASE_URL, SERVICE_KEY, { auth: { persistSession: false } });
 let cachedToken: string | null = null;
@@ -70,18 +71,17 @@ Deno.serve(async (req) => {
 
   const from = params["From"] ?? "", to = params["To"] ?? "", body = (params["Body"] ?? "").trim();
   if (KEYWORDS.has(body.toUpperCase())) return twiml();
-  if (!from || !to || !body) return twiml(EMPTY_REPLY);
+  if (!from || !to || !body) return twiml();
 
-  const { data, error } = await supabase.rpc("tend_sms_submit_prayer", {
+  const { data, error } = await supabase.rpc("tend_sms_handle", {
     p_to: to, p_from: from, p_body: body, p_message_sid: params["MessageSid"] ?? null,
   });
   if (error) {
     console.error("twilio-sms-inbound: save failed", error.message);
     return new Response("Server error", { status: 500 });
   }
-  if (!data?.ok) {
-    console.error("twilio-sms-inbound: not saved", data?.reason);
-    return twiml();
-  }
-  return twiml(data.duplicate ? undefined : REPLY);
+  if (data?.action === "prompt") return twiml(PROMPT(data.church));
+  if (data?.action === "saved") return twiml(CONFIRM(data.church));
+  if (data?.action !== "duplicate") console.error("twilio-sms-inbound: not saved", data?.action, data?.reason);
+  return twiml();
 });

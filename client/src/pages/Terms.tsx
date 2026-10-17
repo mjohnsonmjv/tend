@@ -23,7 +23,7 @@ export default function Terms() {
         </Section>
 
         <Section title="Text messaging">
-          <p>Tend Prayer Requests is a text-messaging program operated by Mark Johnson Ventures LLC. When you text a prayer request to a Tend number, it is shared with that church's care team, or with the Tend prayer team for the main Tend line at (616) 816-4172 (see <a className="underline" href="#/text">tendpray.com/text</a>), and you receive one confirmation reply. Texting the number is your consent to that reply. Message frequency varies with the messages you send.</p>
+          <p>Tend Prayer Requests is a text-messaging program operated by Mark Johnson Ventures LLC. When you text a prayer request to a Tend number, it is shared with that church's care team, or with the Tend prayer team for the main Tend line at (616) 816-4172 (see <a className="underline" href="#/text">tendpray.com/text</a>), and you receive a reply asking how we can pray for you plus one confirmation, usually two messages per request. Texting PRAY, a church keyword, or a request to the number is your consent to those replies. Message frequency varies with the messages you send.</p>
           <p>Message and data rates may apply. Reply STOP to opt out at any time; you will receive one message confirming the opt-out. Reply HELP for help, or contact <a className="underline" href="mailto:support@tendpray.com">support@tendpray.com</a>. Carriers are not liable for delayed or undelivered messages. Text messaging is not monitored for emergencies; call 911 in an emergency.</p>
           <p>See the <a className="underline" href="#/privacy">Privacy Policy</a> for how mobile numbers are handled. Mobile numbers are never shared for marketing.</p>
         </Section>
