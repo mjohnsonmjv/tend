@@ -171,6 +171,32 @@ export async function apiRequest(method: string, url: string, data?: any): Promi
     }
     const r=await supabase.from("tend_churches").select(churchFields).eq("id",id).single(); return result(r.data,r.error);
   }
+  // ---- Church branding for QR codes: website URL + logo (paid tiers).
+  // Reads/writes tend_churches.website_url / logo_url, added by migration
+  // 20261018_church_branding.sql. Until that migration is applied, both
+  // calls degrade gracefully to "no branding saved".
+  const brandingMatch=path.match(/^\/api\/churches\/(\d+)\/branding$/);
+  if(brandingMatch){
+    const id=Number(brandingMatch[1]);
+    const missingColumn=(message?:string)=>!!message && /does not exist/i.test(message);
+    if(method==="GET"){
+      const r=await supabase.from("tend_churches").select("website_url,logo_url").eq("id",id).single();
+      if(r.error && missingColumn(r.error.message)) return result({ websiteUrl:null, logoUrl:null });
+      if(r.error) return result(null,r.error);
+      return result({ websiteUrl:r.data.website_url ?? null, logoUrl:r.data.logo_url ?? null });
+    }
+    if(method==="PATCH"){
+      const websiteUrl=typeof data?.websiteUrl==="string" ? data.websiteUrl.trim().slice(0,300) : "";
+      const logoUrl=typeof data?.logoUrl==="string" ? data.logoUrl.slice(0,500000) : "";
+      if(websiteUrl && !/^https?:\/\//i.test(websiteUrl)) return result(null,{ message:"Website must start with http(s)://" });
+      const r=await supabase.from("tend_churches").update({
+        website_url:websiteUrl || null, logo_url:logoUrl || null,
+      }).eq("id",id).select("website_url,logo_url").single();
+      if(r.error && missingColumn(r.error.message)) return result(null,{ message:"Branding columns are not installed yet. Apply supabase/migrations/20261018_church_branding.sql first." });
+      if(r.error) return result(null,r.error);
+      return result({ websiteUrl:r.data.website_url ?? null, logoUrl:r.data.logo_url ?? null });
+    }
+  }
   const prayerMatch=path.match(/^\/api\/prayers\/(\d+)(?:\/(status|notes|share))?$/);
   if(prayerMatch){
     const id=Number(prayerMatch[1]);
