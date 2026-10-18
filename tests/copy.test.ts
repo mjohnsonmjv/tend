@@ -19,6 +19,7 @@ const FILES = [
   "client/src/components/OAuthReturn.tsx",
   "client/src/pages/ChurchSettings.tsx",
   "client/src/pages/ChurchQR.tsx",
+  "client/src/pages/ChurchSubmit.tsx",
   "client/src/lib/churchQr.ts",
   "api/detect-logo.ts",
   "client/src/components/CareTeamMembers.tsx",

@@ -22,6 +22,8 @@ interface PublicChurch {
   name: string;
   pastorName: string;
   greetingMessage: string;
+  /** Data URL of the church logo. Present for paid tiers that saved one. */
+  logoUrl?: string | null;
 }
 
 export default function ChurchSubmit() {
@@ -255,7 +257,15 @@ export default function ChurchSubmit() {
     <div className="min-h-screen bg-background text-foreground prayer-form">
       <div className="max-w-md mx-auto px-6 py-10">
         <div className="text-center mb-8">
-          <Logo size={40} className="text-primary mx-auto mb-4" />
+          {church.logoUrl ? (
+            <img
+              src={church.logoUrl}
+              alt=""
+              className="mx-auto mb-4 max-h-16 w-auto max-w-[240px] object-contain"
+            />
+          ) : (
+            <Logo size={40} className="text-primary mx-auto mb-4" />
+          )}
           <div className="text-xs uppercase tracking-widest text-muted-foreground mb-1">Share a prayer request</div>
           <h1 className="font-serif text-3xl text-foreground leading-tight">{church.name}</h1>
           <p className="mt-2 text-muted-foreground">
