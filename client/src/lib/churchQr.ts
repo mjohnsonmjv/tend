@@ -27,6 +27,19 @@ export function tendMarkDataUrl(): string {
   return `data:image/svg+xml,${encodeURIComponent(TEND_MARK_SVG)}`;
 }
 
+/**
+ * Convert a data URL to a Blob without fetch(), so Content-Security-Policy
+ * connect-src never comes into play. Pure function: unit tested.
+ */
+export function dataUrlToBlob(dataUrl: string): Blob {
+  const comma = dataUrl.indexOf(",");
+  const header = comma >= 0 ? dataUrl.slice(0, comma) : "";
+  const base64 = comma >= 0 ? dataUrl.slice(comma + 1) : "";
+  const mime = header.match(/data:([^;,]+)/)?.[1] || "application/octet-stream";
+  const bytes = Uint8Array.from(atob(base64), (c) => c.charCodeAt(0));
+  return new Blob([bytes], { type: mime });
+}
+
 /** Pure geometry for the center-logo backdrop: easy to unit test. */
 export function logoBox(qrSize: number): { x: number; y: number; size: number; radius: number; pad: number } {
   const size = Math.round(qrSize * 0.26);

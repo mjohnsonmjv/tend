@@ -6,7 +6,7 @@ import {
   extractLogoCandidates,
   sniffDimensions,
 } from "../api/detect-logo";
-import { logoBox, tendMarkDataUrl } from "../client/src/lib/churchQr";
+import { logoBox, tendMarkDataUrl, dataUrlToBlob } from "../client/src/lib/churchQr";
 
 /* ---------- normalizeWebsite ---------- */
 
@@ -133,6 +133,18 @@ test("logoBox centers a ~26% backdrop", () => {
   assert.equal(b.x, (1024 - 266) / 2);
   assert.equal(b.y, (1024 - 266) / 2);
   assert.ok(b.radius > 0 && b.pad > 0);
+});
+
+test("dataUrlToBlob round-trips a PNG data URL", async () => {
+  // 1x1 transparent PNG
+  const url =
+    "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==";
+  const blob = dataUrlToBlob(url);
+  assert.equal(blob.type, "image/png");
+  assert.ok(blob.size > 0);
+  const bytes = new Uint8Array(await blob.arrayBuffer());
+  assert.equal(bytes[0], 0x89);
+  assert.equal(bytes[1], 0x50); // PNG magic
 });
 
 test("tendMarkDataUrl is a parseable SVG data URL", () => {

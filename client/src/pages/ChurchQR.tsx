@@ -7,7 +7,7 @@ import type { Church } from "@shared/schema";
 import { Download, Printer, Copy, ExternalLink, MessageCircle } from "lucide-react";
 import { useMemo, useEffect, useState } from "react";
 import { useToast } from "@/hooks/use-toast";
-import { generateChurchQr } from "@/lib/churchQr";
+import { generateChurchQr, dataUrlToBlob } from "@/lib/churchQr";
 import { apiRequest } from "@/lib/queryClient";
 import { AccessProblem } from "@/components/AccessProblem";
 
@@ -131,11 +131,31 @@ export default function ChurchQR() {
   };
 
   const downloadPng = async () => {
-    if (!qrDataUrl || !church) return;
+    if (!church) return;
+    if (!qrDataUrl) {
+      toast({ title: "Still generating", description: "Give the QR code a moment, then try again." });
+      return;
+    }
+    const filename = `tend-${church.slug}-qr.png`;
+    // iOS Safari and in-app browsers ignore a[download] for data URLs, so
+    // prefer the system share sheet there: the user can save or send the PNG.
+    try {
+      const file = new File([dataUrlToBlob(qrDataUrl)], filename, { type: "image/png" });
+      if (typeof navigator.share === "function" && navigator.canShare?.({ files: [file] })) {
+        await navigator.share({ files: [file], title: `${church.name} QR code` });
+        return;
+      }
+    } catch (e) {
+      // Dismissing the share sheet is not an error; anything else falls
+      // through to the anchor download below.
+      if (e instanceof DOMException && e.name === "AbortError") return;
+    }
     const a = document.createElement("a");
     a.href = qrDataUrl;
-    a.download = `tend-${church.slug}-qr.png`;
+    a.download = filename;
+    document.body.appendChild(a);
     a.click();
+    a.remove();
   };
 
   const printPoster = () => {
