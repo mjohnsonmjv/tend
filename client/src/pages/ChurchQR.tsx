@@ -7,7 +7,8 @@ import type { Church } from "@shared/schema";
 import { Download, Printer, Copy, ExternalLink, MessageCircle } from "lucide-react";
 import { useMemo, useEffect, useState } from "react";
 import { useToast } from "@/hooks/use-toast";
-import { generateChurchQr } from "@/lib/churchQr";
+import { generateChurchQr, dataUrlToBlob } from "@/lib/churchQr";
+import { apiRequest } from "@/lib/queryClient";
 import { AccessProblem } from "@/components/AccessProblem";
 
 const escapeHtml = (text:string) => text.replace(/[&<>"']/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]!));
@@ -19,30 +20,142 @@ export default function ChurchQR() {
   const [qrDataUrl, setQrDataUrl] = useState<string>("");
   const { toast } = useToast();
 
+  // Paid tiers (starter/growth) can put their own logo in the QR center.
+  // Free tiers get the Tend mark. Branding lives in tend_churches.website_url
+  // and logo_url (migration 20261018_church_branding.sql).
+  const isPaid = church?.plan === "starter" || church?.plan === "growth";
+  const [branding, setBranding] = useState<{ websiteUrl: string | null; logoUrl: string | null } | null>(null);
+  const [siteInput, setSiteInput] = useState("");
+  const [detecting, setDetecting] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [found, setFound] = useState<{ dataUrl: string; logoUrl: string } | null>(null);
+
   // Public URL : for QR embedding. In production tendpray.com/#/c/<slug>.
   const publicUrl = useMemo(() => {
     if (!church) return "";
     return `${window.location.origin}${window.location.pathname}#/c/${church.slug}`;
   }, [church]);
 
+  // Load saved branding for paid tiers (graceful when the branding
+  // migration has not been applied yet).
+  useEffect(() => {
+    if (!church || !isPaid) return;
+    let cancelled = false;
+    apiRequest("GET", `/api/churches/${church.id}/branding`)
+      .then(async (res) => {
+        const data = await res.json();
+        if (cancelled) return;
+        setBranding(data);
+        if (data.websiteUrl) setSiteInput(data.websiteUrl);
+      })
+      .catch(() => { /* branding unavailable: the QR still works */ });
+    return () => { cancelled = true; };
+  }, [church?.id, isPaid]);
+
   // Generate locally. No third-party QR service receives church URLs.
-  // The tendpray.com caption is baked into the image so attribution survives
-  // wherever the PNG travels (bulletins, slides).
+  // Free tiers get the Tend mark in the center; paid tiers get the church's
+  // own logo once saved, or a clean code until then.
+  const activeLogo = isPaid ? (branding?.logoUrl ?? null) : undefined;
   useEffect(() => {
     if (!publicUrl) return;
     let cancelled = false;
-    generateChurchQr(publicUrl)
+    generateChurchQr(publicUrl, { centerLogo: activeLogo })
       .then((url) => { if (!cancelled) setQrDataUrl(url); })
       .catch(() => { if (!cancelled) toast({title:"Could not generate QR code",variant:"destructive"}); });
     return () => { cancelled = true; };
-  }, [church, publicUrl]);
+  }, [church, publicUrl, activeLogo]);
+
+  const findLogo = async () => {
+    const site = siteInput.trim();
+    if (!site) {
+      toast({ title: "Enter your church website first", variant: "destructive" });
+      return;
+    }
+    setDetecting(true);
+    setFound(null);
+    try {
+      // Real serverless endpoint (Vercel), not the Supabase-routed /api/* path.
+      const res = await fetch(`/api/detect-logo?url=${encodeURIComponent(site)}`);
+      const data = await res.json();
+      if (!res.ok || !data.ok) throw new Error(data.error || "Could not find a logo.");
+      setFound({ dataUrl: data.dataUrl, logoUrl: data.logoUrl });
+    } catch (e) {
+      toast({
+        title: "No logo found",
+        description: e instanceof Error ? e.message : "Try your homepage address.",
+        variant: "destructive",
+      });
+    } finally {
+      setDetecting(false);
+    }
+  };
+
+  const useFoundLogo = async () => {
+    if (!found || !church) return;
+    setSaving(true);
+    try {
+      const res = await apiRequest("PATCH", `/api/churches/${church.id}/branding`, {
+        websiteUrl: siteInput.trim(),
+        logoUrl: found.dataUrl,
+      });
+      const data = await res.json();
+      setBranding(data);
+      setFound(null);
+      toast({ title: "Logo added", description: "Your QR code now carries your church logo." });
+    } catch (e) {
+      toast({
+        title: "Could not save the logo",
+        description: e instanceof Error ? e.message : undefined,
+        variant: "destructive",
+      });
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const removeLogo = async () => {
+    if (!church) return;
+    try {
+      const res = await apiRequest("PATCH", `/api/churches/${church.id}/branding`, {
+        websiteUrl: siteInput.trim() || null,
+        logoUrl: null,
+      });
+      setBranding(await res.json());
+    } catch (e) {
+      toast({
+        title: "Could not remove the logo",
+        description: e instanceof Error ? e.message : undefined,
+        variant: "destructive",
+      });
+    }
+  };
 
   const downloadPng = async () => {
-    if (!qrDataUrl || !church) return;
+    if (!church) return;
+    if (!qrDataUrl) {
+      toast({ title: "Still generating", description: "Give the QR code a moment, then try again." });
+      return;
+    }
+    const filename = `tend-${church.slug}-qr.png`;
+    // iOS Safari and in-app browsers ignore a[download] for data URLs, so
+    // prefer the system share sheet there: the user can save or send the PNG.
+    try {
+      const file = new File([dataUrlToBlob(qrDataUrl)], filename, { type: "image/png" });
+      if (typeof navigator.share === "function" && navigator.canShare?.({ files: [file] })) {
+        await navigator.share({ files: [file], title: `${church.name} QR code` });
+        return;
+      }
+    } catch (e) {
+      // Dismissing the share sheet is not an error; anything else falls
+      // through to the anchor download below.
+      if (e instanceof DOMException && e.name === "AbortError") return;
+    }
     const a = document.createElement("a");
     a.href = qrDataUrl;
-    a.download = `tend-${church.slug}-qr.png`;
+    a.download = filename;
+    document.body.appendChild(a);
     a.click();
+    a.remove();
   };
 
   const printPoster = () => {
@@ -153,6 +266,11 @@ export default function ChurchQR() {
                 <div className="mt-1 font-mono text-xs text-muted-foreground break-all">
                   {publicUrl}
                 </div>
+                {!isPaid && (
+                  <p className="mt-3 text-sm text-muted-foreground">
+                    Paid plans put your church logo in the center.
+                  </p>
+                )}
               </div>
             </div>
 
@@ -174,6 +292,75 @@ export default function ChurchQR() {
                 onClick={downloadPng}
                 testId="button-download-png"
               />
+              {isPaid && (
+                <div className="rounded-xl border border-border bg-card p-5">
+                  <div className="font-medium text-foreground mb-1">Your church logo</div>
+                  <p className="text-sm text-muted-foreground leading-relaxed mb-4">
+                    Put your logo in the center of the code. Paste your website and we will find it. No upload needed.
+                  </p>
+                  {branding?.logoUrl ? (
+                    <div className="flex items-center gap-4">
+                      <img
+                        src={branding.logoUrl}
+                        alt="Church logo"
+                        className="h-14 w-14 object-contain rounded-lg bg-white border border-border p-1"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <div className="text-sm font-medium text-foreground truncate">{branding.websiteUrl}</div>
+                        <button
+                          type="button"
+                          onClick={removeLogo}
+                          className="text-sm text-muted-foreground underline underline-offset-2"
+                          data-testid="button-remove-logo"
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="space-y-3">
+                      <input
+                        value={siteInput}
+                        onChange={(e) => setSiteInput(e.target.value)}
+                        placeholder="yourchurch.org"
+                        inputMode="url"
+                        autoCapitalize="none"
+                        autoCorrect="off"
+                        className="w-full rounded-lg border border-border bg-background px-3 py-2.5 text-base text-foreground placeholder:text-muted-foreground"
+                        data-testid="input-church-website"
+                      />
+                      {found ? (
+                        <div className="flex items-center gap-3 rounded-lg border border-border p-3">
+                          <img
+                            src={found.dataUrl}
+                            alt="Detected logo"
+                            className="h-12 w-12 object-contain rounded bg-white border border-border p-1"
+                          />
+                          <div className="flex-1 text-sm text-foreground">Is this your logo?</div>
+                          <Button
+                            size="sm"
+                            onClick={useFoundLogo}
+                            disabled={saving}
+                            data-testid="button-use-logo"
+                          >
+                            {saving ? "Saving" : "Use it"}
+                          </Button>
+                        </div>
+                      ) : (
+                        <Button
+                          onClick={findLogo}
+                          disabled={detecting}
+                          variant="outline"
+                          className="w-full border-primary/30 text-[#8a6d1f] hover:bg-primary/5"
+                          data-testid="button-find-logo"
+                        >
+                          {detecting ? "Looking for your logo" : "Find my logo"}
+                        </Button>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
               <ActionCard
                 title="Copy the link"
                 body="Share your prayer wall directly by URL for emails, texts, or website links."
