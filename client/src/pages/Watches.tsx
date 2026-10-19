@@ -11,11 +11,13 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { Plus, Loader2, Copy, Check, Trash2 } from "lucide-react";
 import type { Church } from "@shared/schema";
+import { WEEKDAY_SHORT, describeWeeklySchedule, startHourOf } from "@/lib/watchSchedule";
 
 interface Watch {
   id: number; churchId: number; title: string; description: string | null;
   slug: string; startDate: string; endDate: string | null;
   slotMinutes: number; isActive: boolean; createdAt: number;
+  activeWeekdays: number[] | null; cycleStartHour: number;
 }
 
 export default function Watches() {
@@ -30,15 +32,25 @@ export default function Watches() {
   const [description, setDescription] = useState("");
   const [startDate, setStartDate] = useState(() => new Date().toISOString().slice(0, 10));
   const [endDate, setEndDate] = useState("");
+  const [scheduleType, setScheduleType] = useState<"once" | "weekly">("once");
+  const [weekdays, setWeekdays] = useState<number[]>([6]);
+  const [startTime, setStartTime] = useState("10:00");
   const [copied, setCopied] = useState<number | null>(null);
 
+  const toggleWeekday = (d: number) =>
+    setWeekdays((w) => (w.includes(d) ? w.filter((x) => x !== d) : [...w, d].sort((a, b) => a - b)));
+
+  const weekly = scheduleType === "weekly";
   const create = useMutation({
     mutationFn: async () => (await apiRequest("POST", `/api/churches/${churchId}/watches`, {
       title, description, startDate, endDate: endDate || null, slotMinutes: 15,
+      activeWeekdays: weekly ? weekdays : null,
+      cycleStartHour: weekly ? startHourOf(startTime) : 0,
     })).json(),
     onSuccess: (w: Watch) => {
       queryClient.invalidateQueries({ queryKey: [`/api/churches/${churchId}/watches`] });
       setShowForm(false); setTitle(""); setDescription(""); setEndDate("");
+      setScheduleType("once"); setWeekdays([6]); setStartTime("10:00");
       toast({ title: "Prayer watch created", description: "Share the signup link to fill the day." });
     },
     onError: (e: Error) => toast({ title: "Could not create the watch", description: e.message, variant: "destructive" }),
@@ -73,12 +85,73 @@ export default function Watches() {
             <div className="grid sm:grid-cols-2 gap-4">
               <div className="sm:col-span-2"><Label htmlFor="w-title">Title</Label><Input id="w-title" value={title} onChange={e => setTitle(e.target.value)} placeholder="Easter week 24/7 prayer" /></div>
               <div className="sm:col-span-2"><Label htmlFor="w-desc">Description <span className="text-muted-foreground font-normal">(shown on the signup page)</span></Label><Textarea id="w-desc" value={description} onChange={e => setDescription(e.target.value)} placeholder="Join our church family in covering every minute in prayer…" rows={2} /></div>
+              <div className="sm:col-span-2">
+                <Label>Schedule</Label>
+                <div className="grid grid-cols-2 gap-2 mt-1.5">
+                  {(["once", "weekly"] as const).map((t) => (
+                    <button
+                      key={t}
+                      type="button"
+                      onClick={() => setScheduleType(t)}
+                      aria-pressed={scheduleType === t}
+                      className={`rounded-xl border px-4 py-3 text-sm font-medium text-left transition-colors ${
+                        scheduleType === t
+                          ? "border-primary bg-primary/10 text-foreground"
+                          : "border-border bg-background text-muted-foreground hover:border-primary/50"
+                      }`}
+                    >
+                      {t === "once" ? "One time" : "Weekly"}
+                      <span className="block text-xs font-normal mt-0.5">
+                        {t === "once" ? "A date range, like Easter week" : "Repeats every week"}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+              {weekly && (
+                <>
+                  <div className="sm:col-span-2">
+                    <Label>Repeats every</Label>
+                    <div className="flex flex-wrap gap-1.5 mt-1.5">
+                      {WEEKDAY_SHORT.map((name, d) => (
+                        <button
+                          key={d}
+                          type="button"
+                          aria-pressed={weekdays.includes(d)}
+                          aria-label={name}
+                          onClick={() => toggleWeekday(d)}
+                          className={`h-10 w-10 rounded-full border text-sm font-semibold transition-colors ${
+                            weekdays.includes(d)
+                              ? "border-primary bg-primary text-primary-foreground"
+                              : "border-border bg-background text-muted-foreground hover:border-primary/50"
+                          }`}
+                        >
+                          {name[0]}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div>
+                    <Label htmlFor="w-time">Start time</Label>
+                    <Input id="w-time" type="time" step="3600" value={startTime} onChange={e => setStartTime(e.target.value)} />
+                  </div>
+                  <div className="flex items-end">
+                    <p className="text-sm text-muted-foreground pb-2.5">
+                      {describeWeeklySchedule(weekdays, startTime)} · {weekdays.length * 96} slots a week.
+                    </p>
+                  </div>
+                </>
+              )}
               <div><Label htmlFor="w-start">Start date</Label><Input id="w-start" type="date" value={startDate} onChange={e => setStartDate(e.target.value)} /></div>
               <div><Label htmlFor="w-end">End date <span className="text-muted-foreground font-normal">(blank = ongoing)</span></Label><Input id="w-end" type="date" value={endDate} min={startDate} onChange={e => setEndDate(e.target.value)} /></div>
             </div>
-            <p className="text-sm text-muted-foreground mt-3">Each day is split into 96 fifteen-minute slots. The first two weeks of slots are created now; more fill in as people visit.</p>
+            <p className="text-sm text-muted-foreground mt-3">
+              {weekly
+                ? "Each picked day starts a 24-hour window of 96 fifteen-minute slots. The next 12 weeks are created now; more fill in as people visit."
+                : "Each day is split into 96 fifteen-minute slots. The first two weeks of slots are created now; more fill in as people visit."}
+            </p>
             <div className="flex gap-2 mt-4">
-              <Button disabled={!title.trim() || !startDate || create.isPending} onClick={() => create.mutate()}>
+              <Button disabled={!title.trim() || !startDate || (weekly && weekdays.length === 0) || create.isPending} onClick={() => create.mutate()}>
                 {create.isPending ? <><Loader2 className="h-4 w-4 mr-2 animate-spin" /> Creating…</> : "Create watch"}
               </Button>
               <Button variant="ghost" onClick={() => setShowForm(false)}>Cancel</Button>
@@ -91,7 +164,7 @@ export default function Watches() {
           : !watches.data?.length ? (
             <div className="border border-dashed border-border rounded-2xl p-10 text-center">
               <p className="font-serif text-xl mb-2">No prayer watches yet</p>
-              <p className="text-muted-foreground text-sm">Start one above — a week of 24/7 prayer, a day of prayer before Easter, or an ongoing ministry.</p>
+              <p className="text-muted-foreground text-sm">Start one above: a week of 24/7 prayer, a day of prayer before Easter, or an ongoing ministry.</p>
             </div>
           ) : (
             <div className="space-y-4">
@@ -101,7 +174,9 @@ export default function Watches() {
                     <div>
                       <Link href={`/church/${churchId}/watches/${w.id}`} className="font-serif text-xl hover:underline">{w.title}</Link>
                       <p className="text-sm text-muted-foreground mt-1">
-                        {new Date(w.startDate + "T12:00:00").toLocaleDateString()} – {w.endDate ? new Date(w.endDate + "T12:00:00").toLocaleDateString() : "ongoing"}
+                        {w.activeWeekdays?.length
+                          ? <>{describeWeeklySchedule(w.activeWeekdays, `${String(w.cycleStartHour).padStart(2, "0")}:00`)}{w.endDate ? ` through ${new Date(w.endDate + "T12:00:00").toLocaleDateString()}` : " · ongoing"}</>
+                          : <>{new Date(w.startDate + "T12:00:00").toLocaleDateString()} – {w.endDate ? new Date(w.endDate + "T12:00:00").toLocaleDateString() : "ongoing"}</>}
                         {!w.isActive && <span className="ml-2 text-xs uppercase tracking-wide">(paused)</span>}
                       </p>
                     </div>

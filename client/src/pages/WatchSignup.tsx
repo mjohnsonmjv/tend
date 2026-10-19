@@ -9,11 +9,13 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useToast } from "@/hooks/use-toast";
 import { Logo } from "@/components/Logo";
 import { ChevronLeft, ChevronRight, Check, Loader2, Clock, ChevronDown } from "lucide-react";
+import { isWatchCalendarDay, describeWeeklySchedule } from "@/lib/watchSchedule";
 
 interface WatchInfo {
   id: number; slug: string; title: string; description: string | null;
   churchName: string; startDate: string; endDate: string | null;
   slotMinutes: number; isActive: boolean;
+  activeWeekdays: number[] | null; cycleStartHour: number;
 }
 interface Slot { id: number; startsAt: string; endsAt: string; taken: boolean; displayName?: string | null; }
 interface DayView { total: number; filled: number; slots: Slot[]; }
@@ -46,12 +48,14 @@ export default function WatchSignup() {
     const end = watch.data.endDate ? new Date(watch.data.endDate + "T12:00:00") : null;
     const today = new Date(); today.setHours(0, 0, 0, 0);
     const first = start < today ? today : start;
-    const activeWeekdays: number[] | null = (watch.data as any).activeWeekdays ?? null;
+    const activeWeekdays: number[] | null = watch.data.activeWeekdays ?? null;
     const list: Date[] = [];
     for (let i = 0; i < 28 && list.length < 8; i++) {
       const d = new Date(first); d.setDate(d.getDate() + i);
       if (end && d > end) break;
-      if (activeWeekdays && !activeWeekdays.includes(d.getDay())) continue;
+      // Weekly watches also list the spillover second half of each window
+      // (e.g. Sunday for a Saturday-start watch).
+      if (!isWatchCalendarDay(d, activeWeekdays)) continue;
       list.push(d);
     }
     return list;
@@ -157,7 +161,11 @@ export default function WatchSignup() {
           <div className="flex items-center gap-2 text-sm text-muted-foreground mb-2"><Logo size={20} /><span>{w.churchName}</span></div>
           <h1 className="font-serif text-3xl">{w.title}</h1>
           {w.description && <p className="text-muted-foreground mt-2">{w.description}</p>}
-          <p className="text-sm text-muted-foreground mt-3 flex items-center gap-1.5"><Clock className="h-4 w-4" /> Around-the-clock prayer. Pick a 15-minute time to cover.</p>
+          <p className="text-sm text-muted-foreground mt-3 flex items-center gap-1.5"><Clock className="h-4 w-4" />
+            {w.activeWeekdays?.length
+              ? <>{describeWeeklySchedule(w.activeWeekdays, `${String(w.cycleStartHour).padStart(2, "0")}:00`)}. Pick a 15-minute time to cover.</>
+              : <>Around-the-clock prayer. Pick a 15-minute time to cover.</>}
+          </p>
           <button onClick={() => setShowWhy(v => !v)} className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-foreground underline decoration-primary decoration-2 underline-offset-4">
             Why 24/7 prayer?
             <ChevronDown className={`h-4 w-4 transition-transform ${showWhy ? "rotate-180" : ""}`} />

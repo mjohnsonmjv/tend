@@ -25,6 +25,9 @@ const FILES = [
   "client/src/components/PcoSyncSettings.tsx",
   "client/src/lib/pcoSync.ts",
   "supabase/functions/pray-session/index.ts",
+  "client/src/pages/Watches.tsx",
+  "client/src/pages/WatchSignup.tsx",
+  "client/src/lib/watchSchedule.ts",
 ];
 
 for (const f of FILES) {

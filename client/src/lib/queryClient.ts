@@ -206,7 +206,7 @@ export async function apiRequest(method: string, url: string, data?: any): Promi
     const r=await supabase.from("tend_prayers").update(update).eq("id",id).select(prayerFields).single();return result(r.data,r.error);
   }
   // ---- 24/7 prayer watches: pastor management (signed in, RLS enforced) ----
-  const watchFields="id,churchId:church_id,title,description,slug,startDate:start_date,endDate:end_date,slotMinutes:slot_minutes,isActive:is_active,createdAt:created_at";
+  const watchFields="id,churchId:church_id,title,description,slug,startDate:start_date,endDate:end_date,slotMinutes:slot_minutes,isActive:is_active,createdAt:created_at,activeWeekdays:active_weekdays,cycleStartHour:cycle_start_hour";
   const churchWatchMatch=path.match(/^\/api\/churches\/(\d+)\/watches$/);
   if(churchWatchMatch){
     const churchId=Number(churchWatchMatch[1]);
@@ -216,13 +216,18 @@ export async function apiRequest(method: string, url: string, data?: any): Promi
     }
     if(method==="POST"){
       const slug=(data.slug||data.title||"").toLowerCase().trim().replace(/[^a-z0-9]+/g,"-").replace(/^-+|-+$/g,"").slice(0,60)||`watch-${Date.now().toString(36)}`;
+      const activeWeekdays=Array.isArray(data.activeWeekdays)&&data.activeWeekdays.length?data.activeWeekdays:null;
+      const cycleStartHour=Number.isInteger(data.cycleStartHour)?data.cycleStartHour:0;
       const r=await supabase.from("tend_prayer_watches").insert({
         church_id:churchId,title:data.title,description:data.description||null,slug,
         start_date:data.startDate,end_date:data.endDate||null,slot_minutes:data.slotMinutes||15,
+        active_weekdays:activeWeekdays,cycle_start_hour:cycleStartHour,
       }).select(watchFields).single();
       if(r.error) return result(null,r.error);
-      // Generate the first 14 days of slots now; the day view lazily fills the rest.
-      const start=new Date(data.startDate); const horizon=new Date(start); horizon.setDate(horizon.getDate()+13);
+      // Generate slots now; the day view lazily fills the rest. Weekly watches
+      // get 12 weeks of occurrences up front, date-range watches get 14 days.
+      const horizonDays=activeWeekdays?83:13;
+      const start=new Date(data.startDate); const horizon=new Date(start); horizon.setDate(horizon.getDate()+horizonDays);
       const endLimit=data.endDate?new Date(data.endDate):horizon;
       const through=endLimit<horizon?endLimit.toISOString().slice(0,10):horizon.toISOString().slice(0,10);
       await supabase.rpc("tend_generate_watch_slots",{p_watch_id:r.data.id,p_from:data.startDate,p_to:through});
