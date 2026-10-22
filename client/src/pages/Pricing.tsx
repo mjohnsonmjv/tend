@@ -18,44 +18,19 @@ const PLANS = [
     cta: "Start for free",
   },
   {
-    id: "starter",
-    name: "Starter",
-    monthly: 29,
-    annual: 290,
-    tag: "For churches under 200",
-    perks: [
-      "Everything in Free",
-      "Custom greeting message",
-      "Weekly digest email (planned)",
-    ],
-    cta: "Start free trial",
-  },
-  {
     id: "growth",
-    name: "Growth",
+    name: "Church",
     monthly: 49,
     annual: 490,
-    tag: "For churches 200–500",
+    tag: "Every church, every size",
     highlighted: true,
     perks: [
-      "Everything in Starter",
-      "Multiple QR codes (planned)",
-      "Automated SMS follow-up (planned)",
-      "Export prayer log to CSV (planned)",
-    ],
-    cta: "Start free trial",
-  },
-  {
-    id: "large",
-    name: "Large Church",
-    monthly: 99,
-    annual: 990,
-    tag: "For churches 500+",
-    perks: [
-      "Everything in Growth",
-      "Multiple team accounts (planned)",
-      "Small-group ministry views (planned)",
-      "Priority support (planned)",
+      "Everything in Free",
+      "Your logo in the QR code and on your prayer page",
+      "Custom greeting message",
+      "Care team accounts",
+      "24/7 prayer watches",
+      "Planning Center sync",
     ],
     cta: "Start free trial",
   },
@@ -103,7 +78,7 @@ export default function Pricing() {
         )}
       </section>
 
-      <section className="max-w-7xl mx-auto px-6 pb-24 grid md:grid-cols-2 xl:grid-cols-4 gap-6">
+      <section className="max-w-4xl mx-auto px-6 pb-24 grid md:grid-cols-2 gap-6">
         {PLANS.map((p) => (
           <div
             key={p.id}
@@ -116,7 +91,7 @@ export default function Pricing() {
           >
             {p.highlighted && (
               <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-xs font-medium px-3 py-1 rounded-full">
-                Expanded care
+                Everything included
               </div>
             )}
             <div className="text-sm text-muted-foreground uppercase tracking-widest">{p.tag}</div>
@@ -156,7 +131,7 @@ export default function Pricing() {
         <h2 className="font-serif text-3xl text-foreground text-center mb-10">Common questions</h2>
         <div className="space-y-6 text-foreground/90">
           <Faq q="Is the free plan really free?">
-            Yes. One prayer page and one QR code, free forever. No card required. Paid plans add a custom greeting, weekly digest emails, multiple QR codes, automated SMS follow-up, and more.
+            Yes. One prayer page and one QR code, free forever. No card required. The Church plan adds your logo, a custom greeting, care team accounts, 24/7 prayer watches, and Planning Center sync.
           </Faq>
           <Faq q="Does my congregation need to install anything?">
             No. They scan a QR code with their phone camera, land on a simple submission page, and share their request. That's it.

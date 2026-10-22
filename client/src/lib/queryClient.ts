@@ -81,9 +81,7 @@ export async function apiRequest(method: string, url: string, data?: any): Promi
   const {data:session} = await supabase.auth.getSession();
   if (!session.session) throw new Error("Please sign in to access your church.");
   if (path === "/api/billing/status") return result({ configured:true, plans:[
-    { id:"starter", name:"Starter", price:29, description:"For churches under 200. Unlimited requests, custom greeting." },
-    { id:"growth", name:"Growth", price:49, description:"For churches 200 to 500. Multiple QR codes, CSV export." },
-    { id:"large", name:"Large Church", price:99, description:"For churches 500 and up. Team accounts, priority support." },
+    { id:"growth", name:"Church", price:49, description:"Every church, every size. Everything included." },
   ] });
   const billingFn = async (fn: string, body: any) => {
     const res = await fetch(`${SUPABASE_URL}/functions/v1/${fn}`, {
