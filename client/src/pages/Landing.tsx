@@ -225,7 +225,7 @@ function KitSection() {
       <div className="who-grid">
         {[
           ["Announcement slide", "A ready-made slide for your Sunday screens. Add your church's QR code and it is done.", <p key="l"><a className="text-action" href="/kit/tend-announcement-slide.pdf" data-testid="link-kit-slide">Download the slide (PDF) <ArrowRight size={16} /></a></p>],
-          ["Printed card", "A card for the bulletin or the seat backs. Print a stack each week.", <p key="l"><a className="text-action" href="/kit/tend-pew-card.pdf" data-testid="link-kit-card">Download the card (PDF) <ArrowRight size={16} /></a></p>],
+          ["Printed card", "A card for the bulletin or the seat backs. 1 Peter 5:7 is printed on the back, so people keep it. Print a stack each week.", <p key="l"><a className="text-action" href="/kit/tend-pew-card.pdf" data-testid="link-kit-card">Download the card (PDF) <ArrowRight size={16} /></a></p>],
           ["Lobby poster", "Your dashboard generates a printable poster with your church's QR code on it.", <p key="l"><Link className="text-action" href="/signup" data-testid="link-kit-poster">Get your QR code <ArrowRight size={16} /></Link></p>],
         ].map(([title, body, link], i) => (
           <Reveal key={title as string} delay={i * 0.08}>
