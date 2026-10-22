@@ -1,7 +1,12 @@
+import { useEffect } from "react";
 import { Link } from "wouter";
 import { SiteHeader, SiteFooter } from "@/components/SiteHeader";
+import { logSiteEvent } from "@/lib/siteEvents";
 
 export default function NotFound() {
+  useEffect(() => {
+    logSiteEvent("not_found");
+  }, []);
   return (
     <div className="min-h-screen bg-background text-foreground">
       <SiteHeader />
