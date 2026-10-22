@@ -16,10 +16,10 @@ export default function Privacy() {
       <main className="max-w-3xl mx-auto px-6 py-16">
         <p className="eyebrow mb-3">Privacy Policy</p>
         <h1 className="font-serif text-4xl mb-4">How Tend handles information</h1>
-        <p className="text-muted-foreground mb-10">Last updated October 16, 2026. Tend is a pilot service, and this policy will evolve as the service does.</p>
+        <p className="text-muted-foreground mb-10">Last updated October 22, 2026. Tend is a pilot service, and this policy will evolve as the service does.</p>
 
         <Section title="What Tend collects">
-          <p>When a church signs up, Tend collects the church name, a public care-team display name, a welcome message, and the account holder's email address.</p>
+          <p>When a church signs up, Tend collects the church name, a public care-team display name, a welcome message, and the account holder's email address. If you sign in by phone, Tend also collects your mobile number, as described under Text messages below.</p>
           <p>When someone shares through a church's prayer page, Tend collects the request itself: the message, the request type, and whether it was marked urgent. A name and phone number are optional, and requests can be shared anonymously.</p>
         </Section>
 
@@ -40,6 +40,7 @@ export default function Privacy() {
 
         <Section title="Text messages">
           <p>If you text a prayer request to a Tend number, Tend collects your mobile number, the message, and the time it was sent. They are delivered only to the care team of the church that uses that number, or to the Tend prayer team for the main Tend line, and Tend sends one confirmation reply.</p>
+          <p>If you sign in with your mobile number, Tend collects that number to send you one-time sign-in codes and to recognize your account when you return. Sign-in numbers are used for sign-in only, never for marketing or outreach.</p>
           <p>Mobile numbers and text-messaging consent are never sold, rented, or shared with third parties or affiliates for marketing or promotional purposes. They are shared only with the service providers needed to deliver messages, such as our text-messaging carrier.</p>
           <p>Reply STOP to opt out at any time, or HELP for help. Message and data rates may apply.</p>
         </Section>

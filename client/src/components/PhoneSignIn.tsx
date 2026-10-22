@@ -74,7 +74,7 @@ export function PhoneSignIn({ onSignedIn, onNeedEmail }: { onSignedIn: () => voi
           <label className="block text-sm font-medium" htmlFor="phone-signin">Mobile number</label>
           <Input id="phone-signin" type="tel" inputMode="tel" autoComplete="tel-national" placeholder="(616) 555-0123" value={raw} onChange={(e) => setRaw(e.target.value)} data-testid="input-phone" />
           <Button type="submit" className="w-full" disabled={busy} data-testid="button-phone-send">{busy ? "Sending…" : "Text me a code"}</Button>
-          <p className="text-xs text-muted-foreground">We'll text a 6-digit code. Msg & data rates may apply.</p>
+          <p className="text-xs text-muted-foreground">By tapping "Text me a code," you agree to receive a one-time sign-in code by text and to Tend's <a className="underline" href="#/terms">Terms</a> and <a className="underline" href="#/privacy">Privacy Policy</a>. One message per request. Msg & data rates may apply. Reply STOP to opt out, HELP for help.</p>
         </form>
       ) : (
         <form onSubmit={verify} className="space-y-3">
@@ -174,7 +174,7 @@ export function PhoneSettings() {
         </form>
       )}
       {msg && <p role="status" className="text-sm">{msg}</p>}
-      <p className="text-xs text-muted-foreground">US numbers only. Msg & data rates may apply.</p>
+      <p className="text-xs text-muted-foreground">US numbers only. By saving your number, you agree to receive one-time sign-in codes by text. Msg & data rates may apply. Reply STOP to opt out, HELP for help.</p>
     </div>
   );
 }
