@@ -10,9 +10,7 @@ import { apiRequest } from "@/lib/queryClient";
 interface PublicChurch { slug: string; name: string; }
 
 const PLANS = [
-  { id: "starter", name: "Starter", monthly: 29, annual: 290, tag: "For churches under 200" },
-  { id: "growth", name: "Growth", monthly: 49, annual: 490, tag: "For churches 200-500" },
-  { id: "large", name: "Large Church", monthly: 99, annual: 990, tag: "For churches 500+" },
+  { id: "growth", name: "Church", monthly: 49, annual: 490, tag: "Every church, every size" },
 ];
 
 export default function Gift() {

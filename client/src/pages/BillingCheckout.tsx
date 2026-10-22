@@ -7,7 +7,7 @@ import { apiRequest } from "@/lib/queryClient";
 import { supabase } from "@/lib/supabase";
 import { pageQuery } from "@/lib/location";
 
-const PLAN_NAMES: Record<string, string> = { starter: "Starter", growth: "Growth", large: "Large Church" };
+const PLAN_NAMES: Record<string, string> = { starter: "Starter", growth: "Church", large: "Large Church" };
 
 function hashQuery() {
   return pageQuery();
