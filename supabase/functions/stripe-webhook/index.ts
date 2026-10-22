@@ -12,6 +12,32 @@ const FROM = Deno.env.get("CONFIRM_FROM") || "Tend <support@tendpray.com>";
 const ALERT_TO = Deno.env.get("ALERT_TO") || "mrmarkjohnson@gmail.com";
 const ALERT_FROM = Deno.env.get("ALERT_FROM") || "Tend Alerts <support@tendpray.com>";
 const SITE_URL = Deno.env.get("SITE_URL") || "https://tendpray.com";
+const STRIPE_KEY = Deno.env.get("STRIPE_SECRET_KEY") ?? "";
+
+const PLAN_LABELS: Record<string, string> = { starter: "Starter", growth: "Church", large: "Large Church" };
+const planLabelFor = (plan: string) =>
+  PLAN_LABELS[plan] ?? (plan.charAt(0).toUpperCase() + plan.slice(1));
+
+async function stripeApi(path: string, params: Record<string, string>) {
+  if (!STRIPE_KEY) throw new Error("Stripe key not configured");
+  const res = await fetch(`https://api.stripe.com/v1/${path}`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${STRIPE_KEY}`, "Content-Type": "application/x-www-form-urlencoded" },
+    body: new URLSearchParams(params),
+  });
+  const data = await res.json();
+  if (!res.ok) throw new Error(data?.error?.message || `Stripe ${path} failed`);
+  return data;
+}
+
+async function stripeGet(path: string) {
+  if (!STRIPE_KEY) return null;
+  const res = await fetch(`https://api.stripe.com/v1/${path}`, {
+    headers: { Authorization: `Bearer ${STRIPE_KEY}` },
+  });
+  if (!res.ok) return null;
+  return await res.json();
+}
 
 const PLANS = ["starter", "growth", "large"];
 
@@ -150,7 +176,7 @@ async function ownerEmailVerified(ownerId: string, pastorEmail: string): Promise
 
 async function sendTrialStartedEmail(to: string, churchName: string, plan: string) {
   if (!RESEND_KEY || !to) return;
-  const planLabel = plan.charAt(0).toUpperCase() + plan.slice(1);
+  const planLabel = planLabelFor(plan);
   await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: { Authorization: `Bearer ${RESEND_KEY}`, "Content-Type": "application/json" },
@@ -165,7 +191,7 @@ async function sendTrialStartedEmail(to: string, churchName: string, plan: strin
 
 async function sendGiftReceivedEmail(to: string, churchName: string, plan: string) {
   if (!RESEND_KEY || !to) return;
-  const planLabel = plan.charAt(0).toUpperCase() + plan.slice(1);
+  const planLabel = planLabelFor(plan);
   await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: { Authorization: `Bearer ${RESEND_KEY}`, "Content-Type": "application/json" },
@@ -173,14 +199,14 @@ async function sendGiftReceivedEmail(to: string, churchName: string, plan: strin
       from: FROM,
       to,
       subject: `Someone gifted Tend ${planLabel} to ${churchName}`,
-      html: `<p>Hello,</p><p>Good news: someone gifted the Tend ${planLabel} plan to <strong>${churchName}</strong>, so your church now has the paid features at no cost to you.</p><p>Nothing else changes. Prayer requests keep arriving in your inbox the same way, and the gift renews automatically on the giver's card until they cancel. If the gift ever ends, we will email you first.</p><p>With care,<br/>The Tend team</p>`,
+      html: `<p>Hello,</p><p>Good news: someone gifted a full year of the Tend ${planLabel} plan to <strong>${churchName}</strong>, so your church now has the paid features at no cost to you.</p><p>Nothing else changes. Prayer requests keep arriving in your inbox the same way. When the year ends, your church returns to the free plan, and we will email you so it never comes as a surprise.</p><p>With care,<br/>The Tend team</p>`,
     }),
   }).catch((e) => console.error("gift received email failed", e));
 }
 
 async function sendGiftReceiptEmail(to: string, churchName: string, plan: string) {
   if (!RESEND_KEY || !to) return;
-  const planLabel = plan.charAt(0).toUpperCase() + plan.slice(1);
+  const planLabel = planLabelFor(plan);
   await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: { Authorization: `Bearer ${RESEND_KEY}`, "Content-Type": "application/json" },
@@ -188,9 +214,39 @@ async function sendGiftReceiptEmail(to: string, churchName: string, plan: string
       from: FROM,
       to,
       subject: `You gifted Tend ${planLabel} to ${churchName}`,
-      html: `<p>Hello,</p><p>Thank you for gifting the Tend ${planLabel} plan to <strong>${churchName}</strong>. Your first payment went through today, and the church's team has been notified.</p><p>The gift renews automatically. If you ever want to change or cancel it, just reply to this email and we will take care of it.</p><p>With gratitude,<br/>The Tend team</p>`,
+      html: `<p>Hello,</p><p>Thank you for gifting the Tend ${planLabel} plan to <strong>${churchName}</strong>. Your payment went through today, and the church's team has been notified.</p><p>This gift covers one full year and does not renew, so there is nothing to cancel. When the year ends, we will email you, and you can gift another year in a couple of clicks if you would like.</p><p>With gratitude,<br/>The Tend team</p>`,
     }),
   }).catch((e) => console.error("gift receipt email failed", e));
+}
+
+async function sendGiftEndedChurchEmail(to: string, churchName: string, plan: string) {
+  if (!RESEND_KEY || !to) return;
+  const planLabel = planLabelFor(plan);
+  await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${RESEND_KEY}`, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      from: FROM,
+      to,
+      subject: `The gifted year of Tend has ended for ${churchName}`,
+      html: `<p>Hello,</p><p>The gifted year of the Tend ${planLabel} plan for <strong>${churchName}</strong> has ended, so your church is back on the free plan. Your prayer page and inbox keep working exactly as before; the paid extras (your logo, custom greeting, care team accounts) are paused.</p><p>If a member would like to gift another year, the gift link sits at the bottom of your church's prayer page. You can also start the ${planLabel} plan yourselves from your church settings any time.</p><p>With care,<br/>The Tend team</p>`,
+    }),
+  }).catch((e) => console.error("gift ended church email failed", e));
+}
+
+async function sendGiftEndedDonorEmail(to: string, churchName: string, slug: string) {
+  if (!RESEND_KEY || !to) return;
+  const giftUrl = `${SITE_URL}/#/gift/${slug}`;
+  await fetch("https://api.resend.com/emails", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${RESEND_KEY}`, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      from: FROM,
+      to,
+      subject: `Your gift year of Tend to ${churchName} has ended`,
+      html: `<p>Hello,</p><p>Your gift of a year of Tend to <strong>${churchName}</strong> has now completed. Thank you: a full year of prayer requests reached their church family because of you.</p><p>The church is back on the free plan. If you would like to gift another year, it takes a couple of clicks: <a href="${giftUrl}">${giftUrl}</a></p><p>With gratitude,<br/>The Tend team</p>`,
+    }),
+  }).catch((e) => console.error("gift ended donor email failed", e));
 }
 
 async function sendDunningEmail(to: string, churchName: string, churchId: number) {
@@ -210,7 +266,7 @@ async function sendDunningEmail(to: string, churchName: string, churchId: number
 
 async function sendAbandonedCartEmail(to: string, churchName: string, plan: string, unsubUrl: string) {
   if (!RESEND_KEY || !to) return;
-  const planLabel = plan.charAt(0).toUpperCase() + plan.slice(1);
+  const planLabel = planLabelFor(plan);
   await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: { Authorization: `Bearer ${RESEND_KEY}`, "Content-Type": "application/json" },
@@ -254,6 +310,13 @@ Deno.serve(async (req) => {
         const church = Array.isArray(rows) ? rows[0] : null;
         if (church) {
           if (isGift) {
+            // Gifts run exactly one paid year: stop the renewal now. The
+            // subscription stays active until its period end, then Stripe
+            // deletes it and the deleted handler reverts the plan.
+            if (s.subscription) {
+              await stripeApi(`subscriptions/${s.subscription}`, { cancel_at_period_end: "true" })
+                .catch((e) => console.error("gift cancel_at_period_end failed", e));
+            }
             const donorEmail = s.customer_details?.email || s.customer_email || "";
             if (await ownerEmailVerified(church.owner_id, church.pastor_email)) {
               await sendGiftReceivedEmail(church.pastor_email, church.name, plan);
@@ -303,6 +366,25 @@ Deno.serve(async (req) => {
           method: "PATCH",
           body: JSON.stringify({ plan: "pilot", stripe_subscription_id: null }),
         });
+        if (sub.metadata?.gift === "true") {
+          try {
+            const detailRows = await db(
+              `tend_churches?id=eq.${church.id}&select=name,slug,pastor_email,owner_id`
+            );
+            const detail = Array.isArray(detailRows) ? detailRows[0] : null;
+            if (detail) {
+              const giftedPlan = validPlan(sub.metadata?.plan) ?? "growth";
+              if (await ownerEmailVerified(detail.owner_id, detail.pastor_email)) {
+                await sendGiftEndedChurchEmail(detail.pastor_email, detail.name, giftedPlan);
+              }
+              const customer = await stripeGet(`customers/${sub.customer}`).catch(() => null);
+              const donorEmail = typeof customer?.email === "string" ? customer.email : "";
+              if (donorEmail) await sendGiftEndedDonorEmail(donorEmail, detail.name, detail.slug);
+            }
+          } catch (e) {
+            console.error("gift ended emails failed", e);
+          }
+        }
       }
     } else if (type === "checkout.session.expired") {
       const sess = event.data.object;
