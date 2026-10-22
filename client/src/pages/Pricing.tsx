@@ -123,6 +123,15 @@ export default function Pricing() {
         ))}
       </section>
 
+      <section className="max-w-3xl mx-auto px-6 pb-16 -mt-6 text-center" data-testid="section-gift-year">
+        <h2 className="font-serif text-3xl text-foreground">Or gift a year to your church</h2>
+        <p className="mt-3 text-muted-foreground max-w-xl mx-auto">
+          Any member can cover a full year of Tend for their church: one payment of $490,
+          no renewal, nothing for the church to manage. Look for "Gift Tend to this church"
+          at the bottom of your church's prayer page.
+        </p>
+      </section>
+
       <p className="text-center text-sm text-muted-foreground pb-10 -mt-4" data-testid="text-stripe-note">
         Payments are processed securely by <span className="font-semibold text-foreground">Stripe</span>.
       </p>

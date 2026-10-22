@@ -1,7 +1,9 @@
-// Creates a Stripe Checkout Session for GIFTING a paid plan to a church.
-// Public endpoint (no Tend account needed): the donor pays now, no trial.
-// Body: { slug, plan, interval }. The webhook assigns the plan to the church
-// when payment completes (metadata.gift=true).
+// Creates a Stripe Checkout Session for GIFTING one year of a paid plan to
+// a church. Public endpoint (no Tend account needed): the donor pays now, no
+// trial. Gifts are annual only and do NOT renew: the webhook sets
+// cancel_at_period_end on the subscription when checkout completes, so the
+// plan runs the full paid year and then ends (metadata.gift=true).
+// Body: { slug, plan, interval: "year" }.
 
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "";
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
@@ -44,7 +46,7 @@ Deno.serve(async (req) => {
     if (!STRIPE_KEY) return json(500, { error: "Billing is not configured yet." });
     const { slug, plan, interval } = await req.json().catch(() => ({}));
     if (!PLANS.includes(plan)) return json(400, { error: "Unknown plan." });
-    if (interval !== "month" && interval !== "year") return json(400, { error: "Unknown billing interval." });
+    if (interval !== "year") return json(400, { error: "Gifts cover one full year." });
     if (typeof slug !== "string" || !/^[a-z0-9][a-z0-9-]{2,39}$/.test(slug)) {
       return json(400, { error: "Unknown church." });
     }
@@ -70,6 +72,9 @@ Deno.serve(async (req) => {
       "metadata[plan]": plan,
       "metadata[interval]": interval,
       "metadata[gift]": "true",
+      "subscription_data[metadata][church_id]": String(church.id),
+      "subscription_data[metadata][plan]": plan,
+      "subscription_data[metadata][gift]": "true",
     });
     return json(200, { url: session.url });
   } catch (e) {
