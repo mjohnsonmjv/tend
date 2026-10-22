@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { normalizeUsPhone } from "@/lib/oauth-core";
-import { loadTurnstile, turnstileToken } from "@/lib/turnstile";
 import { logAuthEvent } from "@/lib/auth-telemetry";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -29,18 +28,12 @@ export function PhoneSignIn({ onSignedIn, onNeedEmail }: { onSignedIn: () => voi
 
   async function send(target: string) {
     setBusy(true); setMsg("");
-    // Invisible bot check: each code request spends a real SMS, so prove
-    // humanity before asking Supabase/Twilio to send one.
-    let captchaToken: string;
-    try {
-      await loadTurnstile();
-      captchaToken = await turnstileToken();
-    } catch {
-      setBusy(false);
-      setMsg("Couldn't complete the spam check. Check your connection and try again.");
-      return false;
-    }
-    const { error } = await supabase.auth.signInWithOtp({ phone: target, options: { shouldCreateUser: true, channel: "sms", captchaToken } });
+    // Turnstile removed 2026-10-22: the invisible challenge was failing for
+    // real users and blocking every code send. Supabase-side CAPTCHA
+    // protection is off to match; rate limits + Twilio Verify fraud guard
+    // remain. Re-add bot protection here only with a widget config that
+    // passes on real phones.
+    const { error } = await supabase.auth.signInWithOtp({ phone: target, options: { shouldCreateUser: true, channel: "sms" } });
     setBusy(false);
     if (error) { setMsg(error.message || "Couldn't send a code. Try again in a minute."); return false; }
     logAuthEvent("phone_code_sent", { provider: "phone" });
@@ -95,7 +88,6 @@ export function PhoneSignIn({ onSignedIn, onNeedEmail }: { onSignedIn: () => voi
         </form>
       )}
       {msg && <p role="status" className="text-sm text-foreground" data-testid="text-phone-message">{msg}</p>}
-      <div id="turnstile-holder" aria-hidden="true" />
     </div>
   );
 }
