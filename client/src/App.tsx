@@ -8,6 +8,7 @@ import { lazy, Suspense, useEffect, useState, type ComponentType } from "react";
 import NotFound from "@/pages/not-found";
 import { AuthProvider,RequireAuth,useAuth } from "@/components/Auth";
 import { trackPageView, currentHashPath, initAnalytics } from "@/lib/analytics";
+import { logSiteEvent } from "@/lib/siteEvents";
 
 // After a deploy, an open tab may request a chunk that no longer exists.
 // Reload once to pick up the new build instead of showing a blank page.
@@ -105,7 +106,11 @@ function AnalyticsTracker() {
   useEffect(() => {
     initAnalytics();
     trackPageView(currentHashPath());
-    const onHashChange = () => trackPageView(currentHashPath());
+    logSiteEvent("page_view");
+    const onHashChange = () => {
+      trackPageView(currentHashPath());
+      logSiteEvent("page_view");
+    };
     window.addEventListener("hashchange", onHashChange);
     return () => window.removeEventListener("hashchange", onHashChange);
   }, []);
