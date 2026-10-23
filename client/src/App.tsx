@@ -36,6 +36,7 @@ const BillingCheckout = page(() => import("@/pages/BillingCheckout"));
 const BillingSuccess = page(() => import("@/pages/BillingSuccess"));
 const Gift = page(() => import("@/pages/Gift"));
 const GiftSuccess = page(() => import("@/pages/GiftSuccess"));
+const Faq = page(() => import("@/pages/Faq"));
 const Privacy = page(() => import("@/pages/Privacy"));
 const Terms = page(() => import("@/pages/Terms"));
 const TextLine = page(() => import("@/pages/TextLine"));
@@ -74,6 +75,7 @@ function AppRouter() {
       <Route path="/" component={Landing} />
       <Route path="/demo" component={Demo} />
       <Route path="/pricing" component={Pricing} />
+      <Route path="/faq" component={Faq} />
       <Route path="/billing/checkout" component={BillingCheckout} />
       <Route path="/billing/success" component={BillingSuccess} />
       <Route path="/gift/success" component={GiftSuccess} />

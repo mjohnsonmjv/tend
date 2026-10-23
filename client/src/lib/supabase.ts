@@ -15,20 +15,28 @@ export const SUPABASE_KEY="sb_publishable_UP2-cYmMSsOJsSAvxX2cVw_SS5IyHJZ";
 // Publishable key only. Database permissions are enforced by RLS.
 const VERIFIER_SUFFIX="-code-verifier";
 const memoryFallback=new Map<string,string>();
+// The store lookup itself must be guarded: this module is also loaded by
+// the build-time prerenderer in Node, where `window` does not exist and a
+// bare reference throws before the try/catch can run. In Node (and whenever
+// storage is unavailable) the memory fallback simply serves everything.
+function storeFor(key:string):Storage|null{
+  if(typeof window==="undefined")return null;
+  try{return key.endsWith(VERIFIER_SUFFIX)?window.localStorage:window.sessionStorage;}catch{return null;}
+}
 const hybridStorage={
   getItem(key:string):string|null{
-    const store=key.endsWith(VERIFIER_SUFFIX)?window.localStorage:window.sessionStorage;
-    try{const v=store.getItem(key);if(v!=null)return v;}catch{/* private mode */}
+    const store=storeFor(key);
+    try{const v=store?.getItem(key);if(v!=null)return v;}catch{/* private mode */}
     return memoryFallback.get(key)??null;
   },
   setItem(key:string,value:string):void{
-    const store=key.endsWith(VERIFIER_SUFFIX)?window.localStorage:window.sessionStorage;
-    try{store.setItem(key,value);}catch{/* private mode */}
+    const store=storeFor(key);
+    try{store?.setItem(key,value);}catch{/* private mode */}
     memoryFallback.set(key,value);
   },
   removeItem(key:string):void{
-    const store=key.endsWith(VERIFIER_SUFFIX)?window.localStorage:window.sessionStorage;
-    try{store.removeItem(key);}catch{/* private mode */}
+    const store=storeFor(key);
+    try{store?.removeItem(key);}catch{/* private mode */}
     memoryFallback.delete(key);
   },
 };

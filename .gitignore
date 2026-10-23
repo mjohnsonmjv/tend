@@ -24,3 +24,4 @@ tests/vercel-security.cjs
 outreach/church-leads.md
 outreach/stock-sources/
 supabase/.temp/
+dist-ssr/
