@@ -13,7 +13,7 @@ const GIFT_PRICE = 490;
 
 const GIFT_PERKS = [
   "A full year of the Church plan",
-  "One payment today. It does not renew",
+  "One payment today",
   "The church's team is notified right away",
 ];
 
@@ -51,8 +51,8 @@ export default function Gift() {
         ) : (<>
           <h1 className="font-serif text-4xl sm:text-5xl mb-4">Gift a year of Tend to<br />{church.name}</h1>
           <p className="text-muted-foreground max-w-xl mx-auto mb-10">
-            Cover a full year of Tend for your church. You pay once today, the church's team
-            is notified, and the gift does not renew. No Tend account needed.
+            Cover a full year of Tend for your church. You pay once today and the church's team
+            is notified. No Tend account needed.
           </p>
 
           <div className="max-w-md mx-auto rounded-2xl border border-primary/40 bg-primary/5 p-6 mb-8 text-left" data-testid="card-gift-year">
