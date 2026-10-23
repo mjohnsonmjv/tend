@@ -1,17 +1,13 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "framework": "vite",
-  "buildCommand": "npx vite build",
+  "buildCommand": "npm run build",
   "outputDirectory": "dist/public",
   "redirects": [
     {"source": "/signup", "destination": "/#/signup", "permanent": false},
     {"source": "/register", "destination": "/#/signup", "permanent": false},
     {"source": "/login", "destination": "/#/login", "permanent": false},
     {"source": "/demo", "destination": "/#/demo", "permanent": false},
-    {"source": "/pricing", "destination": "/#/pricing", "permanent": false},
-    {"source": "/privacy", "destination": "/#/privacy", "permanent": false},
-    {"source": "/terms", "destination": "/#/terms", "permanent": false},
-    {"source": "/text", "destination": "/#/text", "permanent": false},
     {"source": "/c/:slug", "destination": "/#/c/:slug", "permanent": false},
     {"source": "/c/:slug/wall", "destination": "/#/c/:slug/wall", "permanent": false},
     {"source": "/c/:slug/thanks", "destination": "/#/c/:slug/thanks", "permanent": false},

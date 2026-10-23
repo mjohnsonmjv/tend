@@ -12,6 +12,8 @@ const FILES = [
   "supabase/functions/send-prayer-alert/handler.ts",
   "supabase/functions/nurture-unsubscribe/index.ts",
   "client/src/pages/Landing.tsx",
+  "client/src/pages/Faq.tsx",
+  "client/src/lib/faqData.ts",
   "client/src/pages/Pricing.tsx",
   "client/src/pages/SubmitThanks.tsx",
   "client/src/components/Inbox.tsx",
