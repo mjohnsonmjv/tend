@@ -10,6 +10,16 @@ const result = (data: any, error?: any) => {
   return new Response(JSON.stringify(dateRows(data)), { headers: { "content-type": "application/json" } });
 };
 
+/** Pick the email a new church is filed under. The address typed on the signup
+ * form wins (it is the freshest), then the signed-in account's email, then the
+ * address saved during phone-first signup. Returns "" when there is none, so
+ * callers can ask for one instead of sending an empty string to the database,
+ * which the tend_churches pastor_email check rejects.
+ */
+export function resolvePastorEmail(accountEmail?: string | null, formEmail?: string | null, pendingEmail?: string | null): string {
+  return (formEmail || accountEmail || pendingEmail || "").trim();
+}
+
 /** All app data calls go to durable Supabase APIs, never a sandbox proxy.
  * Public reads/writes are narrow RPCs; private calls use the signed-in JWT + RLS.
  */
@@ -136,11 +146,15 @@ export async function apiRequest(method: string, url: string, data?: any): Promi
   }
   if (path === "/api/churches" && method === "POST") {
     // Phone-first signups add their email after verification; it may still be
-    // unconfirmed, so fall back to the address saved during signup.
+    // unconfirmed, so fall back to the address saved during signup, or the one
+    // typed on the signup form itself. Never send an empty pastor_email: the
+    // database rejects it and the raw constraint error is no help to anyone.
     let pendingEmail = "";
     try { pendingEmail = sessionStorage.getItem("tend_pending_email") || ""; } catch { /* private mode */ }
+    const pastorEmail = resolvePastorEmail(session.session.user.email, data.pastorEmail, pendingEmail);
+    if (!pastorEmail) throw new Error("Add your email to finish setting up your church.");
     const r=await supabase.from("tend_churches").insert({
-      name:data.name,slug:data.slug,pastor_name:data.pastorName,pastor_email:session.session.user.email||pendingEmail,
+      name:data.name,slug:data.slug,pastor_name:data.pastorName,pastor_email:pastorEmail,
       contact_role:data.contactRole,greeting_message:data.greetingMessage,
     }).select(churchFields).single(); return result(r.data,r.error);
   }

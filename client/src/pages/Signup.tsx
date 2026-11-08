@@ -6,6 +6,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { apiRequest,queryClient } from "@/lib/queryClient";
+import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -31,16 +32,43 @@ const schema=z.object({
   slug:z.string().min(3,"Use at least 3 characters.").max(40).regex(/^[a-z0-9][a-z0-9-]+$/,"Use lowercase letters, numbers, and hyphens.").refine(v=>v!=="demo","Please choose another church URL."),
   contactRole:z.enum(["pastor","staff","board","volunteer","congregant","donor"],{message:"Choose the option that fits you best."}),
   pastorName:z.string().trim().min(2,"Add a public care-team name.").max(100),
+  // Only required when the signed-in account has no email (phone-first signup):
+  // the database rejects an empty pastor_email, so the form collects it here
+  // instead of failing on the raw constraint at insert time.
+  pastorEmail:z.string().trim().max(254,"Use an email address under 254 characters.").email("Enter a valid email address.").optional().or(z.literal("")),
   greetingMessage:z.string().trim().min(1,"Add a confirmation message.").max(300,"Keep the greeting within 300 characters."),
 });
+const readPendingEmail=()=>{try{return sessionStorage.getItem("tend_pending_email")||"";}catch{return "";}};
+const looksLikeEmail=(v:string)=>/.+@.+\..+/.test(v.trim());
 export default function Signup(){
   const {session}=useAuth();const [,navigate]=useLocation();
   const [step,setStep]=useState(1);const [slugEdited,setSlugEdited]=useState(false);
-  const form=useForm<z.infer<typeof schema>>({resolver:zodResolver(schema),defaultValues:{name:"",slug:"",pastorName:"Care team",greetingMessage:"Thank you for trusting us with this. Your church family is praying for you."}});
+  // Phone-first accounts have no email on the session yet; the form collects it
+  // on step 1 so church creation never runs with an empty pastor_email.
+  const needsEmail=!session?.user.email;
+  const form=useForm<z.infer<typeof schema>>({resolver:zodResolver(schema),defaultValues:{name:"",slug:"",pastorName:"Care team",pastorEmail:readPendingEmail(),greetingMessage:"Thank you for trusting us with this. Your church family is praying for you."}});
   const values=form.watch();
-  const create=useMutation({mutationFn:async(v:z.infer<typeof schema>)=>(await apiRequest("POST","/api/churches",v)).json() as Promise<Church>,onSuccess:church=>{trackSignupCompleted();queryClient.invalidateQueries({queryKey:["/api/churches"]});navigate(`/church/${church.id}/qr`)}});
+  const create=useMutation({mutationFn:async(v:z.infer<typeof schema>)=>{
+    const email=v.pastorEmail?.trim()||"";
+    if(email&&needsEmail){
+      // Attach the address to the account too (starts the confirmation email),
+      // so the next church they create does not need it again. A taken address
+      // stops here instead of filing the church under someone else's inbox; a
+      // transient failure does not block creating the church.
+      const {error}=await supabase.auth.updateUser({email});
+      if(error&&/already/i.test(error.message))throw new Error("That email is already on a Tend account. Sign in with email instead, or use a different email.");
+      try{sessionStorage.setItem("tend_pending_email",email);}catch{/* private mode */}
+    }
+    return (await apiRequest("POST","/api/churches",v)).json() as Promise<Church>;
+  },onSuccess:church=>{trackSignupCompleted();queryClient.invalidateQueries({queryKey:["/api/churches"]});navigate(`/church/${church.id}/qr`)}});
   useEffect(()=>{trackSignupStarted()},[]);
-  async function next(){if(await form.trigger(["name","slug","contactRole","pastorName"]))setStep(2)}
+  async function next(){
+    if(needsEmail){
+      if(!await form.trigger(["name","slug","contactRole","pastorName","pastorEmail"]))return;
+      if(!looksLikeEmail(form.getValues("pastorEmail")||"")){form.setError("pastorEmail",{message:"Add your email to finish setting up."});return;}
+    }else if(!await form.trigger(["name","slug","contactRole","pastorName"]))return;
+    setStep(2);
+  }
   return <><SiteHeader/><main className="max-w-3xl mx-auto px-5 py-12">
     <p className="eyebrow">Set up your church or group · {step} of 2</p><h1 className="text-3xl mb-3">{step===1?"Make a place for prayer.":"Welcome people in your own words."}</h1><p className="text-muted-foreground mb-8">No payment required to start. Your QR code is ready as soon as you finish.</p>
     <Form {...form}><form className="border rounded-xl bg-card p-6 sm:p-8 space-y-6" onSubmit={form.handleSubmit(v=>create.mutate(v))}>
@@ -49,7 +77,8 @@ export default function Signup(){
         <FormField control={form.control} name="slug" render={({field})=><FormItem><FormLabel>Church URL name</FormLabel><FormControl><Input {...field} maxLength={40} data-testid="input-slug" onChange={e=>{setSlugEdited(true);field.onChange(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g,""))}} placeholder="grace-community"/></FormControl><FormDescription className="break-all">{publicChurchUrl(values.slug||"your-church")}</FormDescription><FormMessage/></FormItem>}/>
         <FormField control={form.control} name="contactRole" render={({field})=><FormItem><FormLabel>Your role</FormLabel><FormControl><RadioGroup value={field.value} onValueChange={field.onChange} className="grid sm:grid-cols-2 gap-2" data-testid="input-role">{ROLES.map(([v,label,desc])=><Label key={v} htmlFor={`role-${v}`} className="flex items-start gap-3 rounded-lg border p-3 cursor-pointer hover:bg-muted/50 has-[:checked]:border-primary"><RadioGroupItem id={`role-${v}`} value={v}/><span><span className="block text-sm font-medium">{label}</span><span className="block text-xs text-muted-foreground">{desc}</span></span></Label>)}</RadioGroup></FormControl><FormMessage/></FormItem>}/>
         <FormField control={form.control} name="pastorName" render={({field})=><FormItem><FormLabel>Care-team display name</FormLabel><FormControl><Input {...field} maxLength={100} data-testid="input-pastor-name"/></FormControl><FormDescription>Visible to your congregation on the prayer page. “Care team” works fine if you prefer no personal name.</FormDescription><FormMessage/></FormItem>}/>
-        <p className="text-sm text-muted-foreground break-all">Private account email: {session?.user.email || (() => { try { return sessionStorage.getItem("tend_pending_email") || ""; } catch { return ""; } })()}</p>
+        {needsEmail&&<FormField control={form.control} name="pastorEmail" render={({field})=><FormItem><FormLabel>Your email</FormLabel><FormControl><Input {...field} type="email" autoComplete="email" maxLength={254} data-testid="input-pastor-email" placeholder="you@example.com"/></FormControl><FormDescription>Your church setup and receipts need an email address. It stays private and is not shown on the public prayer form.</FormDescription><FormMessage/></FormItem>}/>}
+        <p className="text-sm text-muted-foreground break-all">Private account email: {session?.user.email || readPendingEmail() || values.pastorEmail || ""}</p>
         <Button type="button" className="w-full min-h-12" data-testid="button-setup-next" onClick={next}>Continue</Button>
       </>:<>
         <FormField control={form.control} name="greetingMessage" render={({field})=><FormItem><FormLabel>After someone shares a request</FormLabel><FormControl><Textarea {...field} rows={3} maxLength={300} data-testid="input-greeting"/></FormControl><FormDescription>{values.greetingMessage.length}/300 characters. A receipt confirmation, not a promise that someone has already prayed.</FormDescription><FormMessage/></FormItem>}/>
